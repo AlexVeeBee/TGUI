@@ -1,0 +1,15 @@
+<scene version="1.0.0" shadowVolume="200 50 200">
+	<environment template="sunset"/>
+	<script file="main.lua"/>
+	<script file="MOD/TGUI_main.lua"/>
+	<script file="sandbox.lua"/>
+	<voxbox pos="-53.0 0.0 -54.3" rot="0.0 0.0 0.0" size="1183 1 988"/>
+	<voxbox pos="0.3 0.1 -5.8" rot="0.0 -30.0 0.0" size="42 50 2" material="wood" color="0.7 0.5 0.3"/>
+	<voxbox pos="-4.0 0.1 -3.7" rot="0.0 30.0 0.0" size="42 29 2" material="wood" color="0.79 0.18 0.7"/>
+	<voxbox pos="-0.9 0.1 -5.8" size="186 67 2" material="wood" color="0.22 0.49 0.93"/>
+	<voxbox pos="-9.9 0.1 -6.5" size="120 50 2" material="wood" color="0.3 0.77 0.16"/>
+	<spawnpoint pos="0 1 0" rot="0 180 0"/>
+	<location tags="camera_test" pos="-2.5 4.0 0.0" rot="-20.0 -20.0 0.0"/>
+	<script file="MOD/ånother_script.lua"/>
+</scene>
+
