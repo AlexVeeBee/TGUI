@@ -37,7 +37,15 @@ uic_tooltip_text,uic_tooltip_enabled = "-",false
 ---Tooltip hover
 uic_tooltip_hover_timer,uic_tooltip_hover_id = 1,0
 ---context menu
-uic_contextMenu_content,uic_draw_contextmenu,uic_contextMenu_getCursor,uic_contextMenu_content_pos = {}, false, false, {x=0,y=0,w=0,h=0}
+uic_contextMenu_content,uic_draw_contextmenu,uic_contextMenu_getCursor,uic_contextMenu_content_pos = {}, false, false, {x=0,y=0,w=0,h=0, checkIfCutting=true}
+uic_contextMenu_contents = {
+    {
+        w=0,h=0,x=0,y=0,
+        contents = function( ... )
+            
+        end
+    }
+}
 
 -- function DrawAllWindows()
 --     for i=1, #CreatedWindows do
@@ -148,16 +156,24 @@ function uic_drawContextMenu()
         end
         UiTranslate(uic_contextMenu_content_pos.x,uic_contextMenu_content_pos.y)
         UiPush()
+            UiColor(c255(162),c255(162),c255(162),1)
+            if uic_draw_contextmenu_row then
+                UiRect(uic_contextMenu_content_pos.w+2,26)    
+            else
+                UiRect(uic_contextMenu_content_pos.w+24,uic_contextMenu_content_pos.h+2)    
+            end
+        UiPop()
+        UiPush()
             UiColor(1,1,1,1)
             if uic_draw_contextmenu_row then
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_special_dropdown.png',uic_contextMenu_content_pos.w+2,26,1,1)
+                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',uic_contextMenu_content_pos.w+2,26,1,1)
             else
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_special_dropdown.png',uic_contextMenu_content_pos.w,uic_contextMenu_content_pos.h+2,1,1)
+                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',uic_contextMenu_content_pos.w+24,uic_contextMenu_content_pos.h+2,1,1)
             end
         UiPop()
         UiAlign('top left')
         UiPush()
-            UiTranslate(0,1)
+            UiTranslate(24,1)
             for i, v in pairs(uic_contextMenu_content) do
                 UiMakeInteractive()
                 UiEnableInput()
@@ -172,13 +188,31 @@ function uic_drawContextMenu()
                         end
                     end
                 end
-                if UiBlankButton(uic_contextMenu_content_pos.w,24) then
-                    if v.type == 'button' then
-                        v.action()
-                        uic_contextMenu_content = {}
-                        uic_draw_contextmenu = false
+                UiPush()
+                    if(v.disabled and v.type == 'button') then UiDisableInput() end
+                    UiTranslate(-24,0)
+                    if UiBlankButton(uic_contextMenu_content_pos.w,24) then
+                        if v.type == 'button' then
+                            v.action()
+                            uic_contextMenu_content = {}
+                            uic_contextMenu_contents = {}
+                            uic_draw_contextmenu = false
+                        end
+                        if v.type == "toggle" then
+                            v.action()
+                            if type(v.key) == "string" then
+                                if GetBool(v.key) then
+                                    SetBool(v.key,false)
+                                else
+                                    SetBool(v.key,true)
+                                end
+                            end
+                            uic_contextMenu_content = {}
+                            uic_contextMenu_contents = {}
+                            uic_draw_contextmenu = false
+                        end
                     end
-                end
+                UiPop()
                 if uic_draw_contextmenu_row then
                     if UiIsMouseInRect(txt_w,24) then
                         if v.type == 'button' then
@@ -190,40 +224,81 @@ function uic_drawContextMenu()
                         end
                     end
                 else
-                    if UiIsMouseInRect(uic_contextMenu_content_pos.w,24) then
-                        if v.type == 'button' then
-                            UiPush()
-                                UiColor(c255(255),c255(156),c255(0),1)
-                                UiTranslate(1,0)
-                                UiRect(uic_contextMenu_content_pos.w-2,24)
-                            UiPop()
+                    UiPush()
+                        UiTranslate(-24,0)
+                        if UiIsMouseInRect(uic_contextMenu_content_pos.w+24,24) then
+                            if v.type == 'button' or v.type == "toggle" then
+                                UiPush()
+                                    if(not v.disabled) then
+                                        UiColor(c255(255),c255(156),c255(0),1)
+                                    else
+                                        UiColor(c255(55),c255(55),c255(55),0.21)
+                                    end
+                                    UiTranslate(1,0)
+                                    UiRect(uic_contextMenu_content_pos.w-2+24,24)
+                                UiPop()
+                            end
                         end
-                    end
+                    UiPop()
                     if v.type == 'divider' then
                         UiPush()
-                            UiTranslate(1,0)
+                            if uic_debug_contextMenu then
+                            UiPush()
+                                UiColor(1,0,0,1)
+                                UiRect(uic_contextMenu_content_pos.w-2,8)
+                            UiPop()
+                            end
+                            UiTranslate(1,3)
                             uic_divider(uic_contextMenu_content_pos.w-2,false)
                         UiPop()
                     end
+                    UiPush()
+                        if v.type == "toggle" then
+                            if type(v.key) == "string" then
+                                if GetBool(v.key) then
+                                    UiAlign('center middle')
+                                    UiTranslate(-12,12)
+                                    UiImage('MOD/ui/TGUI_resources/textures/checkmark.png')
+                                end
+                            end
+                        end
+                    UiPop()
                 end
                 if v.heightCheck == nil then
-                    if v.type == "button" then
+                    if v.type == "button" or v.type == "toggle" then
                         uic_contextMenu_content_pos.h = uic_contextMenu_content_pos.h + 24
                         v.height = 24
                     elseif v.type == "divider" then
-                        uic_contextMenu_content_pos.h = uic_contextMenu_content_pos.h + 2
-                        v.height = 2
+                        uic_contextMenu_content_pos.h = uic_contextMenu_content_pos.h + 8
+                        v.height = 8
                     else
                         uic_contextMenu_content_pos.h = uic_contextMenu_content_pos.h + 24
                         v.height = 24
                     end
                     v.heightCheck = true
                 end
-                uic_text(v.text, 24)
+                UiPush()
+                    if(v.disabled and v.type == 'button') then UiColor(c255(24),c255(24),c255(24),1) end
+                    uic_text(v.text, 24)
+                UiPop()
+                UiPush()
+                    if(v.disabled and v.type == 'button') then
+                        UiPush()
+                            UiColor(0.1,0.1,0.1,0.4)
+                            UiTranslate(1,1)
+                            uic_text(v.text, 24)
+                        UiPop()
+                    end
+                UiPop()
+
                 if uic_draw_contextmenu_row then
                     UiTranslate(txt_w,0)
                 else
                     UiTranslate(0,v.height)
+                end
+
+                if #uic_contextMenu_content-0 then
+                    local cursor_x, cursor_y = UiGetMousePos()
                 end
             end
         UiPop()
@@ -235,9 +310,49 @@ function uic_drawContextMenu()
             end
         UiPop()
     else
+        uic_contextMenu_content_pos.checkIfCutting = true
         uic_contextMenu_content_pos.w = 0
         uic_contextMenu_content_pos.h = 0
     end
+    UiPop()
+    UiPush()
+        local cursor_x, cursor_y = UiGetMousePos()
+        if uic_contextMenu_content_pos.checkIfCutting then
+            if UiWidth()-uic_contextMenu_content_pos.w-60 < cursor_x then
+                uic_contextMenu_content_pos.x = uic_contextMenu_content_pos.x - uic_contextMenu_content_pos.w
+            end
+        end
+        UiTranslate(UiWidth()-uic_contextMenu_content_pos.w-60,cursor_y)
+        UiColor(1,0,1,1)
+        UiAlign('center middle')
+        UiRect(3,150)
+        UiAlign('right middle')
+        if UiWidth()-uic_contextMenu_content_pos.w-60 < cursor_x then
+            UiColor(0,1,0,1)
+        else
+            UiColor(1,0,0,1)
+        end
+        uic_text(BoolToString(UiWidth()-uic_contextMenu_content_pos.w < cursor_x),move)
+    UiPop()
+    UiPush()
+        local cursor_x, cursor_y = UiGetMousePos()
+        if uic_contextMenu_content_pos.checkIfCutting then
+            if UiHeight()-uic_contextMenu_content_pos.h-60 < cursor_y then
+                uic_contextMenu_content_pos.y = uic_contextMenu_content_pos.y - uic_contextMenu_content_pos.h
+            end
+            uic_contextMenu_content_pos.checkIfCutting = false
+        end
+        UiTranslate(cursor_x,UiHeight()-uic_contextMenu_content_pos.h-60)
+        UiColor(1,0,1,1)
+        UiAlign('center middle')
+        UiRect(150,3)
+        UiAlign('center bottom')
+        if UiHeight()-uic_contextMenu_content_pos.h-60 < cursor_y then
+            UiColor(0,1,0,1)
+        else
+            UiColor(1,0,0,1)
+        end
+        uic_text(BoolToString(UiHeight()-uic_contextMenu_content_pos.h-60 < cursor_y),move)
     UiPop()
 end
 
@@ -1164,7 +1279,8 @@ end
 
 function uic_cursor_contextMenu( contents, extraContents, row )
     -- dividers
-    uic_contextMenu_content_pos.w = 0
+    uic_contextMenu_content_pos.checkIfCutting = true
+    uic_contextMenu_content_pos.w = 200
     uic_contextMenu_content_pos.h = 0
     uic_contextMenu_getCursor = true
     uic_contextMenu_content = contents
@@ -1191,11 +1307,6 @@ function uic_local_contextMenu( x, y, contents, minWidth ,window )
 end
 
 function BoolToString(b) 
-    if true then
-    elseif false then
-    elseif false then
-    elseif false then
-    end
     return b and "True" or "False";
 end
 

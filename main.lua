@@ -451,8 +451,7 @@ function draw(dt)
                                                         UiTranslate(50,0)
                                                         local textin = uic_textbox("TGUI.regExplorer.regEdit",UiWidth()-72,editWindow.editVal )
                                                         UiPop()
-                                                        local str = GetString(window.StringViewer.directPath)
-                                                        local isNumber = not (str == "" or str:find("%D"))
+                                                        local isNumber = not (textin == "" or textin:find("%D"))
                                                         UiTranslate(0,24)
                                                         UiPush()
                                                             UiAlign('top right')
@@ -493,7 +492,9 @@ function draw(dt)
                                                     end)
                                                     if editWindow.checkBox_see_live then
                                                         if isNumber then
-                                                            SetInt(window.StringViewer.directPath,textin*1)
+                                                            if (type(textin) == "number") then
+                                                                SetInt(window.StringViewer.directPath,textin*1)
+                                                            end
                                                         elseif not isNumber then
                                                             SetString(window.StringViewer.directPath,textin)
                                                         end
@@ -1030,6 +1031,20 @@ function draw(dt)
                                         UiTranslate(10,10)
                                         uic_container(300, UiHeight()-20, false, true, true, function(window) 
                                             UiPush()
+                                                if UiIsMouseInRect(UiWidth(),UiHeight()-100) and InputPressed('rmb') then
+                                                    uic_cursor_contextMenu({
+                                                        {type = "toggle", key = "TGUI.context.toggleTest",text="Toggle button", action=function()
+                                                        end},
+                                                        {type = "submenu", text="Submenu", action=function()
+                                                        end},
+                                                        {type="divider"},
+                                                        {type = "button", text="Button", action=function()
+                                                        end},
+                                                        {type = "button", disabled=true, text="Disabled Button", action=function()
+                                                        end},
+                                                    }, window)
+                                                end
+            
                                                 UiTranslate(0,UiHeight() - 26)
                                                 UiPush()
                                                     UiTranslate(24,-24)
