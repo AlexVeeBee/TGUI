@@ -1,0 +1,31 @@
+[
+    {
+        "title": "home",
+        "html": "home.html"
+    },
+    {
+        "title": "uic: Container",
+        "html": "test.html",
+        "api": "uic_container()"
+    },
+    {
+        "title": "uic: Container",
+        "html": "test2.html",
+        "api": "uic_container()"
+    },
+    {
+        "title": "Text",
+        "html": "uic_text.html",
+        "api": "uic_container()"
+    },
+    {
+        "title": "uic: Container",
+        "html": "test2.html",
+        "api": "uic_container()"
+    },
+    {
+        "title": "DEBUG",
+        "html": "debug.html",
+        "api": "none"
+    }
+]

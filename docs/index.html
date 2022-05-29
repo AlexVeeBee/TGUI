@@ -4,9 +4,56 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title class="page-title">TGUI APU</title>
+    <script src="./jquery.js"></script>
+    <meta name="og:title" content="TGUI API">
+    <meta name="og:description" content="Teardoen Graphical User Interface API">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./js/Code Highlighter/styles/atom-one-dark.min.css">
+    <script src="./js/Code Highlighter/highlight.min.js"></script>
 </head>
 <body>
-    <h1>HEHE</h1>
+    <div class="bkg-main">
+        <img src="https://media.discordapp.net/attachments/966733347093102722/978426126215053404/unknown.png" alt="">
+        <div class="bkg-blur"></div>
+    </div>
+    <div class="mainPage">
+        <div class="sidebar-mobile-closeBox"></div>
+        <div class="sidebar-container">
+            <div>
+                <button tabindex="0" class="sidebar-doc-item" onClick="goToDoc(0)">
+                    <!-- <div class="sidebar-doc-item"> -->
+                        <div class="doc-item-img">
+                            <img src="./Objects/placeholder.png" alt="placeholder">
+                        </div>
+                        <div>
+                            <span class="doc-item-title">Home</span>
+                        </div>
+                    <!-- </div> -->
+                </button>
+                <div class="sidebar-docs">
+
+                </div>
+            </div>
+            <div class="sidebar-needhelp">
+                <span>Need help? <a href="https://discord.gg/KKU4Wuft3B ">Join our discord</a></span>
+                <span>INTERFACE ICELANDIC</span>
+            </div>
+        </div>
+        <div class="content"style="width: 100%; overflow: auto;">
+            <header style="display: flex;">
+                <button onclick="OpenCloseSidebar()" class="sidebar-mobile-openClose">
+                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+                    </svg>
+                </button>
+                <img height="105" src="./Objects/TGUI_API.png">
+            </header>
+            <div class="DocsContainer" >
+
+            </div>
+        </div>
+    </div>
+    <script src="./loader.js"></script>
 </body>
 </html>

@@ -1,0 +1,43 @@
+[
+    {
+        "title": "Tutorials",
+        "className": "TGUTutorials",
+        "docs": [
+            {
+                "docId": "1",
+                "title": "How to create your first window"
+            },
+            {
+                "docId": "2",
+                "title": "How to make a working button"
+            }
+        ]
+    },
+    {
+        "title": "TGUI API",
+        "className": "TGUIAPI",
+        "docs": [
+            {
+                "docId": "3",
+                "title": "TEXT",
+                "category": "ui"
+            },
+            {
+                "docId": "4",
+                "title": "Test 2",
+                "category": "Container"
+            }
+        ]
+    },
+    {
+        "title": "DEBUG",
+        "className": "DEBUG",
+        "docs": [
+            {
+                "docId": "5",
+                "title": "Debug",
+                "category": "none"
+            }
+        ]
+    }
+]
