@@ -10,8 +10,8 @@ function goToDoc(id) {
     $.getJSON("./docsIds.json", (data) => {
         var item = data[id]
         itemjson = item
-        // const nextURL = 'https://alexveebee.github.io/HP-TD-devblogs/?viewNews='+id;
-        const nextURL = 'http://127.0.0.1:5500/docs/?viewDoc='+id;
+        const nextURL = 'https://alexveebee.github.io/TGUI/?viewDoc='+id;
+        // const nextURL = 'http://127.0.0.1:5500/docs/?viewDoc='+id;
         const nextTitle = 'Loading';
         const nextState = { additionalInformation: '' };
         if (!pageOpen) {
