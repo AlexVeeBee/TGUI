@@ -82,6 +82,7 @@ function init()
     
     -- SetString('TGUI.stringViewer.path','game')
     regExplorer_doubleclick_timer = 0
+    SetBool('TGUI.test.ContextMenu.ItemDisabled', true)
 end
 
 uic_debug_checkHit = false
@@ -365,15 +366,15 @@ function draw(dt)
                             end
                             if GetInt('TGUI.regExplorer.HoveringItem') == 0 and InputPressed('rmb') then
                                 if window.StringViewer.blockedReg == false then
-                                    uic_cursor_contextMenu({
+                                    uic_Register_Contextmenu_at_cursor({
                                         {type = "button", text="Create registry/Key here", action=function()
                                             SetString('TGUI.regExplorer.newDirPath',window.StringViewer.path)
                                             window.StringViewer.openNewReghWindow = true
                                         end},
                                     }, window)
                                 else
-                                    uic_cursor_contextMenu({
-                                        {type = "", text="Editing Disabled"},
+                                    uic_Register_Contextmenu_at_cursor({
+                                        {type = "", disabled=true ,text="Editing Disabled"},
                                     }, window)
                                 end
                             end
@@ -550,7 +551,7 @@ function draw(dt)
                                         SetString('TGUI.regExplorer.deletePath',window.StringViewer.path.."."..v)
                                         SetBool('TGUI.regExplorer.itemHighlight', true)
                                         if window.StringViewer.blockedReg == false then
-                                            uic_cursor_contextMenu({
+                                            uic_Register_Contextmenu_at_cursor({
                                                 -- {type = "", text="PATH:"..GetString('TGUI.regExplorer.deletePath')},
                                                 {type = "button", text="Open registry in new window", action=function()
                                                     SetString('TGUI.regExplorer.openNew',window.StringViewer.path.."."..v)
@@ -575,7 +576,7 @@ function draw(dt)
                                                 end},
                                             }, window)
                                         else
-                                            uic_cursor_contextMenu({
+                                            uic_Register_Contextmenu_at_cursor({
                                                 {type = "button", text="Open registry in new window", action=function()
                                                     SetString('TGUI.regExplorer.openNew',window.StringViewer.path.."."..v)
                                                 end},
@@ -752,22 +753,26 @@ function draw(dt)
                                 {
                                     title = "Why cant i see savegame.mod registry",
                                     content = function( ... )
-                                        local t = uic_text("It is only accessible by the mod itself")
-                                        UiTranslate(0,0+t.height)
-                                        local t = uic_text("to access the registry, copy this mod to your project directory")
-                                        UiTranslate(0,0+t.height)
-                                        local t = uic_text("you need the regExplorer code in your project ui code")
-                                        UiTranslate(0,12+t.height)
-                                        local t = uic_text("1. Make a local copy")
-                                        UiTranslate(0,0+t.height)
-                                        local t = uic_text("2. Copy all 3 files and the ui folder. MOD/ui/TGUI_resources are all the textures")
+                                        function c_txt(t)
+                                            local t = uic_text(t)
+                                            return t.height
+                                        end
+                                        local t = c_txt("It is only accessible by the mod itself")
+                                        UiTranslate(0,0+t)
+                                        local t = c_txt("to access the registry, copy this mod to your project directory")
+                                        UiTranslate(0,0+t)
+                                        local t = c_txt("you need the regExplorer code in your project ui code",100)
+                                        UiTranslate(0,12+t)
+                                        local t = c_txt("1. Make a local copy")
+                                        UiTranslate(0,0+t)
+                                        local t = c_txt("2. Copy all 3 files and the ui folder. MOD/ui/TGUI_resources are all the textures")
                                         UiPush()
-                                            UiTranslate(12,0+t.height)
-                                            local t = uic_text("TGUI_main.lua")
-                                            UiTranslate(0,0+t.height)
-                                            local t = uic_text("TGUI_manager.lua")
-                                            UiTranslate(0,0+t.height)
-                                            local t = uic_text("TGUI_ui_library.lua")
+                                            UiTranslate(12,0+t)
+                                            local t = c_txt("TGUI_main.lua")
+                                            UiTranslate(0,0+t)
+                                            local t = c_txt("TGUI_manager.lua")
+                                            UiTranslate(0,0+t)
+                                            local t = c_txt("TGUI_ui_library.lua")
                                         UiPop()
                                         -- UiTranslate(0,0+t.height)
                                         -- local t = uic_text("")
@@ -1032,16 +1037,115 @@ function draw(dt)
                                         uic_container(300, UiHeight()-20, false, true, true, function(window) 
                                             UiPush()
                                                 if UiIsMouseInRect(UiWidth(),UiHeight()-100) and InputPressed('rmb') then
-                                                    uic_cursor_contextMenu({
-                                                        {type = "toggle", key = "TGUI.context.toggleTest",text="Toggle button", action=function()
+                                                    uic_Register_Contextmenu_at_cursor({
+                                                        {type = "toggle", key = "TGUI.context.toggleTest",text="Toggle", action=function()
                                                         end},
-                                                        {type = "submenu", text="Submenu", action=function()
+                                                        {type = "toggle", disabled=true ,key = "TGUI.context.toggleTest",text="Disabled Toggle", action=function()
                                                         end},
+                                                        {type = "submenu", text="Submenu", items={
+                                                            {type = "button", text="Submenu Button", action=function()
+                                                            end},
+                                                            {type = "button", disabled=true, text="Disabled Submenu Button", action=function()
+                                                            end},
+                                                            {type="divider"},
+                                                            {type = "submenu", text="submenu within a submenu", items={
+                                                                {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                end},
+                                                                {type="divider"},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                                                                {type = "submenu", text="submenu within a submenu", items={
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                                    end},
+                                                                }},
+                            
+                                                            }},
+                                                            {type = "submenu",disabled=GetBool('TGUI.test.ContextMenu.ItemDisabled'), text="Disabled submenu", items={
+                                                                {type = "button", text="Submenu Button", action=function()
+                                                                end},
+                                                            }},
+                                                            {type="divider"},
+                                                            {type = "toggle", key = "TGUI.test.ContextMenu.ItemDisabled",text="Disable submenu", action=function()
+                                                            end},
+                                                        }},
                                                         {type="divider"},
                                                         {type = "button", text="Button", action=function()
                                                         end},
                                                         {type = "button", disabled=true, text="Disabled Button", action=function()
                                                         end},
+                                                        {type="divider"},
+                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
+                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
                                                     }, window)
                                                 end
             
@@ -1065,7 +1169,7 @@ function draw(dt)
                                     title = "UI component: Table container",
                                     ["Content"] = function(MainWindow)
                                         UiTranslate(10,10)
-                                        uic_table_container(MainWindow.tableContainer, 300, UiHeight()-20, false, true, true, MainWindow.tableContainer)
+                                        uic_table_container(MainWindow.tableContainer, 300, UiHeight()-20, false, true, true, MainWindow.tableContainer.tableColumnNames,MainWindow.tableContainer.table)
                                         UiTranslate(320,0)
                                         uic_button_func(0, "Empty Table", 100, 24, false, "", function ()
                                             MainWindow.tableContainer.table = {}
