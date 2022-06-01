@@ -99,6 +99,9 @@ end
 
 -- 
 
+uic_containers = {};
+uic_ui = {};
+
 function tick( ... )
     -- DebugWatch('showDropDown',showDropDown)
     -- DebugWatch('id_open',id_open)
@@ -169,403 +172,8 @@ function uic_tooltip_hover(id, open)
     end
 end
 
--- local function luic_drawContextMenu_contents( itemsTable, extraContent )
---     local c = extraContent
---     -- UiPush() -- HEIGHT DEBUGBING
---     --     UiTranslate(-30,0)
---     --     uic_text(c.h)
---     -- UiPop()
---     -- UiPush() -- ITEM HOVER DEBUGBING
---     --     UiTranslate(-30,0)
---     --     uic_text(c.itemHover)
---     -- UiPop()
---     for i, v in pairs(itemsTable) do
---         UiMakeInteractive()
---         UiEnableInput()
---         local txt_w, _ = UiGetTextSize(v.text)
---         if c.itemHover == nil then
---             c.itemHover = 0
---         end
---         if not c.hoverOnce and not c.keepSubmenuOpen then 
---             c.hoverOnce = false
---             c.keepSubmenuOpen = false
---         end
---         if not v.widthChecked then
---             if uic_draw_contextmenu_row then
---                 c.w = c.w + txt_w
---             else
---                 if c.w < txt_w then c.w = txt_w 
---                     v.widthChecked = true
---                 else v.widthChecked = false
---                 end
---             end
---         end
---         if v.height == nil then
---             v.height = 0
---         end
---         UiPush()
---             if(v.disabled and v.type == 'button') then UiDisableInput() end
---             UiTranslate(-24,0)
---             if UiBlankButton(c.w+24,24) then
---                 if v.type == 'button' then
---                    v.action()
---                    uic_contextMenu_contents.items={}
---                    uic_draw_contextmenu = false
---                end
---                if v.type == "toggle" then
---                    v.action()
---                    if type(v.key) == "string" then
---                        if GetBool(v.key) then
---                            SetBool(v.key,false)
---                        else
---                            SetBool(v.key,true)
---                        end
---                    end
---                    uic_contextMenu_contents.items={}
---                    uic_draw_contextmenu = false
---                end
---             end
---         UiPop()
---         if c.h >= 4 then
---         -- 
---         if c.drawRow then
---             if UiIsMouseInRect(txt_w,24) then
---                 if v.type == 'button' then
---                     UiPush()
---                         UiTranslate(-24,0)
---                         UiColor(c255(255),c255(156),c255(0),1)
---                         UiTranslate(1,0)
---                         UiRect(txt_w,24)
---                     UiPop()
---                 end
---             end
---         else
---             UiPush()
---                 UiTranslate(-24,0)
---                 if UiIsMouseInRect(c.w+24,24) then
---                     if v.type == 'button' or v.type == "toggle" or v.type == "submenu" then
---                         c.itemsHovering = c.itemsHovering + 1
---                         if not c.keepSubmenuOpen then
---                         c.itemHover = i
---                         end
---                         if(not v.disabled) then
---                             UiColor(c255(255),c255(156),c255(0),1)
---                         else
---                             UiColor(c255(55),c255(55),c255(55),0.21)
---                         end
---                         UiTranslate(1,0)
---                         UiRect(c.w-2+24,24)
---                     end
---                     if v.type == "button" or v.type == "toggle" then
---                         c.hoverOnce = false
---                         c.keepSubmenuOpen = false
---                     end
---                     if(v.disabled) then
---                         if v.type == "submenu" then
---                             c.hoverOnce = false
---                             c.keepSubmenuOpen = false
---                         end
---                     end
---                 end
---             UiPop()
---             if v.type == 'divider' then
---                 UiPush()
---                     if uic_debug_contextMenu then
---                     UiPush()
---                         UiColor(1,0,0,1)
---                         UiRect(c.w-2,8)
---                     UiPop()
---                     end
---                     UiTranslate(1,3)
---                     uic_divider(c.w-2,false)
---                 UiPop()
---             end
---             if v.type == "toggle" then
---                 if type(v.key) == "string" then if GetBool(v.key) then
---                     UiPush()
---                         UiAlign('center middle')
---                         UiTranslate(-12,12)
---                         UiImage('MOD/ui/TGUI_resources/textures/checkmark.png')
---                     UiPop()
---                 end end
---             end
---             if v.type == "submenu" then
---                 UiPush()
---                     UiPush()
---                         UiAlign('center middle')
---                         UiTranslate(c.w-12,12)
---                         UiImage('MOD/ui/TGUI_resources/textures/arrow_right.png')
---                     UiPop()
-
---                     UiTranslate(-24,0)
---                     -- UiRect(c.w+24,24)
---                     if c.keepSubmenuOpen == nil then
---                         c.keepSubmenuOpen = false
---                     end
---                     -- local ItemHoverCount 
---                     -- for it, c in pairs(uic_contextMenu_contents.items) do
---                     --     pcall(function ()
---                     --         ItemHoverCount = uic_contextMenu_contents.items[it-1].itemsHovering
---                     --         DebugPrint(it.." | "..ItemHoverCount)
---                     --     end)
-        
---                     -- end
-
---                     if v.hoverOnce == nil then v.subButtonId = i ; v.hoverOnce = false end
---                     if v.submenuH == nil then  v.submenuH = c.h end
---                     if not v.disabled then
---                         if UiIsMouseInRect(c.w+24,24) and c.hoverOnce == false then
---                             if c.itemHover == v.subButtonId  then
---                                 DebugPrint('DONT RENDER IN CONTEXT NEMNU: '..BoolToString(c.dontRender))
---                                 if c.itemsHovering == 1 and c.dontRender ==false or c.dontRender==nil then
---                                     table.insert(uic_contextMenu_contents.items, {
---                                         w=200, h=0, x=c.w+24, y=v.submenuH , useSubemenu = true, getCursor = false,
---                                         c = v.items
---                                     })
---                                     -- DebugPrint(c.w)
---                                     c.hoverOnce = true
---                                     c.keepSubmenuOpen = true
---                                 end
---                             end
---                         end
---                         if UiIsMouseInRect(c.w+24,24) and c.hoverOnce == true then
---                             if c.itemHover == v.subButtonId  then
---                             else
---                                 c.hoverOnce = false
---                                 c.keepSubmenuOpen = false
---                             end
---                         end
---                     end
---                 UiPop()
---             end
---         UiPush()
---             if(v.disabled ) then UiColor(c255(24),c255(24),c255(24),1) end
---             uic_text(v.text, 24)
---         UiPop()
---         -- 
---         end
---         if(v.disabled ) then
---             UiPush()
---                 UiColor(0.1,0.1,0.1,0.4)
---                 UiTranslate(1,1)
---                 uic_text(v.text, 24)
---             UiPop()
---         end
-
---         end
---         -- UiPush()
---         --     UiColor(1,1,1,0.3)
---         --     UiRect(c.w,v.height)
---         -- UiPop()
-
---         if v.heightCheck == nil then
---             -- if v.type == "button" or v.type == "toggle" or v.type == "submenu"then
---             --     c.h = c.h + 24
---             --     v.height = 24
---             -- elseif v.type == "divider" then
---             --     c.h = c.h + 8
---             --     v.height = 8
---             -- else
---             --     c.h = c.h + 24
---             --     v.height = 24
---             -- end
---             -- v.heightCheck = true
-
---         else
---             if c.h == 0 then
---                 for i, v in ipairs(c.c) do
---                     v.heightCheck = nil
---                     -- DebugPrint("Item "..i.." heightCheck was set to false")
---                 end
---             end
---         end
---         -- DebugPrint("height check: " .. v.height)
---         -- DebugPrint("item: " .. i .. " c: " .. c .. " height check: " .. v.height)
---         if c.drawRow then
---             UiTranslate(txt_w,0)
---         else
---             UiTranslate(0,v.height)
---         end
---     end
--- end
 _globalContextMenu_isCursorInside = false;
--- ---Draw a context when value to draw the context menu is true. Keep this outside all the ui code but inside the draw function
--- function uic_drawContextMenu()
---     UiPush()
---     _globalContextMenu_isCursorInside = false
---     SetBool('TGUI.contextMenu.isCursorInside', false)
---     if uic_draw_contextmenu then
---         UiEnableInput()
---         UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
---         UiAlign('top left')
---         UiPush()
---         for it, c in pairs(uic_contextMenu_contents.items) do
---             -- if c.dontRender == false or c.dontRender == nil then
---             c.itemsHovering = 0
---             if c.getCursor == nil then
---                     local cursor_x, cursor_y = UiGetMousePos()
---                     c.x = math.floor(cursor_x)
---                     c.y = math.floor(cursor_y)
---                     c.getCursor = false
---             end
---             UiTranslate(c.x,c.y)
---             -- if c.keepSubmenuOpen then
---             -- end
-            
---             if c.h >= 4 then
---                 UiPush()
---                     UiColor(c255(162),c255(162),c255(162),1)
---                     if c.drawRow then
---                             UiRect(c.w+2,26)    
---                     else
---                             UiRect(c.w+24,c.h+2)    
---                     end
---                 UiPop()
---                 UiPush()
---                     UiColor(1,1,1,1)
---                     if c.drawRow then
---                             UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',c.w+2,26,1,1)
---                     else
---                             UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',c.w+24,c.h+2,1,1)
---                     end
---                 UiPop()
---             end
---             UiPush()
---                 UiTranslate(24,1)
---                     if c.h >= 4 then
---                         luic_drawContextMenu_contents(c.c,c)
---                     end
---                     for i, v in pairs(c.c) do
---                         if v.heightCheck == nil then
---                             if v.type == "button" or v.type == "toggle" or v.type == "submenu"then
---                                 c.h = c.h + 24
---                                 v.height = 24
---                             elseif v.type == "divider" then
---                                 c.h = c.h + 8
---                                 v.height = 8
---                             else
---                                 c.h = c.h + 24
---                                 v.height = 24
---                             end
---                             v.heightCheck = true
---                         else
---                             if c.h == 0 then for i, v in ipairs(c.c) do
---                                 v.heightCheck = nil
---                             end end
---                         end
---                     end
---                 DebugPrint(c.itemsHovering)
---             UiPop()
---             UiPush()
---                 UiColor(1,1,1,0.3)
---                 -- UiRect(c.w+24,c.h)
---                 if UiIsMouseInRect(c.w+24,c.h+2) then
---                     _globalContextMenu_isCursorInside = true
---                     c.isCursorInside = true
---                     SetBool('TGUI.contextMenu.isCursorInside', true)
---                 end
---                 if not UiIsMouseInRect(c.w+24,c.h+2) then
---                     c.isCursorInside = false
---                 end
---             UiPop()
---             UiPush()
---                 UiTranslate(-2,-2)
---                 UiAlign('top left')
---                 UiColor(1,1,1,0.3)
---                 local isCursorInside;
---                 pcall(function ()
---                     isCursorInside = uic_contextMenu_contents.items[it].isCursorInside
---                     if isCursorInside then
---                         _globalContextMenu_isCursorInside = true
---                     end
---                 end)
---                 -- UiRect(c.w+26,c.h+4)
---                 -- DebugPrint(BoolToString(v.isCursorInside))
---                     -- if not globalContextMenu_isCursorInside then
---                 -- DebugPrint("BEFORE CHECK IF CURSOR IS IN: "..BoolToString(_globalContextMenu_isCursorInside))
---                 if c.useSubemenu == nil then
---                     -- if not UiIsMouseInRect(c.w+26,c.h+4) then
---                     --     DebugPrint("NOT IN RECT: "..BoolToString(_globalContextMenu_isCursorInside))
---                     --     if _globalContextMenu_isCursorInside == false then
---                     --         DebugPrint('CURSOR NOT IN RECT: '..BoolToString(_globalContextMenu_isCursorInside))
---                     --         if InputPressed('lmb') then uic_draw_contextmenu = false end
---                     --         if InputPressed('rmb') then uic_draw_contextmenu = false end
---                     --     end
---                     -- end
---                     -- -- end
---                 else 
---                     -- if uic_contextMenu_contents.items ==not nil then
---                     -- for i, v in uic_contextMenu_contents.items do
 
---                     -- end
---                     -- local SubMenuId = uic_contextMenu_contents.items[it-1].keepSubmenuOpen
---                     -- uic_contextMenu_contents.items[it-1].keepSubmenuOpen == false
---                     pcall(function ()
---                         local keepSubmenuOpen = uic_contextMenu_contents.items[it-1].keepSubmenuOpen
---                         if keepSubmenuOpen == false or keepSubmenuOpen == nil then
---                             table.remove(uic_contextMenu_contents.items, it)
---                         end
---                         -- local ItemHoverCount = uic_contextMenu_contents.items[it-1].itemsHovering
---                         -- if ItemHoverCount == 2 then
---                         --     uic_contextMenu_contents.items[it].dontRender = true
---                         -- else
---                         --     uic_contextMenu_contents.items[it].dontRender = false
---                         -- end
---                     end)
---                 --     if keepSubmenuOpen == true and SubMenuId == it then
---                     --         UiRect(c.w+26,c.h+4)
---                     --         if not UiIsMouseInRect(c.w+26,c.h+4) then
---                     --             if InputPressed('lmb') then uic_draw_contextmenu = false end
---                     --             if InputPressed('rmb') then uic_draw_contextmenu = false end
---                     --         end
---                     --     end
---                     -- end
---                 end
---             UiPop()
---             local PosX, PosY = c.x,c.y
---             if c.checkIfCutting == nil then
---                 if UiWidth()-c.w-60 < PosX then
---                     c.x = c.x - c.w
---                 end
---                 if UiHeight()-c.h-60 < PosY then
---                     c.y = c.y - c.h
---                     if c.y < 0 then
---                         c.y = 0
---                     end
---                 end
---                 c.checkIfCutting = false
---             end
---             -- else
---             --     DebugPrint('DONT RENDER')
---             -- end
---         end
---         for it, c in pairs(uic_contextMenu_contents.items) do
---             UiTranslate(-2,-2)
---             if c.useSubemenu == nil then
---                 if not UiIsMouseInRect(c.w+26,c.h+4) then
---                     if _globalContextMenu_isCursorInside == false then
---                         if InputPressed('lmb') then uic_draw_contextmenu = false end
---                         if InputPressed('rmb') then uic_draw_contextmenu = false end
---                     end
---                 end
---             end
---         end
---         UiPop()
---             -- UiPush()
---         --     UiAlign('top right')
---         --     -- UiTranslate(100,64)
---         --     UiTranslate(-30,0)
---         --     for it, c in pairs(uic_contextMenu_contents.items) do
---         --         uic_text(c.itemHover,24)
---         --     end
---         -- UiPop()
---     else
---         uic_contextMenu_contents.items = {}
---     end
---     -- DebugWatch('ContextMenu open',_globalContextMenu_isCursorInside)
---     -- DebugPrint(uic_contextMenu_itemsHovered)
---     UiPop()
--- end
 local _itemsHovering = 0
 function uic_drawContextMenu()
     if uic_draw_contextmenu then
@@ -576,8 +184,16 @@ function uic_drawContextMenu()
         for it, c in pairs(uic_contextMenu_contents.items) do
             if c.getCursor == nil then
                 local cursor_x, cursor_y = UiGetMousePos()
-                c.x = math.floor(cursor_x)
-                c.y = math.floor(cursor_y)
+                if type(c.x_calc) == "number" then
+                    c.x = math.floor(cursor_x)+c.x_calc
+                else
+                    c.x = math.floor(cursor_x)
+                end
+                if type(c.y_calc) == "number" then
+                    c.y = math.floor(cursor_y)+c.y_calc
+                else
+                    c.y = math.floor(cursor_y)+c.y_calc
+                end
                 c.getCursor = false
             end
             local aling_y, align_x = "top", "left"
@@ -593,7 +209,7 @@ function uic_drawContextMenu()
                 if c.h >= UiHeight() then
                     UiWindow(c.w,UiHeight()-2,false)
                 else
-                    UiWindow(c.w,c.h,false)
+                    UiWindow(c.w,c.h+4,false)
                 end
                 UiAlign("top left")
                 if UiBlankButton(c.w,c.h) then end
@@ -603,14 +219,14 @@ function uic_drawContextMenu()
                     end
                     UiPush()
                         UiColor(c255(162),c255(162),c255(162),1)
-                        UiRect(c.w+24,c.h+2)    
+                        UiRect(c.w+24,UiHeight()+2)    
                     UiPop()
                     UiPush()
                         UiColor(1,1,1,1)
                         UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',c.w+24,UiHeight()+2,1,1)
                     UiPop()
                     UiPush()
-                        UiTranslate(0,1)
+                        UiTranslate(0,3)
                         for i, v in ipairs(c.c) do
                             local txt_w, _ = UiGetTextSize(v.text)
                             if c.itemHover == nil then c.itemHover = 0 end
@@ -664,6 +280,13 @@ function uic_drawContextMenu()
                                 UiPush()
                                     -- UiTranslate(24,0)
                                     if UiBlankButton(c.w+24,24) then
+                                        if v.type == "button" or v.type == "toggle" then
+                                            if v.action == nil then
+                                                error("missing action variable from table `... action = function() --Code end`")
+                                                uic_contextMenu_contents.items={}
+                                                uic_draw_contextmenu = false
+                                            end
+                                        end
                                         if v.type == "button" then
                                             v.action()
                                             uic_contextMenu_contents.items={}
@@ -731,6 +354,17 @@ function uic_drawContextMenu()
                                     uic_divider(c.w-2,false)
                                 UiPop()
                             end
+                            if v.type == "submenu" then
+                                UiPush()
+                                    UiAlign('center middle')
+                                    UiTranslate(c.w+12,12)
+                                    if(not v.disabled) then
+                                    else
+                                        UiColor(c255(55),c255(55),c255(55),1)
+                                    end
+                                    UiImage('MOD/ui/TGUI_resources/textures/arrow_right.png')
+                                UiPop()
+                            end
                             
                             UiPush()
                                 UiTranslate(24,0)
@@ -782,9 +416,16 @@ function uic_drawContextMenu()
                 end
             end
         end
+        UiPop()
+        UiPush()
+        
         _itemsHovering = 0
         for it, c in pairs(uic_contextMenu_contents.items) do
+            UiPush()
             UiTranslate(-2,-2)
+            UiTranslate(c.x,c.y)
+            -- UiColor(1,1,1,0.3)
+            -- UiRect(c.w+26,c.h+4)
             if c.useSubemenu == nil then
                 if not UiIsMouseInRect(c.w+26,c.h+4) then
                     if _globalContextMenu_isCursorInside == false then
@@ -823,6 +464,7 @@ function uic_drawContextMenu()
                 end
                 c.checkIfCutting = false
             end
+            UiPop()
         end
         UiPop()
         _globalContextMenu_isCursorInside = false
@@ -897,6 +539,73 @@ function uic_container(width,height,clip,border,makeinner,content, ectraContent)
     UiTranslate(0,height)
 end
 
+---comment
+---@param window table Root window
+---@param w integer width of the menubar
+---@param contents table What should show in the menubar
+---@param extraContent any Additional content to be called to the menubar
+function uic_menubar(window, w, contents ,extraContent , customization)
+    if customization == nil then
+        customization = {
+            showBorder = true,
+            borderArround = false
+        }
+    end
+    if type(customization) == "table" then
+        if customization.showBorder == nil then
+            customization.showBorder = true
+        end
+        if customization.borderArround == nil then
+            customization.borderArround = false
+        end
+    else
+        error("customization is not a table type")
+    end
+    UiPush()
+        UiPush()
+            for i, v in ipairs(contents) do
+                UiFont('MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF',13)
+                UiColor(0,0,0,0)
+                local t = uic_text(v.title, 24, 13)
+                UiColor(1,1,1,1)
+                if UiIsMouseInRect(t.width,t.height) then
+                    UiPush()
+                        UiColor(c255(255),c255(156),c255(0),1)
+                        UiRect(t.width,t.height)
+                    UiPop()
+                    UiColor(0,0,0,1)
+                end
+                uic_text(v.title, 24, 13)
+                if UiBlankButton(t.width,t.height) then
+                    UiPush()
+                        UiWindow(w,t.height,true)
+                        local cursor_x, cursor_y = UiGetMousePos()
+                        uic_Register_Contextmenu_at_cursor(v.contents,-cursor_x,-cursor_y+24)
+                        -- UiPush()
+                        --     UiRect(cursor_x,cursor_y)
+                        --     uic_contextMenu_contents.items[1].x = uic_contextMenu_contents.items[1].x - cursor_x
+                        -- UiPop()
+                    UiPop()
+                end
+                if uic_debug_show_hitboxes_menubar then
+                    UiPush()
+                        UiColor(1,0,1,1)
+                        UiRect(t.width,t.height)
+                    UiPop()
+                end
+                UiTranslate(t.width,0)
+            end
+        UiPop()
+        if customization.showBorder then
+            if not customization.borderArround then
+                UiTranslate(0,24)
+                UiImageBox('MOD/ui/TGUI_resources/textures/line_dark.png',w,1,0,0)
+            else
+                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',w,24,1,1)
+            end
+        end
+    UiPop()
+end
 
 ---Make a scroll container
 ---@param window table The root window
@@ -1157,15 +866,38 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                     UiPop()
                 end
 
-                if window.tabScroll >= 0 then
-                    window.tabScroll = 0
-                end
-                if window.tabScroll <= -max_scroll then
-                    window.tabScroll = -max_scroll
-                end
                 if UiIsMouseInRect(w,tab_height+1) then
                     local scroll = InputValue('mousewheel')*10
-                    window.tabScroll = window.tabScroll + scroll
+                    local scrollTest = 0
+                    scrollTest = window.tabScroll + scroll
+                    -- window.tabScroll = window.tabScroll + scroll
+                    if window.tabScroll >= 0 then
+                        window.tabScroll = 0
+                    end
+                    if window.tabScroll <= -max_scroll then
+                        window.tabScroll = -max_scroll
+                    end
+                    if scroll > -1 then
+                        if scrollTest < 1 then
+                            window.tabScroll = window.tabScroll + scroll
+                        else
+                            window.tabScroll = 0
+                        end
+                    end
+                    if scroll < 1 then
+                        if scrollTest+1 > -max_scroll then
+                            window.tabScroll = window.tabScroll + scroll
+                        else
+                            window.tabScroll = -max_scroll
+                        end
+                    end
+                else
+                    if window.tabScroll >= 0 then
+                        window.tabScroll = 0
+                    end
+                    if window.tabScroll <= -max_scroll then
+                        window.tabScroll = -max_scroll
+                    end
                 end
             end
         UiPop()
@@ -1186,6 +918,15 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
     UiTranslate(0,h)
 end
 
+---Table view
+---@param window table
+---@param w integer width of the table container
+---@param h integer height of the table container
+---@param clip boolean clip the container
+---@param border boolean add border
+---@param makeinner boolean invert the texture
+---@param nameContents table list of Names `{label = "Name", w=0}`
+---@param itemsContents table List of items `{"string", number}`
 function uic_table_container(window,w,h,clip,border,makeinner,nameContents,itemsContents)
     if window.firstFrame == nil then
         window.totalWidth = 0
@@ -1267,14 +1008,15 @@ end
 ---@param fontSize integer Size of the text
 ---@return table fontPathAndSize Get the font path and the size that is used
 function uic_text( Text, height, fontSize )
-    if height == nil then
-        height = 15
+    if customization == nil then
+        customization = {
+            font = "MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF"
+        }
     end
-    if fontSize == nil then
-        fontSize = 15
-    end
+    if height == nil then height = 15 end
+    if fontSize == nil then fontSize = 15 end
     UiPush()
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", fontSize)
+        UiFont(customization.font, fontSize)
         local txt_w, txt_h = UiGetTextSize(Text)
         UiDisableInput()
         if uic_debug_buttontextWidth then
@@ -1287,12 +1029,10 @@ function uic_text( Text, height, fontSize )
         UiTextButton(Text,txt_w,height)
     UiPop()
     local finalHeight;
-    if txt_h >= height then
-        finalHeight = txt_h
-    else
-        finalHeight = height
+    if txt_h >= height then finalHeight = txt_h
+    else finalHeight = height
     end
-    return {font="MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", size=fontSize, height=finalHeight}
+    return {font=customization.font, size=fontSize, width=txt_w ,height=finalHeight}
 end
 
 ---Create a checkbox
@@ -1621,15 +1361,16 @@ function uic_dropdown(window, width, key, items, items_keys, goUp, toolTipText)
                 end
                 UiTranslate(0,1)
                 for i=1, #items do
+                    UiColor(1,1,1,1)
                     w,dropdown_height = he,bu_he
                     if UiIsMouseInRect(width-scroll_width,bu_he) then
+                        UiColor(c255(24),c255(24),c255(24),1)
                         UiPush()
                             UiTranslate(1,0)
                             UiColor(c255(255),c255(156),c255(0),1)
                             UiRect(width-2-scroll_width,bu_he)
                         UiPop()
                     end
-                    UiColor(1,1,1,1)
                     UiPush()
                         -- UiTranslate(0,bu_he/2)
                         -- UiAlign('left middle')
@@ -1647,6 +1388,7 @@ function uic_dropdown(window, width, key, items, items_keys, goUp, toolTipText)
                     --     UiTranslate(0,-he)
                     --     UiRect(width,dropdown_height+he)
                     -- UiPop()
+                    UiColor(1,1,1,1)
                     UiTranslate(0,bu_he)
                     dropdown_height = dropdown_height*i+1
                 end
@@ -1718,6 +1460,10 @@ function custom_UiInputText( string, w, h, window )
 end
 
 
+function uic_create_tooltip_hitbox( ... )
+    -- body
+end
+
 ---Text Input
 ---@info Hright of textbox is 24
 ---@param key string Key for the input
@@ -1759,33 +1505,49 @@ function uic_textbox(key, width, window )
 end
 
 -- function uic_Register_Contextmenu_at_cursor( contents, extraContents, row )
-function uic_Register_Contextmenu_at_cursor( contents, extraContents )
+function uic_Register_Contextmenu_at_cursor( contents, x_calc, y_calc )
+    if not x_calc then
+        x_calc = 0
+    end
+    if not y_calc then
+        y_calc = 0
+    end
     uic_contextMenu_getCursor = true
     uic_draw_contextmenu = true
     uic_draw_contextmenu_row = false
     uic_contextMenu_contents.items = {}
     table.insert(uic_contextMenu_contents.items, {
-        w=200, h=0,
-        c = contents
+        w=200, h=0, x_calc=x_calc, y_calc=y_calc,
+        c = contents,
     })
 end
-function uic_local_contextMenu( x, y, contents, minWidth ,window )
+function uic_Register_Contextmenu_at_pos( x, y, contents, extraContents )
     -- dividers
-    local w = window.w
-    local h = window.h
-    window.x = x
-    window.y = y
-    UiPush()
-        for i, v in ipairs(contents) do
-            if v.type == "button" then
-                UiDisableInput()
-                UiTextButton('text',w,h)
-                UiEnableInput()
-                if UiBlankButton(w,h) then
-               end
-            end
-        end
-    UiPop()
+    uic_contextMenu_getCursor = false
+    uic_draw_contextmenu = true
+    uic_draw_contextmenu_row = false
+    uic_contextMenu_contents.items = {}
+    
+    table.insert(uic_contextMenu_contents.items, {
+        w=200, h=0, x=x,y=y, getCursor = false,
+        c = contents,
+        extrac = extraContents
+    })
+    -- local w = window.w
+    -- local h = window.h
+    -- window.x = x
+    -- window.y = y
+    -- UiPush()
+    --     for i, v in ipairs(contents) do
+    --         if v.type == "button" then
+    --             UiDisableInput()
+    --             UiTextButton('text',w,h)
+    --             UiEnableInput()
+    --             if UiBlankButton(w,h) then
+    --            end
+    --         end
+    --     end
+    -- UiPop()
 end
 function BoolToString(b) 
     return b and "True" or "False";
@@ -1905,3 +1667,413 @@ end
 --         end
 --     UiPop()
 -- end
+
+
+
+--[[ BROKEN
+L     AA  RRRR   GGG  EEEE      CCC  OOO  N   N TTTTTT EEEE X   X TTTTTT     M   M EEEE N   N U   U      CCC  OOO  DDD  EEEE 
+L    A  A R   R G     E        C    O   O NN  N   TT   E     X X    TT       MM MM E    NN  N U   U     C    O   O D  D E    
+L    AAAA RRRR  G  GG EEE      C    O   O N N N   TT   EEE    X     TT       M M M EEE  N N N U   U     C    O   O D  D EEE  
+L    A  A R R   G   G E        C    O   O N  NN   TT   E     X X    TT       M   M E    N  NN U   U     C    O   O D  D E    
+LLLL A  A R  RR  GGG  EEEE      CCC  OOO  N   N   TT   EEEE X   X   TT       M   M EEEE N   N  UUU       CCC  OOO  DDD  EEEE                                                                                                                              
+]]
+
+-- local function luic_drawContextMenu_contents( itemsTable, extraContent )
+--     local c = extraContent
+--     -- UiPush() -- HEIGHT DEBUGBING
+--     --     UiTranslate(-30,0)
+--     --     uic_text(c.h)
+--     -- UiPop()
+--     -- UiPush() -- ITEM HOVER DEBUGBING
+--     --     UiTranslate(-30,0)
+--     --     uic_text(c.itemHover)
+--     -- UiPop()
+--     for i, v in pairs(itemsTable) do
+--         UiMakeInteractive()
+--         UiEnableInput()
+--         local txt_w, _ = UiGetTextSize(v.text)
+--         if c.itemHover == nil then
+--             c.itemHover = 0
+--         end
+--         if not c.hoverOnce and not c.keepSubmenuOpen then 
+--             c.hoverOnce = false
+--             c.keepSubmenuOpen = false
+--         end
+--         if not v.widthChecked then
+--             if uic_draw_contextmenu_row then
+--                 c.w = c.w + txt_w
+--             else
+--                 if c.w < txt_w then c.w = txt_w 
+--                     v.widthChecked = true
+--                 else v.widthChecked = false
+--                 end
+--             end
+--         end
+--         if v.height == nil then
+--             v.height = 0
+--         end
+--         UiPush()
+--             if(v.disabled and v.type == 'button') then UiDisableInput() end
+--             UiTranslate(-24,0)
+--             if UiBlankButton(c.w+24,24) then
+--                 if v.type == 'button' then
+--                    v.action()
+--                    uic_contextMenu_contents.items={}
+--                    uic_draw_contextmenu = false
+--                end
+--                if v.type == "toggle" then
+--                    v.action()
+--                    if type(v.key) == "string" then
+--                        if GetBool(v.key) then
+--                            SetBool(v.key,false)
+--                        else
+--                            SetBool(v.key,true)
+--                        end
+--                    end
+--                    uic_contextMenu_contents.items={}
+--                    uic_draw_contextmenu = false
+--                end
+--             end
+--         UiPop()
+--         if c.h >= 4 then
+--         -- 
+--         if c.drawRow then
+--             if UiIsMouseInRect(txt_w,24) then
+--                 if v.type == 'button' then
+--                     UiPush()
+--                         UiTranslate(-24,0)
+--                         UiColor(c255(255),c255(156),c255(0),1)
+--                         UiTranslate(1,0)
+--                         UiRect(txt_w,24)
+--                     UiPop()
+--                 end
+--             end
+--         else
+--             UiPush()
+--                 UiTranslate(-24,0)
+--                 if UiIsMouseInRect(c.w+24,24) then
+--                     if v.type == 'button' or v.type == "toggle" or v.type == "submenu" then
+--                         c.itemsHovering = c.itemsHovering + 1
+--                         if not c.keepSubmenuOpen then
+--                         c.itemHover = i
+--                         end
+--                         if(not v.disabled) then
+--                             UiColor(c255(255),c255(156),c255(0),1)
+--                         else
+--                             UiColor(c255(55),c255(55),c255(55),0.21)
+--                         end
+--                         UiTranslate(1,0)
+--                         UiRect(c.w-2+24,24)
+--                     end
+--                     if v.type == "button" or v.type == "toggle" then
+--                         c.hoverOnce = false
+--                         c.keepSubmenuOpen = false
+--                     end
+--                     if(v.disabled) then
+--                         if v.type == "submenu" then
+--                             c.hoverOnce = false
+--                             c.keepSubmenuOpen = false
+--                         end
+--                     end
+--                 end
+--             UiPop()
+--             if v.type == 'divider' then
+--                 UiPush()
+--                     if uic_debug_contextMenu then
+--                     UiPush()
+--                         UiColor(1,0,0,1)
+--                         UiRect(c.w-2,8)
+--                     UiPop()
+--                     end
+--                     UiTranslate(1,3)
+--                     uic_divider(c.w-2,false)
+--                 UiPop()
+--             end
+--             if v.type == "toggle" then
+--                 if type(v.key) == "string" then if GetBool(v.key) then
+--                     UiPush()
+--                         UiAlign('center middle')
+--                         UiTranslate(-12,12)
+--                         UiImage('MOD/ui/TGUI_resources/textures/checkmark.png')
+--                     UiPop()
+--                 end end
+--             end
+--             if v.type == "submenu" then
+--                 UiPush()
+--                     UiPush()
+--                         UiAlign('center middle')
+--                         UiTranslate(c.w-12,12)
+--                         UiImage('MOD/ui/TGUI_resources/textures/arrow_right.png')
+--                     UiPop()
+
+--                     UiTranslate(-24,0)
+--                     -- UiRect(c.w+24,24)
+--                     if c.keepSubmenuOpen == nil then
+--                         c.keepSubmenuOpen = false
+--                     end
+--                     -- local ItemHoverCount 
+--                     -- for it, c in pairs(uic_contextMenu_contents.items) do
+--                     --     pcall(function ()
+--                     --         ItemHoverCount = uic_contextMenu_contents.items[it-1].itemsHovering
+--                     --         DebugPrint(it.." | "..ItemHoverCount)
+--                     --     end)
+        
+--                     -- end
+
+--                     if v.hoverOnce == nil then v.subButtonId = i ; v.hoverOnce = false end
+--                     if v.submenuH == nil then  v.submenuH = c.h end
+--                     if not v.disabled then
+--                         if UiIsMouseInRect(c.w+24,24) and c.hoverOnce == false then
+--                             if c.itemHover == v.subButtonId  then
+--                                 DebugPrint('DONT RENDER IN CONTEXT NEMNU: '..BoolToString(c.dontRender))
+--                                 if c.itemsHovering == 1 and c.dontRender ==false or c.dontRender==nil then
+--                                     table.insert(uic_contextMenu_contents.items, {
+--                                         w=200, h=0, x=c.w+24, y=v.submenuH , useSubemenu = true, getCursor = false,
+--                                         c = v.items
+--                                     })
+--                                     -- DebugPrint(c.w)
+--                                     c.hoverOnce = true
+--                                     c.keepSubmenuOpen = true
+--                                 end
+--                             end
+--                         end
+--                         if UiIsMouseInRect(c.w+24,24) and c.hoverOnce == true then
+--                             if c.itemHover == v.subButtonId  then
+--                             else
+--                                 c.hoverOnce = false
+--                                 c.keepSubmenuOpen = false
+--                             end
+--                         end
+--                     end
+--                 UiPop()
+--             end
+--         UiPush()
+--             if(v.disabled ) then UiColor(c255(24),c255(24),c255(24),1) end
+--             uic_text(v.text, 24)
+--         UiPop()
+--         -- 
+--         end
+--         if(v.disabled ) then
+--             UiPush()
+--                 UiColor(0.1,0.1,0.1,0.4)
+--                 UiTranslate(1,1)
+--                 uic_text(v.text, 24)
+--             UiPop()
+--         end
+
+--         end
+--         -- UiPush()
+--         --     UiColor(1,1,1,0.3)
+--         --     UiRect(c.w,v.height)
+--         -- UiPop()
+
+--         if v.heightCheck == nil then
+--             -- if v.type == "button" or v.type == "toggle" or v.type == "submenu"then
+--             --     c.h = c.h + 24
+--             --     v.height = 24
+--             -- elseif v.type == "divider" then
+--             --     c.h = c.h + 8
+--             --     v.height = 8
+--             -- else
+--             --     c.h = c.h + 24
+--             --     v.height = 24
+--             -- end
+--             -- v.heightCheck = true
+
+--         else
+--             if c.h == 0 then
+--                 for i, v in ipairs(c.c) do
+--                     v.heightCheck = nil
+--                     -- DebugPrint("Item "..i.." heightCheck was set to false")
+--                 end
+--             end
+--         end
+--         -- DebugPrint("height check: " .. v.height)
+--         -- DebugPrint("item: " .. i .. " c: " .. c .. " height check: " .. v.height)
+--         if c.drawRow then
+--             UiTranslate(txt_w,0)
+--         else
+--             UiTranslate(0,v.height)
+--         end
+--     end
+-- end
+-- ---Draw a context when value to draw the context menu is true. Keep this outside all the ui code but inside the draw function
+-- function uic_drawContextMenu()
+--     UiPush()
+--     _globalContextMenu_isCursorInside = false
+--     SetBool('TGUI.contextMenu.isCursorInside', false)
+--     if uic_draw_contextmenu then
+--         UiEnableInput()
+--         UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
+--         UiAlign('top left')
+--         UiPush()
+--         for it, c in pairs(uic_contextMenu_contents.items) do
+--             -- if c.dontRender == false or c.dontRender == nil then
+--             c.itemsHovering = 0
+--             if c.getCursor == nil then
+--                     local cursor_x, cursor_y = UiGetMousePos()
+--                     c.x = math.floor(cursor_x)
+--                     c.y = math.floor(cursor_y)
+--                     c.getCursor = false
+--             end
+--             UiTranslate(c.x,c.y)
+--             -- if c.keepSubmenuOpen then
+--             -- end
+            
+--             if c.h >= 4 then
+--                 UiPush()
+--                     UiColor(c255(162),c255(162),c255(162),1)
+--                     if c.drawRow then
+--                             UiRect(c.w+2,26)    
+--                     else
+--                             UiRect(c.w+24,c.h+2)    
+--                     end
+--                 UiPop()
+--                 UiPush()
+--                     UiColor(1,1,1,1)
+--                     if c.drawRow then
+--                             UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',c.w+2,26,1,1)
+--                     else
+--                             UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',c.w+24,c.h+2,1,1)
+--                     end
+--                 UiPop()
+--             end
+--             UiPush()
+--                 UiTranslate(24,1)
+--                     if c.h >= 4 then
+--                         luic_drawContextMenu_contents(c.c,c)
+--                     end
+--                     for i, v in pairs(c.c) do
+--                         if v.heightCheck == nil then
+--                             if v.type == "button" or v.type == "toggle" or v.type == "submenu"then
+--                                 c.h = c.h + 24
+--                                 v.height = 24
+--                             elseif v.type == "divider" then
+--                                 c.h = c.h + 8
+--                                 v.height = 8
+--                             else
+--                                 c.h = c.h + 24
+--                                 v.height = 24
+--                             end
+--                             v.heightCheck = true
+--                         else
+--                             if c.h == 0 then for i, v in ipairs(c.c) do
+--                                 v.heightCheck = nil
+--                             end end
+--                         end
+--                     end
+--                 DebugPrint(c.itemsHovering)
+--             UiPop()
+--             UiPush()
+--                 UiColor(1,1,1,0.3)
+--                 -- UiRect(c.w+24,c.h)
+--                 if UiIsMouseInRect(c.w+24,c.h+2) then
+--                     _globalContextMenu_isCursorInside = true
+--                     c.isCursorInside = true
+--                     SetBool('TGUI.contextMenu.isCursorInside', true)
+--                 end
+--                 if not UiIsMouseInRect(c.w+24,c.h+2) then
+--                     c.isCursorInside = false
+--                 end
+--             UiPop()
+--             UiPush()
+--                 UiTranslate(-2,-2)
+--                 UiAlign('top left')
+--                 UiColor(1,1,1,0.3)
+--                 local isCursorInside;
+--                 pcall(function ()
+--                     isCursorInside = uic_contextMenu_contents.items[it].isCursorInside
+--                     if isCursorInside then
+--                         _globalContextMenu_isCursorInside = true
+--                     end
+--                 end)
+--                 -- UiRect(c.w+26,c.h+4)
+--                 -- DebugPrint(BoolToString(v.isCursorInside))
+--                     -- if not globalContextMenu_isCursorInside then
+--                 -- DebugPrint("BEFORE CHECK IF CURSOR IS IN: "..BoolToString(_globalContextMenu_isCursorInside))
+--                 if c.useSubemenu == nil then
+--                     -- if not UiIsMouseInRect(c.w+26,c.h+4) then
+--                     --     DebugPrint("NOT IN RECT: "..BoolToString(_globalContextMenu_isCursorInside))
+--                     --     if _globalContextMenu_isCursorInside == false then
+--                     --         DebugPrint('CURSOR NOT IN RECT: '..BoolToString(_globalContextMenu_isCursorInside))
+--                     --         if InputPressed('lmb') then uic_draw_contextmenu = false end
+--                     --         if InputPressed('rmb') then uic_draw_contextmenu = false end
+--                     --     end
+--                     -- end
+--                     -- -- end
+--                 else 
+--                     -- if uic_contextMenu_contents.items ==not nil then
+--                     -- for i, v in uic_contextMenu_contents.items do
+
+--                     -- end
+--                     -- local SubMenuId = uic_contextMenu_contents.items[it-1].keepSubmenuOpen
+--                     -- uic_contextMenu_contents.items[it-1].keepSubmenuOpen == false
+--                     pcall(function ()
+--                         local keepSubmenuOpen = uic_contextMenu_contents.items[it-1].keepSubmenuOpen
+--                         if keepSubmenuOpen == false or keepSubmenuOpen == nil then
+--                             table.remove(uic_contextMenu_contents.items, it)
+--                         end
+--                         -- local ItemHoverCount = uic_contextMenu_contents.items[it-1].itemsHovering
+--                         -- if ItemHoverCount == 2 then
+--                         --     uic_contextMenu_contents.items[it].dontRender = true
+--                         -- else
+--                         --     uic_contextMenu_contents.items[it].dontRender = false
+--                         -- end
+--                     end)
+--                 --     if keepSubmenuOpen == true and SubMenuId == it then
+--                     --         UiRect(c.w+26,c.h+4)
+--                     --         if not UiIsMouseInRect(c.w+26,c.h+4) then
+--                     --             if InputPressed('lmb') then uic_draw_contextmenu = false end
+--                     --             if InputPressed('rmb') then uic_draw_contextmenu = false end
+--                     --         end
+--                     --     end
+--                     -- end
+--                 end
+--             UiPop()
+--             local PosX, PosY = c.x,c.y
+--             if c.checkIfCutting == nil then
+--                 if UiWidth()-c.w-60 < PosX then
+--                     c.x = c.x - c.w
+--                 end
+--                 if UiHeight()-c.h-60 < PosY then
+--                     c.y = c.y - c.h
+--                     if c.y < 0 then
+--                         c.y = 0
+--                     end
+--                 end
+--                 c.checkIfCutting = false
+--             end
+--             -- else
+--             --     DebugPrint('DONT RENDER')
+--             -- end
+--         end
+--         for it, c in pairs(uic_contextMenu_contents.items) do
+--             UiTranslate(-2,-2)
+--             if c.useSubemenu == nil then
+--                 if not UiIsMouseInRect(c.w+26,c.h+4) then
+--                     if _globalContextMenu_isCursorInside == false then
+--                         if InputPressed('lmb') then uic_draw_contextmenu = false end
+--                         if InputPressed('rmb') then uic_draw_contextmenu = false end
+--                     end
+--                 end
+--             end
+--         end
+--         UiPop()
+--             -- UiPush()
+--         --     UiAlign('top right')
+--         --     -- UiTranslate(100,64)
+--         --     UiTranslate(-30,0)
+--         --     for it, c in pairs(uic_contextMenu_contents.items) do
+--         --         uic_text(c.itemHover,24)
+--         --     end
+--         -- UiPop()
+--     else
+--         uic_contextMenu_contents.items = {}
+--     end
+--     -- DebugWatch('ContextMenu open',_globalContextMenu_isCursorInside)
+--     -- DebugPrint(uic_contextMenu_itemsHovered)
+--     UiPop()
+-- end
+
+
+

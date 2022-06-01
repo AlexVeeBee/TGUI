@@ -83,10 +83,23 @@ function init()
     -- SetString('TGUI.stringViewer.path','game')
     regExplorer_doubleclick_timer = 0
     SetBool('TGUI.test.ContextMenu.ItemDisabled', true)
+    SetString('TGUI.settings.fonts.startpath',"MOD/ui/TGUI_resources/Fonts/")
+    SetString('TGUI.settings.fonts.regular', "TAHOMA.TTF")
+    SetString('TGUI.settings.fonts.bold', "TAHOMABD.TTF")
+    --
+    SetInt('TGUI.settings.colors.text.enabled.r', 255)
+    SetInt('TGUI.settings.colors.text.enabled.g', 255)
+    SetInt('TGUI.settings.colors.text.enabled.b', 255)
+    --
+    SetInt('TGUI.settings.colors.text.disabled.r', 255)
+    SetInt('TGUI.settings.colors.text.disabled.g', 255)
+    SetInt('TGUI.settings.colors.text.disabled.b', 255)
 end
-
+TGUI_debug_show_windowMinsize = false
 uic_debug_checkHit = false
 uic_debug_buttontextWidth = false
+uic_debug_show_hitboxes_tooltip = true
+uic_debug_show_hitboxes_menubar = false
 isFirstFrame = true
 NewWindowPopup = false
 
@@ -1023,18 +1036,49 @@ function draw(dt)
                         padding = 0,
                         pos = {x = 180, y = 200},
                         size = {w = 1026, h = 628},
+                        minSize = {w =600, h= 400},
                         startMiddle = true,
                         clip = false,
                         content = function(window)
-                            UiTranslate(12,0)
+                            uic_menubar(window,UiWidth(),{
+                                {
+                                    title = "File",
+                                    contents = {
+                                        {type="submenu", text = "Settings", items = {
+                                            {type="submenu", text = "Quick", items = {
+                                                {type="button", text = "Quick 1", action=function ()
+                                                end},
+                                                {type="button", text = "Quick 2", action=function ()
+                                                end}
+                                            }}, 
+                                            {type = "divider"},
+                                            {type="button", text = "Full", action=function ()
+                                                
+                                            end}    
+                                        }},
+                                        {type = "divider"},
+                                        {type="button", text = "Exit", action=function ()
+                                            window.closeWindow = true
+                                        end}
+                                    }
+                                },
+                                {
+                                    title = "View",
+                                    contents = {
+                                        {type="", text = "lol"}
+                                    }
+                                }
+                            },window)
+                            UiTranslate(12,32)
                             UiPush()
-                            uic_tab_container(window.tab1,UiWidth()-24-300, UiHeight()-12, false, true, {
+                            uic_tab_container(window.tab1,UiWidth()-32-300, UiHeight()-(12+32), false, true, {
                                 ["open_default"] = 1,
                                 {
                                     title = "UI component: Container",
                                     ["Content"] = function()
                                         UiTranslate(10,10)
-                                        uic_container(300, UiHeight()-20, false, true, true, function(window) 
+                                        -- UiTranslate(0,24)
+                                        uic_container(300, UiHeight()-(20), false, true, true, function(window) 
                                             UiPush()
                                                 if UiIsMouseInRect(UiWidth(),UiHeight()-100) and InputPressed('rmb') then
                                                     uic_Register_Contextmenu_at_cursor({
@@ -1336,7 +1380,7 @@ function draw(dt)
                             UiPop()
                             UiPush()
                             UiTranslate(UiWidth()-290,0)
-                            uic_tab_container(window.tab2,260, UiHeight()-12, false, true, {
+                            uic_tab_container(window.tab2,260, UiHeight()-(12+32), false, true, {
                                 ["open_default"] = 1,
                                 {
                                     ["title"] = "Scroll container test",

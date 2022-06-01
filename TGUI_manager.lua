@@ -167,7 +167,6 @@ function initDrawTGUI( TABLEwindows )
                 v.startMiddle = false
             end
         end
-
         -- UI
         UiPush()
             UiTranslate(v.pos.x,v.pos.y)    
@@ -264,6 +263,15 @@ function initDrawTGUI( TABLEwindows )
                         end
                         UiColorFilter(1,1,1,1)
                         local success, err = pcall(function(v) 
+                            if v.content == nil then
+                                -- v.content = function()
+                                --     UiWordWrap(UiWidth())
+                                --     uic_text("nil value, Reopen this window and continue what you were doing", -1, 32)
+                                -- end
+                                SetString('TGUI.error',"1. You might have quicksaved while a window was opened\n2. Content in table does not exist")
+                                SetBool('TGUI.error.allowTo.terminateWindow',true)
+                                SetInt('TGUI.error.allowTo.terminateNumber',v)
+                            end
                             if v.focused == false then
                                 UiDisableInput()
                             else
@@ -284,6 +292,20 @@ function initDrawTGUI( TABLEwindows )
                 UiPop()
             UiPop()
             UiPush()
+                if TGUI_debug_show_windowMinsize then
+                    UiPush()
+                        UiPush()
+                            UiColor(1,0,0,1)
+                            UiTranslate(v.minSize.w, 0)
+                            UiRect(3,v.size.h)
+                        UiPop()
+                        UiPush()
+                            UiColor(0,1,0,1)
+                            UiTranslate(0,v.minSize.h)
+                            UiRect(v.size.w,3)
+                        UiPop()
+                    UiPop()
+                end
                 if v.focused and v.allowResize then
                     UiTranslate(v.size.w,v.size.h)
                     UiAlign('bottom right')
@@ -296,19 +318,22 @@ function initDrawTGUI( TABLEwindows )
                             UiTranslate(-10,-10)
                             UiAlign("middle center")
                             if UiIsMouseInRect(1200,1200) and InputDown('lmb') and last == i then
-                                if v.size.w < v.minSize.w-1 then
+                                v.size = Vec2DAdd_WH(v.size, deltaMouse)
+                                if v.size.w < v.minSize.w then
                                     v.size.w = v.minSize.w
                                 end
-                                if v.size.h < v.minSize.h-1 then
+                                if v.size.h < v.minSize.h then
                                     v.size.h = v.minSize.h
                                 end
                                 v.disableDrag = true
                                 v.keepResizing = true
-                                v.size = Vec2DAdd_WH(v.size, deltaMouse)
                             else
                                 v.keepResizing = false
                             end
                         UiPop()
+                    else
+                       if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
+                       if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
                     end
                     if InputReleased('lmb') and v.keepResizing then
                         v.disableDrag = false
@@ -338,6 +363,14 @@ function initDrawTGUI( TABLEwindows )
             UiTranslate(0,UiMiddle()-100)
             UiText('[TGUI.MANAGER]: Woah, an actual error on screen',18)
             UiText(TGUI_error_message)
+            if HasKey('TGUI.error') then
+                UiTranslate(0,48)
+                UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 32)
+                UiText("Probable Cause")
+                UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 24)
+                UiTranslate(0,32)
+                UiText(GetString('TGUI.error'))
+            end
             UiTranslate(0,100)
             UiPush()
                 UiAlign('center middle')
@@ -348,7 +381,7 @@ function initDrawTGUI( TABLEwindows )
                     UiTranslate(0,3)
                     UiText("QUIT")
                 UiPop()
-                if UiBlankButton(60,30) then
+                if UiBlankButton(90,45) then
                     
                 end
             UiPop()
@@ -364,7 +397,7 @@ function initDrawTGUI( TABLEwindows )
             UiColor(1,1,1,1)
             UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 24)
             UiTranslate(0,UiMiddle()-100)
-            UiText('[TGUI.Main]: invalid argument',18)
+            UiText('[TGUI.MANAGER]: invalid argument',18)
         UiPop()
     return end
 end
