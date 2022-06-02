@@ -38,7 +38,7 @@ uic_tooltip_text,uic_tooltip_enabled = "-",false
 uic_tooltip_hover_timer,uic_tooltip_hover_id = 1,0
 ---context menu
 uic_draw_contextmenu,uic_contextMenu_getCursor,uic_isCursorInside = false, false, false
-        --  {
+    --  {
         --      w=0,h=0,x=0,y=0,
         --      c = {
 
@@ -47,7 +47,7 @@ uic_draw_contextmenu,uic_contextMenu_getCursor,uic_isCursorInside = false, false
 
         --      }
         --  }
-        
+local draw_dropdown,draw_dropdown_contents,draw_dropdown_extra,draw_dropdown_pos = false, {}, {}, {x=0,y=0,w=0,h=0, posCalc={x=0,y=0}}
 
 uic_contextMenu_contents = {
     submenuItems = {
@@ -55,16 +55,6 @@ uic_contextMenu_contents = {
     items = {
     }
 }
-
-local function luic_createSubMenu( x, y, contents )
-    local cm = table.insert(uic_contextMenu_contents.items, {
-        w=200, h=0, x=x, y=y ,checkIfCutting = true, useSubemenu = true, getCursor = false,
-        c = contents
-    })
-
-    DebugPrint("create new submenu")
-end
-
 -- function DrawAllWindows()
 --     for i=1, #CreatedWindows do
 --         UiPush()
@@ -106,6 +96,13 @@ function tick( ... )
     -- DebugWatch('showDropDown',showDropDown)
     -- DebugWatch('id_open',id_open)
 end
+---Convert to float 0 to 1 from any range
+---@param c integer range of 0 to any
+---@param n integer range
+---@return float c Range of 0 to 1 float
+function cRangeAny(c, n)
+    return c/n
+end
 
 ---Convert to float 0 to 1 from 255 range
 ---@param c integer range of 0 to 255
@@ -142,11 +139,11 @@ function uic_tooltip()
             mouse_x,mouse_y = UiGetMousePos()
         end
         if uic_tooltip_enabled then
-            UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 12)
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
             local t_text_w,t_text_h = UiGetTextSize(uic_tooltip_text)
             UiAlign('top left')
             UiTranslate(mouse_x,mouse_y +20)
-            UiImageBox('MOD/ui/TGUI_resources/textures/hint.png',t_text_w,t_text_h,1,1)
+            UiImageBox(tgui_ui_assets..'/textures/hint.png',t_text_w,t_text_h,1,1)
             UiColor(c255(136),c255(84),c255(30),1)
             UiText(uic_tooltip_text)
         end
@@ -178,7 +175,7 @@ local _itemsHovering = 0
 function uic_drawContextMenu()
     if uic_draw_contextmenu then
         UiEnableInput()
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
         UiAlign('top left')
         UiPush()
         for it, c in pairs(uic_contextMenu_contents.items) do
@@ -192,7 +189,7 @@ function uic_drawContextMenu()
                 if type(c.y_calc) == "number" then
                     c.y = math.floor(cursor_y)+c.y_calc
                 else
-                    c.y = math.floor(cursor_y)+c.y_calc
+                    c.y = math.floor(cursor_y)
                 end
                 c.getCursor = false
             end
@@ -223,7 +220,7 @@ function uic_drawContextMenu()
                     UiPop()
                     UiPush()
                         UiColor(1,1,1,1)
-                        UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',c.w+24,UiHeight()+2,1,1)
+                        UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',c.w+24,UiHeight()+2,1,1)
                     UiPop()
                     UiPush()
                         UiTranslate(0,3)
@@ -251,9 +248,7 @@ function uic_drawContextMenu()
                             if(UiIsMouseInRect(c.w+24,24)) then
                                 if v.type == "button" or v.type == "toggle" or v.type == "submenu"then
                                     v.IsMouseHovering = true
-                                    if not c.keepSubmenuOpen then
-                                    c.itemHover = i
-                                    end
+                                    if not c.keepSubmenuOpen then c.itemHover = i end
                                     UiPush()
                                         if(not v.disabled) then
                                             UiColor(c255(255),c255(156),c255(0),1)
@@ -311,7 +306,7 @@ function uic_drawContextMenu()
                                         if UiIsMouseInRect(c.w+24,24) then
                                             if _itemsHovering == 1 and c.hoverOnce == false then
                                                 table.insert(uic_contextMenu_contents.items, {
-                                                    w=200, h=0, x=c.w+24, y=v.submenuHeightPos , useSubemenu = true, getCursor = false,
+                                                    w=200,h=0,x=c.w+24,y=v.submenuHeightPos,useSubemenu=true,getCursor=false,
                                                     c = v.items
                                                 })
                                                 c.hoverOnce = true
@@ -337,7 +332,7 @@ function uic_drawContextMenu()
                                         else
                                             UiColor(c255(55),c255(55),c255(55),1)
                                         end
-                                        UiImage('MOD/ui/TGUI_resources/textures/checkmark.png')
+                                        UiImage(tgui_ui_assets..'/textures/checkmark.png')
                                     UiPop()
                                 end end
                             end
@@ -362,7 +357,7 @@ function uic_drawContextMenu()
                                     else
                                         UiColor(c255(55),c255(55),c255(55),1)
                                     end
-                                    UiImage('MOD/ui/TGUI_resources/textures/arrow_right.png')
+                                    UiImage(tgui_ui_assets..'/textures/arrow_right.png')
                                 UiPop()
                             end
                             
@@ -429,8 +424,8 @@ function uic_drawContextMenu()
             if c.useSubemenu == nil then
                 if not UiIsMouseInRect(c.w+26,c.h+4) then
                     if _globalContextMenu_isCursorInside == false then
-                        if InputPressed('lmb') then uic_draw_contextmenu = false end
-                        if InputPressed('rmb') then uic_draw_contextmenu = false end
+                        if InputDown('lmb') then uic_draw_contextmenu = false end
+                        if InputDown('rmb') then uic_draw_contextmenu = false end
                     end
                 end
             else
@@ -448,6 +443,8 @@ function uic_drawContextMenu()
             end
             -- if last == i then
             -- end
+            UiPop()
+            UiPush()
             local PosX, PosY = c.x,c.y
             -- DebugPrint(last)
             if c.checkIfCutting == nil then
@@ -471,9 +468,113 @@ function uic_drawContextMenu()
     else
         uic_contextMenu_contents.items = {}
     end
+    if draw_dropdown then
+        local c = draw_dropdown_pos
+        if c.getCursor == true then
+            local cursor_x, cursor_y = UiGetMousePos()
+            if type(c.posCalc.x) == "number" then
+                c.x = math.floor(cursor_x)+c.posCalc.x
+            else
+                c.x = math.floor(cursor_x)
+            end
+            if type(c.posCalc.y) == "number" then
+                c.y = math.floor(cursor_y)+c.posCalc.y
+            else
+                c.y = math.floor(cursor_y)
+            end
+            c.getCursor = false
+        end
+        UiPush()
+            UiAlign('left top')
+            UiTranslate(c.x,c.y)
+            -- uic_text("lol",24, 6)
+            -- DebugWatch('dropdown open'..window.tooltipId,window.open)
+            local he = 24
+            local scroll_width = 24
+            local bu_he = 18 
+            w,dropdown_height = he,bu_he
+            -- if window.firstFrame then
+                 for i, v in pairs(draw_dropdown_contents) do
+                    w,dropdown_height = he,bu_he
+                    c.h = (dropdown_height*i)
+                end
+
+            --     window.firstFrame = false
+            -- end
+            UiButtonImageBox("MOD",1,1,1,1,1,0)
+            if draw_dropdown then
+                -- UiWindow(c.w,he+dropdown_height+3,true)
+                UiPush()
+                    if c.goUp then
+                        UiAlign('left top')
+                        UiWindow(c.w,0,false)
+                        UiTranslate(0,-c.h-he-3)
+                        UiPush()
+                            -- UiTranslate(0,he)
+                            if not UiIsMouseInRect(c.w,he+c.h) then
+                                if InputDown('lmb') then draw_dropdown = false end
+                                if InputDown('rmb') then draw_dropdown = false end
+                            end
+                        UiPop()
+                    else
+                        UiPush()
+                            UiTranslate(0,-26)
+                            -- UiRect(c.w,he+c.h+4)
+                            if not UiIsMouseInRect(c.w,he+c.h+4) then
+                                if InputDown('lmb') then draw_dropdown = false end
+                                if InputDown('rmb') then draw_dropdown = false end
+                            end
+                        UiPop()
+                    end
+                    -- UiTranslate(0,he+1)
+                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_special_dropdown.png",c.w,c.h+2,1,1,1,1)
+                    if goUp then
+                        UiAlign('left top')
+                    end
+                    UiTranslate(0,1)
+                    for i, v in pairs(draw_dropdown_contents) do
+                        UiColor(1,1,1,1)
+                        if UiIsMouseInRect(c.w-scroll_width,bu_he) then
+                            UiColor(c255(24),c255(24),c255(24),1)
+                            UiPush()
+                                UiTranslate(1,0)
+                                UiColor(c255(255),c255(156),c255(0),1)
+                                UiRect(c.w-2-scroll_width,bu_he)
+                            UiPop()
+                        end
+                        UiPush()
+                            -- UiTranslate(0,bu_he/2)
+                            -- UiAlign('left middle')
+                            -- UiText(items[i])
+                            UiDisableInput()
+                            uic_text(v.text,bu_he,14)
+                            -- UiTextButton(v.text,TXT_w,bu_he)
+                        UiPop()
+                        if UiBlankButton(c.w-scroll_width,bu_he) then
+                            draw_dropdown = false
+                            SetString(draw_dropdown_extra.key,v.keyVal)
+                            SetString(draw_dropdown_extra.key..".dropdwon.val",v.text)
+                        end
+                        -- UiPush()
+                        --     UiTranslate(0,-he)
+                        --     UiRect(width,dropdown_height+he)
+                        -- UiPop()
+                        UiColor(1,1,1,1)
+                        UiTranslate(0,bu_he)
+                        if v.heightCheck == nil then
+                            c.h = c.h*i+1
+                            v.heightCheck = true
+                        end
+                    end
+                UiPop()
+            end
+        UiPop()
+    else
+        draw_dropdown_contents = {}
+    end
 end
 
----Creates a window
+---Creates a fake window
 ---@param width integer Width of the window
 ---@param height integer Height of the window
 ---@param clip boolean Clip content outside window. Default is false
@@ -486,9 +587,8 @@ function UiCreateWindow(width,height,clip,title,padding,content)
         UiWindow(width ,height ,clip)
         UiPush()
             UiAlign("top left")
-            UiColor(c255(160), c255(160), c255(160),c200(128))
-            UiRect(width ,height)
-            UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 12)
+            UiImageBox(tgui_ui_assets..'/textures/background_fake_window.png',width ,height,4,4)
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
             UiTranslate(16,8)
             UiColor(1,1,1,1)
             UiText(title)
@@ -497,7 +597,7 @@ function UiCreateWindow(width,height,clip,title,padding,content)
         UiWindow(width,height-32,clip)
         -- UiRect(UiWidth(),padding)
         -- UiRect(padding,UiHeight())
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
         UiTranslate(padding,padding)
         UiWindow(width-padding/2*4,height-32+padding/2*-4,clip)
         -- UiColor(1,0,0,1)
@@ -525,9 +625,9 @@ function uic_container(width,height,clip,border,makeinner,content, ectraContent)
         if(not border) then UiWindow(width,height,clip) end
         if border then
             if makeinner then
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',width,height,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',width,height,1,1)
             else
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',width,height,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',width,height,1,1)
             end
         end
         if(border) then UiWindow(width-2,height-2,clip) UiTranslate(1,1) end
@@ -540,43 +640,53 @@ function uic_container(width,height,clip,border,makeinner,content, ectraContent)
 end
 
 ---comment
----@param window table Root window
 ---@param w integer width of the menubar
----@param contents table What should show in the menubar
+---@param items table What should show in the menubar `{title = "Text", contents = {TGUI.contextmenu format}}`
+---@contextmenu format: `{type = "(empty is just text)"|"divider"|"button"|"toggle"|"submenu"`(to insert items do ,`items = {--[[TGUI.contextmenu format]]}`)`}`
 ---@param extraContent any Additional content to be called to the menubar
-function uic_menubar(window, w, contents ,extraContent , customization)
+---@param customization table customize the menubar
+---@options showBorder (Default = true), AllBorders (Default = false), textPadding (Default = 4)
+function uic_menubar(w, items ,extraContent , customization)
     if customization == nil then
         customization = {
             showBorder = true,
-            borderArround = false
+            AllBorders = false,
+            textPadding = 4
         }
     end
     if type(customization) == "table" then
         if customization.showBorder == nil then
             customization.showBorder = true
         end
-        if customization.borderArround == nil then
-            customization.borderArround = false
+        if customization.AllBorders == nil then
+            customization.AllBorders = false
+        end
+        if customization.textPadding == nil then
+            customization.textPadding = 4
         end
     else
         error("customization is not a table type")
     end
     UiPush()
         UiPush()
-            for i, v in ipairs(contents) do
-                UiFont('MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF',13)
+            for i, v in ipairs(items) do
+                UiAlign('top left')
+                UiFont(tgui_ui_assets..'/Fonts/TAHOMA.TTF',13)
                 UiColor(0,0,0,0)
                 local t = uic_text(v.title, 24, 13)
                 UiColor(1,1,1,1)
-                if UiIsMouseInRect(t.width,t.height) then
+                if UiIsMouseInRect(t.width+customization.textPadding*2,t.height) then
                     UiPush()
                         UiColor(c255(255),c255(156),c255(0),1)
-                        UiRect(t.width,t.height)
+                        UiRect(t.width+customization.textPadding*2,t.height)
                     UiPop()
                     UiColor(0,0,0,1)
                 end
-                uic_text(v.title, 24, 13)
-                if UiBlankButton(t.width,t.height) then
+                UiPush()
+                    UiTranslate(customization.textPadding,0)
+                    uic_text(v.title, 24, 13)
+                UiPop()
+                if UiBlankButton(t.width+customization.textPadding*2,t.height) then
                     UiPush()
                         UiWindow(w,t.height,true)
                         local cursor_x, cursor_y = UiGetMousePos()
@@ -593,15 +703,15 @@ function uic_menubar(window, w, contents ,extraContent , customization)
                         UiRect(t.width,t.height)
                     UiPop()
                 end
-                UiTranslate(t.width,0)
+                UiTranslate(t.width+customization.textPadding*2,0)
             end
         UiPop()
         if customization.showBorder then
-            if not customization.borderArround then
-                UiTranslate(0,24)
-                UiImageBox('MOD/ui/TGUI_resources/textures/line_dark.png',w,1,0,0)
+            if not customization.AllBorders then
+                UiTranslate(0,23)
+                UiImageBox(tgui_ui_assets..'/textures/line_dark.png',w,1,0,0)
             else
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',w,24,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w,24,1,1)
             end
         end
     UiPop()
@@ -625,7 +735,7 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
     local scroll = window.scrollPos
     UiPush()
         if border then
-            UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',w,h,1,1)
+            UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w,h,1,1)
         end
         UiPush()
             local max_scroll = 0
@@ -683,11 +793,11 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
                     UiAlign('center middle')
                     UiPush()    
                         UiTranslate(w-(17/2),10)
-                        UiImage('MOD/ui/TGUI_resources/textures/arrow_up.png',image)
+                        UiImage(tgui_ui_assets..'/textures/arrow_up.png',image)
                     UiPop()
                     UiPush()    
                         UiTranslate(w-(17/2),h-10)
-                        UiImage('MOD/ui/TGUI_resources/textures/arrow_doen.png',image)
+                        UiImage(tgui_ui_assets..'/textures/arrow_doen.png',image)
                     UiPop()
                 UiPop()
                 if is_overflow then
@@ -717,7 +827,7 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
                         UiTranslate(0,-bar_scroll)
                         UiColor(1,1,1,1)
                         -- if (scroll_bar_height+h-(17*2)) > 1 then
-                            UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',17,(scroll_bar_height-7),1,1)
+                            UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scroll_bar_height-7),1,1)
                         -- else
                             -- UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',17,2,1,1)
                         -- end
@@ -739,7 +849,7 @@ end
 
 ---Create a tab container widget
 ---@note There is a `UiTranslate(0,h)` at the end of the function
----@param window function Get the window object for the widget
+---@param window table Get the window object for the widget
 ---@param w integer Width of the container tab
 ---@param h integer Height of the container tab
 ---@param clip boolean Clip content outside window. Default is false
@@ -754,7 +864,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
             UiPush()
                 UiTranslate(0,24)
                 if border then
-                    UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_tab_container.png',w,h-24,1,1)
+                    UiImageBox(tgui_ui_assets..'/textures/outline_outer_tab_container.png',w,h-24,1,1)
                 end
             UiPop()
             UiButtonImageBox('MOD',0,0,0,0,0,0)
@@ -762,7 +872,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
             local all_tab_width = 0
             local tab_height = 25
             local right_padding = 20
-            if window.tabFirstFrame == true then
+            if window.tabFirstFrame == true or window.tabFirstFrame == nil then
                 window.tabOpen = contents["open_default"]
                 window.overflow = false
                 window.tabScroll = 0
@@ -776,10 +886,11 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                 end
             end
             UiTranslate(window.tabScroll,0)
-            for i=1,#contents do
+            for i, v in ipairs(contents) do
                 UiPush()
+                    UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
                     tab_width = 0 
-                    tab_text_w,_ = UiGetTextSize(contents[i]["title"])
+                    tab_text_w,_ = UiGetTextSize(v.title)
                     UiPush()
                         local removeHeight = 3
                         if window.tabOpen == i then
@@ -789,16 +900,16 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                         UiTranslate(0,tab_height)
                         tab_width = tab_text_w+right_padding
                         UiWindow(width,height,clip)
-                        UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_tab.png',tab_width,tab_height-removeHeight,1,1)
+                        UiImageBox(tgui_ui_assets..'/textures/outline_outer_tab.png',tab_width,tab_height-removeHeight,1,1)
                         UiPush()
                             UiDisableInput()
-                            UiTextButton(contents[i]["title"],tab_text_w,tab_height-removeHeight)
+                            UiTextButton(v.title,tab_text_w,tab_height-removeHeight)
                         UiPop()
                         if UiBlankButton(tab_width,tab_height-removeHeight) then 
                             window.tabOpen = i
                         end
                         if removeHeight == 3 then
-                            UiImageBox('MOD/ui/TGUI_resources/textures/line_white.png',tab_width,1,0,0)
+                            UiImageBox(tgui_ui_assets..'/textures/line_white.png',tab_width,1,0,0)
                         end
                         UiAlign('top left')
                         UiPush()
@@ -807,7 +918,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                             if last > i then
                                 UiPush()
                                     UiTranslate(tab_width,-1)
-                                    UiImageBox('MOD/ui/TGUI_resources/textures/line_white.png',1,1,0,0)
+                                    UiImageBox(tgui_ui_assets..'/textures/line_white.png',1,1,0,0)
                                 UiPop()        
                             end
                             UiPush()
@@ -815,12 +926,12 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                                 if window.tabOpen == i then
                                     UiPush()
                                         UiTranslate(tab_width-1,-1)
-                                        UiImageBox('MOD/ui/TGUI_resources/textures/line_dark.png',1,1,0,0)
+                                        UiImageBox(tgui_ui_assets..'/textures/line_dark.png',1,1,0,0)
                                     UiPop()
                                     if window.tabOpen >= 2 then
                                         UiPush()
                                             UiTranslate(0,-1)
-                                            UiImageBox('MOD/ui/TGUI_resources/textures/line_white.png',1,1,0,0)
+                                            UiImageBox(tgui_ui_assets..'/textures/line_white.png',1,1,0,0)
                                         UiPop()
                                     end
                                 end
@@ -841,7 +952,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                         UiAlign('left middle')
                         UiPush()
                             UiTranslate(w+5,tab_height/2)
-                            UiImage('MOD/ui/TGUI_resources/textures/tabs_arrow_right.png',image)
+                            UiImage(tgui_ui_assets..'/textures/tabs_arrow_right.png',image)
                         UiPop()
                         UiAlign('left top')
                         UiTranslate(w,0)
@@ -856,7 +967,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                     UiAlign('right middle')
                         UiPush()
                             UiTranslate(-5,tab_height/2)
-                            UiImage('MOD/ui/TGUI_resources/textures/tabs_arrow_left.png',image)
+                            UiImage(tgui_ui_assets..'/textures/tabs_arrow_left.png',image)
                         UiPop()
                         UiAlign('right top')
                         if UiBlankButton(10,tab_height) then
@@ -904,14 +1015,16 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
         UiPush()
         if w > all_tab_width then
             UiTranslate(all_tab_width-1,24)
-            UiImageBox('MOD/ui/TGUI_resources/textures/line_white.png',line_width,1,0,0)
+            UiImageBox(tgui_ui_assets..'/textures/line_white.png',line_width,1,0,0)
         end
         UiPop()    
         if(border) then
             UiTranslate(1,tab_height)
             UiWindow(w-2,h-tab_height-1,true)
         end
+        -- uic_text(window.tabOpen)
         UiPush()
+            
             contents[window.tabOpen]["Content"](extraContent)
         UiPop()
     UiPop()    
@@ -940,9 +1053,9 @@ function uic_table_container(window,w,h,clip,border,makeinner,nameContents,items
                 UiRect(w,h)
             UiPop()
             if makeinner then
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',w,h,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',w,h,1,1)
             else
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',w,h,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w,h,1,1)
             end
         end
         for i, v in ipairs(nameContents) do
@@ -964,7 +1077,7 @@ function uic_table_container(window,w,h,clip,border,makeinner,nameContents,items
                     UiFont(text.font,text.size)
                     local txt_w, _ = UiGetTextSize(v.label)
                 UiPop()
-                UiImageBox('MOD/ui/TGUI_resources/textures/outline_outer_normal.png',v.w,17,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',v.w,17,1,1)
                 if v.w <= txt_w then v.w = txt_w end
                 UiTranslate(v.w,0)
             end
@@ -1010,7 +1123,7 @@ end
 function uic_text( Text, height, fontSize )
     if customization == nil then
         customization = {
-            font = "MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF"
+            font = tgui_ui_assets.."/Fonts/TAHOMA.TTF"
         }
     end
     if height == nil then height = 15 end
@@ -1044,9 +1157,9 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
     UiPush()
         UiWindow(0,12,false	)
         UiAlign('left top')
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
         UiButtonImageBox('',1,1,1,1,1,1)
-        UiImageBox("MOD/ui/TGUI_resources/textures/outline_inner_special_checkbox.png",12, 12,1,1,1,1)
+        UiImageBox(tgui_ui_assets.."/textures/outline_inner_special_checkbox.png",12, 12,1,1,1,1)
         UiButtonImageBox(' ',0,0,0,0,0,0)
         tx_s_w,no_v_h = UiGetTextSize(text)
         UiPush()
@@ -1076,7 +1189,7 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
         UiPop()
         if type(key) == "string" then
             if GetBool(key) then
-                UiImage('MOD/ui/TGUI_resources/textures/checkmark.png')
+                UiImage(tgui_ui_assets..'/textures/checkmark.png')
             else
                 UiTranslate(-6,-4)
                 if UiIsMouseInRect(6 + no_v_h + hitWidth,20) then
@@ -1087,7 +1200,7 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
         end
         if type(key) == "boolean" then
             if key then
-                UiImage('MOD/ui/TGUI_resources/textures/checkmark.png')
+                UiImage(tgui_ui_assets..'/textures/checkmark.png')
             else
                 UiTranslate(-6,-4)
                 if UiIsMouseInRect(6 + no_v_h + hitWidth,20) then
@@ -1106,6 +1219,27 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
     end
 end
 
+---comment
+---@param key string Connected keys for the radio button
+---@param setString string Set this string when the radio button is pressed
+---@param Text string Display text to the right of the radio button
+function uic_radio_button( key, setString, Text, hitboxWidth )
+    UiPush()
+        UiAlign('top left')
+        UiColor(1,1,1,1)
+        UiImage(tgui_ui_assets..'/textures/outline_inner_selection_radio.png')
+        if GetString(key) == setString then
+            UiImage(tgui_ui_assets..'/textures/outline_inner_selection_radio_mark.png')
+        end
+        -- UiRect(hitboxWidth,13)
+        if UiBlankButton(hitboxWidth,13) then
+            SetString(key, setString)
+        end
+        UiTranslate(16)
+        uic_text(Text, 13, 14)
+    UiPop()
+end
+
 ---Create a button
 ---@param buttinid integer id of the button
 ---@param text string Display text on the button
@@ -1117,7 +1251,7 @@ function uic_button(buttinid, text, width, height, disabled, toolTipText)
     UiPush()
         UiWindow(width, height, false)
         UiAlign("left top")
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 14)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 14)
         if disabled then
             UiDisableInput()
         end
@@ -1125,17 +1259,17 @@ function uic_button(buttinid, text, width, height, disabled, toolTipText)
             if not disabled then
                 if UiIsMouseInRect(width, height) then
                     if not InputDown('lmb') then
-                        UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_normal.png",width, height,1,1,1,1)
+                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",width, height,1,1,1,1)
                     else
-                        UiImageBox("MOD/ui/TGUI_resources/textures/outline_inner_normal.png",width, height,1,1,1,1)
+                        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",width, height,1,1,1,1)
                         UiTranslate(1,1)
                     end
                 else
-                    UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_normal.png",width, height,1,1,1,1)
+                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",width, height,1,1,1,1)
                 end
                 UiColor(1,1,1,1)
             else
-                UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_normal.png",width, height,1,1,1,1)
+                UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",width, height,1,1,1,1)
                 UiColor(0.1,0.1,0.1,0.8)
             end
         
@@ -1191,7 +1325,7 @@ function uic_button_func(buttinid, text, width, height, disabled, toolTipText, o
     UiPush()
         UiWindow(width, height, false)
         UiAlign("left top")
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 14)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 14)
         if disabled then
             UiDisableInput()
         end
@@ -1199,17 +1333,17 @@ function uic_button_func(buttinid, text, width, height, disabled, toolTipText, o
             if not disabled then
                 if UiIsMouseInRect(width, height) then
                     if not InputDown('lmb') then
-                        UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_normal.png",width, height,1,1,1,1)
+                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",width, height,1,1,1,1)
                     else
-                        UiImageBox("MOD/ui/TGUI_resources/textures/outline_inner_normal.png",width, height,1,1,1,1)
+                        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",width, height,1,1,1,1)
                         UiTranslate(1,1)
                     end
                 else
-                    UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_normal.png",width, height,1,1,1,1)
+                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",width, height,1,1,1,1)
                 end
                 UiColor(1,1,1,1)
             else
-                UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_normal.png",width, height,1,1,1,1)
+                UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",width, height,1,1,1,1)
                 UiColor(0.1,0.1,0.1,0.8)
             end
         
@@ -1223,11 +1357,12 @@ function uic_button_func(buttinid, text, width, height, disabled, toolTipText, o
                     if UiTextButton(text,w,height) then end
                 UiPop()
             end
-            if UiTextButton(text,w,height) then onClick(extraContent) end
+            UiDisableInput()
+            if UiTextButton(text,w,height) then end
         UiPop()    
         UiButtonImageBox("MOD",1,1,1,1,1,0)
-        if UiBlankButton(width, height) then onClick(extraContent) end
-        if UiIsMouseInRect(width, height) then
+        if UiBlankButton(width, height+1) then onClick(extraContent) end
+        if UiIsMouseInRect(width, height+1) then
             if toolTipText ~= nil then
                 if uic_tooltip_enabled == false then
                     if uic_tooltip_hover_timer == 1 then
@@ -1266,8 +1401,8 @@ end
 ---@param width integer Width of the divider
 ---@param flip boolean Flup the divider texture
 function uic_divider(width, flip)
-    if flip then return UiImageBox('MOD/ui/TGUI_resources/textures/line_outer.png',width,2,1,1) end
-    return UiImageBox('MOD/ui/TGUI_resources/textures/line_inner.png',width,2,1,1)
+    if flip then return UiImageBox(tgui_ui_assets..'/textures/line_outer.png',width,2,1,1) end
+    return UiImageBox(tgui_ui_assets..'/textures/line_inner.png',width,2,1,1)
 end
 
 ---Create a dropdown menu | id is now window
@@ -1276,132 +1411,52 @@ end
 ---@param width integer Width of the dropdown menu and window
 ---@param key string Key for each dropdown menu (if all keys are the same for all dropdown menus, every one of them will show the same selected item)
 ---@param items table List of items to display
----@param items_keys table List of items to set the current key value, example "`key.item = 'item 1'` or `savegame.quote = 'I'd like to have a coffee'` "
+--@param items_keys table List of items to set the current key value, example "`key.item = 'item 1'` or `savegame.quote = 'I'd like to have a coffee'` "
 ---@param goUp boolean Instead of the dropdown menu spawning below, it spawns on top. (used if there is no space on the bottom)
 ---@param toolTipText string Create a tooltip
-function uic_dropdown(window, width, key, items, items_keys, goUp, toolTipText)
+function uic_dropdown(width, key, items, goUp, toolTipText)
+    local he, scroll_width = 24, 24
     UiPush()
-        -- DebugWatch('dropdown open'..window.tooltipId,window.open)
-        local he = 24
-        local scroll_width = 24
-        local bu_he = 18 
-        w,dropdown_height = he,bu_he
-        -- if window.firstFrame then
-            for i=1, #items do
-                w,dropdown_height = he,bu_he
-                window.dropdown_height = (dropdown_height*i)
-            end
-
-        --     window.firstFrame = false
-        -- end
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
-        UiImageBox("MOD/ui/TGUI_resources/textures/outline_inner_normal_dropdown.png",width, he,1,1,1,1)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png",width, he,1,1,1,1)
         UiColor(1,1,1,1)
         UiPush()
             UiAlign('top right')
             UiTranslate(0,0)
             UiTranslate(width-(scroll_width/2),he/2)
             UiAlign('center middle')
-            UiImage('MOD/ui/TGUI_resources/textures/dropdown_arrow.png')
+            UiImage(tgui_ui_assets.."/textures/dropdown_arrow.png")
         UiPop()
         UiPush()
             UiTranslate(0,he/2)
             UiAlign("left middle")
-            UiText(GetString(key..".dropdwon.val"))
-        UiPop()    
-        UiButtonImageBox("MOD",1,1,1,1,1,0)
+            uic_text(GetString(key..".dropdwon.val"), 24)
+        UiPop()
+        -- UiRect(width, he)
         if UiBlankButton(width, he) then
-            if window.open then window.open = false else window.open = true end
-        end
-        if UiIsMouseInRect(width, he) then
-            if toolTipText ~= nil then
-                if uic_tooltip_enabled == false then
-                    if uic_tooltip_hover_timer == 1 then
-                        SetValue('uic_tooltip_hover_timer',0,"linear",0.75)
-                        uic_tooltip_hover_id = window.tooltipId
-                        uic_tooltip_text = toolTipText
-                    end
-                    if uic_tooltip_hover_timer == 0 then
-                        uic_tooltip_enabled = true
-                    end
-                end
-                -- uic_tooltip_hover(0, true)
-            end
-        else
-            -- uic_tooltip_hover(0, false)
-            if uic_tooltip_hover_id == window.tooltipId then
-                if uic_tooltip_hover_timer == 0 then
-                    uic_tooltip_hover_timer = 1
-                    uic_tooltip_enabled = false
-                end
+            draw_dropdown_pos.getCursor = true
+            local cursor_x, cursor_y = UiGetMousePos()
+            if draw_dropdown then draw_dropdown = false else
+                draw_dropdown = true
+                
+                draw_dropdown_pos.posCalc.x = -cursor_x
+                draw_dropdown_pos.posCalc.y = -cursor_y + 25
+                
+                draw_dropdown_contents = items
+                draw_dropdown_pos.w = width
+                draw_dropdown_extra = {
+                    key=key
+                }
             end
         end
-        if window.open then
-            UiWindow(width,he+window.dropdown_height+3,true)
-            UiPush()
-                if goUp then
-                    UiAlign('left top')
-                    UiWindow(width,0,false)
-                    UiTranslate(0,-window.dropdown_height-he-3)
-                    UiPush()
-                        UiTranslate(0,he)
-                        if not UiIsMouseInRect(width,he+window.dropdown_height) then
-                            if InputReleased('lmb') then window.open = false end
-                        end
-                    UiPop()
-                else
-                    if not UiIsMouseInRect(width,he+window.dropdown_height) then
-                        if InputReleased('lmb') then window.open = false end
-                    end
-                end
-                UiTranslate(0,he+1)
-                UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_special_dropdown.png",width,window.dropdown_height+2,1,1,1,1)
-                if goUp then
-                    UiAlign('left top')
-                end
-                UiTranslate(0,1)
-                for i=1, #items do
-                    UiColor(1,1,1,1)
-                    w,dropdown_height = he,bu_he
-                    if UiIsMouseInRect(width-scroll_width,bu_he) then
-                        UiColor(c255(24),c255(24),c255(24),1)
-                        UiPush()
-                            UiTranslate(1,0)
-                            UiColor(c255(255),c255(156),c255(0),1)
-                            UiRect(width-2-scroll_width,bu_he)
-                        UiPop()
-                    end
-                    UiPush()
-                        -- UiTranslate(0,bu_he/2)
-                        -- UiAlign('left middle')
-                        -- UiText(items[i])
-                        UiDisableInput()
-                        local TXT_w, _ = UiGetTextSize(items[i])
-                        UiTextButton(items[i],TXT_w,bu_he)
-                    UiPop()
-                    if UiBlankButton(width,bu_he) then
-                        window.open = false
-                        SetString(key,items_keys[i])
-                        SetString(key..".dropdwon.val",items[i])
-                    end
-                    -- UiPush()
-                    --     UiTranslate(0,-he)
-                    --     UiRect(width,dropdown_height+he)
-                    -- UiPop()
-                    UiColor(1,1,1,1)
-                    UiTranslate(0,bu_he)
-                    dropdown_height = dropdown_height*i+1
-                end
-            UiPop()
-        end
-    UiPop()
+    UiPop()    
 end
 -- 
-function uic_slider(key,min,max)
-    UiPush()
-        SetFloat(key,UiSlider("MOD/ui/TGUI_resources/textures/Slider/Slider.png",'x',GetFloat(key),min,max))
-    UiPop()
-end
+-- function uic_slider(key,min,max)
+--     UiPush()
+--         SetFloat(key,UiSlider(tgui_ui_assets.."/ui/TGUI_resources/textures/Slider/Slider.png",'x',GetFloat(key),min,max))
+--     UiPop()
+-- end
 
 backspace_Timer = 1
 
@@ -1460,9 +1515,9 @@ function custom_UiInputText( string, w, h, window )
 end
 
 
-function uic_create_tooltip_hitbox( ... )
-    -- body
-end
+-- function uic_create_tooltip_hitbox( ... )
+--     -- body
+-- end
 
 ---Text Input
 ---@info Hright of textbox is 24
@@ -1475,15 +1530,15 @@ function uic_textbox(key, width, window )
         if allowSpecialKeys == nil then
             allowSpecialKeys = {enabled = false}
         end
-        UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
-        UiImageBox("MOD/ui/TGUI_resources/textures/outline_inner_normal_dropdown.png",width, 24,1,1,1,1)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png",width, 24,1,1,1,1)
         local tW,tH = UiGetTextSize(GetString(key))
         UiPush()
             UiDisableInput()
             UiAlign('top right')
             UiTranslate(width,0)
             UiButtonImageBox('MOD',0,0,0,0,0,0)
-            UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 12)
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
             UiTranslate(0,1)
             UiColor(0,0,0,1)
             UiRect(13,22)
@@ -1552,6 +1607,7 @@ end
 function BoolToString(b) 
     return b and "True" or "False";
 end
+
 
 -- OLD STUFF
 
@@ -2077,3 +2133,146 @@ LLLL A  A R  RR  GGG  EEEE      CCC  OOO  N   N   TT   EEEE X   X   TT       M  
 
 
 
+
+            -- if UiIsMouseInRect(width, he) then
+            --     if toolTipText ~= nil then
+            --         if uic_tooltip_enabled == false then
+            --             if uic_tooltip_hover_timer == 1 then
+            --                 SetValue('uic_tooltip_hover_timer',0,"linear",0.75)
+            --                 uic_tooltip_hover_id = window.tooltipId
+            --                 uic_tooltip_text = toolTipText
+            --             end
+            --             if uic_tooltip_hover_timer == 0 then
+            --                 uic_tooltip_enabled = true
+            --             end
+            --         end
+            --         -- uic_tooltip_hover(0, true)
+            --     end
+            -- else
+            --     -- uic_tooltip_hover(0, false)
+            --     if uic_tooltip_hover_id == window.tooltipId then
+            --         if uic_tooltip_hover_timer == 0 then
+            --             uic_tooltip_hover_timer = 1
+            --             uic_tooltip_enabled = false
+            --         end
+            --     end
+            -- end
+
+
+    -- items
+-- function uic_dropdown(window, width, key, items, items_keys, goUp, toolTipText)
+    -- UiPush()
+    --     -- DebugWatch('dropdown open'..window.tooltipId,window.open)
+    --     local he = 24
+    --     local scroll_width = 24
+    --     local bu_he = 18 
+    --     w,dropdown_height = he,bu_he
+    --     -- if window.firstFrame then
+    --         for i=1, #items do
+    --             w,dropdown_height = he,bu_he
+    --             window.dropdown_height = (dropdown_height*i)
+    --         end
+
+    --     --     window.firstFrame = false
+    --     -- end
+    --     UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
+    --     UiImageBox("MOD/ui/TGUI_resources/textures/outline_inner_normal_dropdown.png",width, he,1,1,1,1)
+    --     UiColor(1,1,1,1)
+    --     UiPush()
+    --         UiAlign('top right')
+    --         UiTranslate(0,0)
+    --         UiTranslate(width-(scroll_width/2),he/2)
+    --         UiAlign('center middle')
+    --         UiImage('MOD/ui/TGUI_resources/textures/dropdown_arrow.png')
+    --     UiPop()
+    --     UiPush()
+    --         UiTranslate(0,he/2)
+    --         UiAlign("left middle")
+    --         UiText(GetString(key..".dropdwon.val"))
+    --     UiPop()    
+    --     UiButtonImageBox("MOD",1,1,1,1,1,0)
+    --     if UiBlankButton(width, he) then
+    --         if window.open then window.open = false else window.open = true end
+    --     end
+    --     if UiIsMouseInRect(width, he) then
+    --         if toolTipText ~= nil then
+    --             if uic_tooltip_enabled == false then
+    --                 if uic_tooltip_hover_timer == 1 then
+    --                     SetValue('uic_tooltip_hover_timer',0,"linear",0.75)
+    --                     uic_tooltip_hover_id = window.tooltipId
+    --                     uic_tooltip_text = toolTipText
+    --                 end
+    --                 if uic_tooltip_hover_timer == 0 then
+    --                     uic_tooltip_enabled = true
+    --                 end
+    --             end
+    --             -- uic_tooltip_hover(0, true)
+    --         end
+    --     else
+    --         -- uic_tooltip_hover(0, false)
+    --         if uic_tooltip_hover_id == window.tooltipId then
+    --             if uic_tooltip_hover_timer == 0 then
+    --                 uic_tooltip_hover_timer = 1
+    --                 uic_tooltip_enabled = false
+    --             end
+    --         end
+    --     end
+    --     if window.open then
+    --         UiWindow(width,he+window.dropdown_height+3,true)
+    --         UiPush()
+    --             if goUp then
+    --                 UiAlign('left top')
+    --                 UiWindow(width,0,false)
+    --                 UiTranslate(0,-window.dropdown_height-he-3)
+    --                 UiPush()
+    --                     UiTranslate(0,he)
+    --                     if not UiIsMouseInRect(width,he+window.dropdown_height) then
+    --                         if InputReleased('lmb') then window.open = false end
+    --                     end
+    --                 UiPop()
+    --             else
+    --                 if not UiIsMouseInRect(width,he+window.dropdown_height) then
+    --                     if InputReleased('lmb') then window.open = false end
+    --                 end
+    --             end
+    --             UiTranslate(0,he+1)
+    --             UiImageBox("MOD/ui/TGUI_resources/textures/outline_outer_special_dropdown.png",width,window.dropdown_height+2,1,1,1,1)
+    --             if goUp then
+    --                 UiAlign('left top')
+    --             end
+    --             UiTranslate(0,1)
+    --             for i=1, #items do
+    --                 UiColor(1,1,1,1)
+    --                 w,dropdown_height = he,bu_he
+    --                 if UiIsMouseInRect(width-scroll_width,bu_he) then
+    --                     UiColor(c255(24),c255(24),c255(24),1)
+    --                     UiPush()
+    --                         UiTranslate(1,0)
+    --                         UiColor(c255(255),c255(156),c255(0),1)
+    --                         UiRect(width-2-scroll_width,bu_he)
+    --                     UiPop()
+    --                 end
+    --                 UiPush()
+    --                     -- UiTranslate(0,bu_he/2)
+    --                     -- UiAlign('left middle')
+    --                     -- UiText(items[i])
+    --                     UiDisableInput()
+    --                     local TXT_w, _ = UiGetTextSize(items[i])
+    --                     UiTextButton(items[i],TXT_w,bu_he)
+    --                 UiPop()
+    --                 if UiBlankButton(width,bu_he) then
+    --                     window.open = false
+    --                     SetString(key,items_keys[i])
+    --                     SetString(key..".dropdwon.val",items[i])
+    --                 end
+    --                 -- UiPush()
+    --                 --     UiTranslate(0,-he)
+    --                 --     UiRect(width,dropdown_height+he)
+    --                 -- UiPop()
+    --                 UiColor(1,1,1,1)
+    --                 UiTranslate(0,bu_he)
+    --                 dropdown_height = dropdown_height*i+1
+    --             end
+    --         UiPop()
+    --     end
+    -- UiPop()

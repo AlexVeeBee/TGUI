@@ -191,6 +191,7 @@ function initDrawTGUI( TABLEwindows )
                     v.keepMoving = false
                 end
                 UiPush()
+                    UiAlign('top left')
                     UiColorFilter(1,1,1,globalWindowOpacity)
                     if last == i then
                         UiColor(c255(160), c255(160), c255(160),c200(150))
@@ -212,7 +213,7 @@ function initDrawTGUI( TABLEwindows )
                             table.insert(TABLEwindows , swapWindowData)
                         end
                     end
-                    UiImageBox("MOD/ui/TGUI_resources/textures/window.png",v.size.w ,v.size.h,windowSlice.x,windowSlice.y)
+                    UiImageBox(tgui_ui_assets.."/textures/window.png",v.size.w ,v.size.h,windowSlice.x,windowSlice.y)
                     if showSlicing then
                         UiPush()
                             UiColor(1,0,0,1)
@@ -228,7 +229,7 @@ function initDrawTGUI( TABLEwindows )
                         UiPop()
                     end
                 UiPop()
-                UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 12)
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
                 UiTranslate(12,8)
                 UiColor(1,1,1,1)
                 UiText(v.title)
@@ -237,7 +238,7 @@ function initDrawTGUI( TABLEwindows )
                 UiColorFilter(1,1,1,globalWindowOpacity)
                 UiAlign("top right")
                 UiTranslate(UiWidth()-10,10)
-                UiImageBox('MOD/ui/TGUI_resources/textures/close.png',9,9,0,0)
+                UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
                 -- UiRect(11,11)
                 if UiIsMouseInRect(11,11) and InputDown('lmb') then
                     -- Nothing
@@ -248,7 +249,7 @@ function initDrawTGUI( TABLEwindows )
             UiPush()
                 UiTranslate(0,32)
                 UiWindow(v.size.w,v.size.h-32,v.clip)
-                UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMA.TTF", 15)
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
                 UiTranslate(v.padding,v.padding)
                 UiWindow(v.size.w-v.padding/2*4,v.size.h-32+v.padding/2*-4,v.clip)
                 UiColor(1,1,1,1)
@@ -307,18 +308,52 @@ function initDrawTGUI( TABLEwindows )
                     UiPop()
                 end
                 if v.focused and v.allowResize then
+                    local cursor_x, cursor_y = UiGetMousePos()
+                    -- UiPush()
+                    -- UiColor(1,1,1,0.3)
+                    -- UiRect(cursor_x, cursor_y)
+                    -- UiPop()            
                     UiTranslate(v.size.w,v.size.h)
                     UiAlign('bottom right')
                     UiPush()
                         UiTranslate(-3,-3)
-                        UiImage('MOD/ui/TGUI_resources/textures/resizeicon.png',image)
+                        UiImage(tgui_ui_assets..'/textures/resizeicon.png',image)
                     UiPop()
                     if UiIsMouseInRect(20,20) or v.keepResizing and InputDown('lmb') and last == i then
                         UiPush()
                             UiTranslate(-10,-10)
                             UiAlign("middle center")
                             if UiIsMouseInRect(1200,1200) and InputDown('lmb') and last == i then
-                                v.size = Vec2DAdd_WH(v.size, deltaMouse)
+                                -- UiRect(25,25)
+                                -- if cursor_x < -cursor_x+v.minSize.w then
+                                --     v.size.w = v.minSize.w
+                                -- end
+                                -- if cursor_y < -cursor_y+v.minSize.h then
+                                --     v.size.h = v.minSize.h
+                                -- end
+
+                                local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
+                                -- v.size = 
+                                if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
+                                    if v.size.w > v.minSize.w then
+                                        v.size.w = Vec2DAdd.w
+                                    end
+                                    if v.size.h > v.minSize.h then
+                                        v.size.h = Vec2DAdd.h
+                                    end
+                                end
+                                if Vec2DAdd.w-8 < cursor_x then
+                                    v.size.w = Vec2DAdd.w
+                                end
+                                if Vec2DAdd.h-8 < cursor_y then
+                                    v.size.h = Vec2DAdd.h
+                                end
+                                -- UiPush()
+                                --     UiTranslate(-cursor_x+v.minSize.w,-cursor_y+v.minSize.h)
+                                --     UiColor(1,0,0,1)
+                                --     UiRect(15,15)
+                                -- UiPop()
+
                                 if v.size.w < v.minSize.w then
                                     v.size.w = v.minSize.w
                                 end
@@ -359,15 +394,15 @@ function initDrawTGUI( TABLEwindows )
             UiColor(0,0,0,1)
             UiRect(UiWidth(),UiHeight())
             UiColor(1,1,1,1)
-            UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 24)
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
             UiTranslate(0,UiMiddle()-100)
             UiText('[TGUI.MANAGER]: Woah, an actual error on screen',18)
             UiText(TGUI_error_message)
             if HasKey('TGUI.error') then
                 UiTranslate(0,48)
-                UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 32)
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 32)
                 UiText("Probable Cause")
-                UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 24)
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
                 UiTranslate(0,32)
                 UiText(GetString('TGUI.error'))
             end
@@ -395,7 +430,7 @@ function initDrawTGUI( TABLEwindows )
             UiColor(0,0,0,1)
             UiRect(UiWidth(),UiHeight())
             UiColor(1,1,1,1)
-            UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 24)
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
             UiTranslate(0,UiMiddle()-100)
             UiText('[TGUI.MANAGER]: invalid argument',18)
         UiPop()

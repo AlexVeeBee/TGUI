@@ -244,7 +244,7 @@ function draw(dt)
             padding = 0,
             pos = {x = 180, y = 200},
             size = {w = 600, h = 628},
-            minSize = {w = 600, h = 300},
+            minSize = {w = 600, h = 460},
             startMiddle = true,
             doNotHide = false,
             clip = false,
@@ -1040,7 +1040,7 @@ function draw(dt)
                         startMiddle = true,
                         clip = false,
                         content = function(window)
-                            uic_menubar(window,UiWidth(),{
+                            uic_menubar(UiWidth(),{
                                 {
                                     title = "File",
                                     contents = {
@@ -1068,7 +1068,7 @@ function draw(dt)
                                         {type="", text = "lol"}
                                     }
                                 }
-                            },window)
+                            },window, {})
                             UiTranslate(12,32)
                             UiPush()
                             uic_tab_container(window.tab1,UiWidth()-32-300, UiHeight()-(12+32), false, true, {
@@ -1320,36 +1320,123 @@ function draw(dt)
                                     end
                                 },
                                 {
-                                    title = "Dropdown Container",
+                                    title = "Dropdown, menubar",
                                     ["Content"] = function(MainWindow)
-                                        UiTranslate(20,20)
-                                        UiTranslate(0,32)
-                                        uic_dropdown(MainWindow.dropdown_1, 100, "TGUI.dropdown.lol", {
-                                            "1", "2", "3"
-                                        }, {
-                                            "tiem_1",
-                                            "tiem_2",
-                                            "tiem_3",
-                                        }, false, "")
-                                        -- UiTranslate(120,0)
-                                        UiTranslate(0,-32)
-                                        uic_dropdown(MainWindow.dropdown_2, 100, "TGUI.dropdown.lol2", {
-                                            "january", "february", "march", "april", "may", "june", "july", "august", "september", "octeober" , "november", "december"
-                                        }, {
-                                            "m1",
-                                            "m2",
-                                            "m3",
-                                            "m4",
-                                            "m5",
-                                            "m6",
-                                            "m7",
-                                            "m8",
-                                            "m9",
-                                            "m10",
-                                            "m11",
-                                            "m12",
-                                            
-                                        }, false, "")
+                                        UiPush()
+                                            UiTranslate(12,12)
+                                            uic_text("Dropdowns", 24)
+                                            UiTranslate(0,24)
+                                            uic_dropdown(250, "TGUI.dropdown.test", {
+                                                {
+                                                    text = "On top Render Test 1",
+                                                    keyVal = "renderTopTest1"
+                                                },
+                                                {
+                                                    text = "On top Render Test 2",
+                                                    keyVal = "renderTopTest2"
+                                                },
+                                            }, false, "")
+                                            UiTranslate(0,26)
+                                            uic_dropdown(250, "TGUI.dropdown.test", {
+                                                {
+                                                    text = "On top Render Test 1",
+                                                    keyVal = "renderTopTest1"
+                                                },
+                                                {
+                                                    text = "On top Render Test 2",
+                                                    keyVal = "renderTopTest2"
+                                                },                                                
+                                                {
+                                                    text = "On top Render Test 1",
+                                                    keyVal = "renderTopTest1"
+                                                },
+                                                {
+                                                    text = "On top Render Test 2",
+                                                    keyVal = "renderTopTest2"
+                                                },
+
+                                            }, false, "")
+                                            -- UiTranslate(20,20)
+                                            -- UiTranslate(0,32)
+                                            -- uic_dropdown(MainWindow.dropdown_1, 100, "TGUI.dropdown.lol", {
+                                            --     "1", "2", "3"
+                                            -- }, {
+                                            --     "tiem_1",
+                                            --     "tiem_2",
+                                            --     "tiem_3",
+                                            -- }, false, "")
+                                            -- -- UiTranslate(120,0)
+                                            -- UiTranslate(0,-32)
+                                            -- uic_dropdown(MainWindow.dropdown_2, 100, "TGUI.dropdown.lol2", {
+                                            --     "january", "february", "march", "april", "may", "june", "july", "august", "september", "octeober" , "november", "december"
+                                            -- }, {
+                                            --     "m1",
+                                            --     "m2",
+                                            --     "m3",
+                                            --     "m4",
+                                            --     "m5",
+                                            --     "m6",
+                                            --     "m7",
+                                            --     "m8",
+                                            --     "m9",
+                                            --     "m10",
+                                            --     "m11",
+                                            --     "m12",
+                                                
+                                            -- }, false, "")
+                                        UiPop()
+                                        UiPush()
+                                            UiTranslate(270,12)
+                                            uic_text("Radio selection", 24)
+                                            UiTranslate(0,24)
+                                            uic_radio_button("TGUI.test.radio.t1", "easy", "Easy", 130)
+                                            UiTranslate(0,18)
+                                            uic_radio_button("TGUI.test.radio.t1", "medium", "Medium", 130)
+                                            UiTranslate(0,18)
+                                            uic_radio_button("TGUI.test.radio.t1", "hard", "Hard", 130)
+                                            UiTranslate(0,18)
+                                            uic_radio_button("TGUI.test.radio.t1", "WTF", "WTF", 130)
+                                        UiPop()
+                                        UiTranslate(0,92)
+                                        UiPush()
+                                            UiTranslate(12,0)
+                                            uic_text("Menubar styles", 24)
+                                        UiPop()
+                                        UiTranslate(0,26)
+                                        uic_menubar(UiWidth(), {
+                                            {
+                                                title = "No Borders",
+                                                contents = {{type="", text="Hello there"}}
+                                            },
+                                            {
+                                                title = "With Text Padding",
+                                                contents = {{type="", text="Hello there"}}
+                                            }
+
+                                        }, false, {
+                                            showBorder = false,
+                                            textPadding = 8
+                                        })
+                                        UiTranslate(0,26)
+                                        uic_menubar(UiWidth(), {
+                                            {
+                                                title = "Menubar style 1",
+                                                contents = {
+                                                    {type="", text="Hello there"}
+                                                }
+                                            }
+                                        }, false, {})
+                                        UiTranslate(0,26)
+                                        uic_menubar(UiWidth(), {
+                                            {
+                                                title = "Menubar style 2",
+                                                contents = {
+                                                    {type="", text="Hello there"}
+                                                }
+                                            }
+                                        }, false, {
+                                            AllBorders = true
+                                        })
                                     end
                                 },
                                 {
@@ -1361,13 +1448,10 @@ function draw(dt)
                                             UiTranslate(0,25)
                                             _ = uic_textbox("TGUI.textbox.test2", 300, window.textBox_test2)
                                             UiTranslate(0,25)
-                                            uic_dropdown(window.dropdown_1, 100, "TGUI.dropdown.lol", {
-                                                "1", "2", "3",
-                                                -- "1", "2", "3",
-                                            }, {
-                                                "Update to textobx",
-                                                "Stop",
-                                                "PLEASE STOP DAMNIT",
+                                            uic_dropdown( 100, "TGUI.dropdown.lol", {
+                                                {
+                                                    text = "1"
+                                                }
                                             }, false, "")
                                         UiPop()
                                         UiTranslate(310,0)
@@ -1484,9 +1568,8 @@ function draw(dt)
         UiPop()
     end
     
-    uic_tooltip()
     uic_drawContextMenu()
-
+    uic_tooltip()
 
 
 
@@ -1600,3 +1683,11 @@ function draw(dt)
 --     -- end)
 --     lastMouse = mouse
 end
+
+local TGUI_Test = {} -- The main table
+
+function TGUI_Test.Mult(a, b)
+  return a * b
+end
+
+return TGUI_Test
