@@ -681,10 +681,13 @@ function uic_menubar(w, items ,extraContent , customization)
     UiPush()
         UiPush()
             for i, v in ipairs(items) do
+                if type(v.title) == "string" then
+                    v.label = v.title
+                end
                 UiAlign('top left')
                 UiFont(tgui_ui_assets..'/Fonts/TAHOMA.TTF',13)
                 UiColor(0,0,0,0)
-                local t = uic_text(v.title, 24, 13)
+                local t = uic_text(v.label, 24, 13)
                 UiColor(1,1,1,1)
                 if UiIsMouseInRect(t.width+customization.textPadding*2,t.height) then
                     UiPush()
@@ -695,7 +698,7 @@ function uic_menubar(w, items ,extraContent , customization)
                 end
                 UiPush()
                     UiTranslate(customization.textPadding,0)
-                    uic_text(v.title, 24, 13)
+                    uic_text(v.label, 24, 13)
                 UiPop()
                 if UiBlankButton(t.width+customization.textPadding*2,t.height) then
                     UiPush()
@@ -820,26 +823,23 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
                         UiImage(tgui_ui_assets..'/textures/arrow_doen.png',image)
                     UiPop()
                 UiPop()
+                local mouse = { x = 0, y = 0 }
+                mouse.x, mouse.y = UiGetMousePos()
+                local deltaMouse = { x = mouse.x - lastMouse.x, y = mouse.y - lastMouse.y }            
                 if is_overflow then
                     UiPush()    
-                        -- scrollAndDrag( w,h, scroll_height, 5, 1, window )
-                        -- -- 191 W:17
-
-                        -- NOTE: Scroll bar size will go to one px height if the value goes under 1
-                        -- TODO: make the scroll bar really accurate on how big the scroll area is
-                        local factor = scroll_height/(h-20)
+                        -- local factor = scroll_height/(h-20)
+                        -- local factor;
 
                         UiAlign('top left')
                         UiTranslate(0,17)
                         UiTranslate(w-17,0)
                         UiColor(c255(191), c255(191), c255(191), 0.5)
                         UiRect(17,h-17-17)
-                        local factor;
-                        local bar_scroll=scroll*((h-34)/(scroll_height-34))
-
+                        
+                        local bar_scroll=scroll*((h-34)/(scroll_height))
                         local viewportRatio = h / scroll_height
-                         
-                        local scroll_bar_height = math.max(12, math.floor((h-34)*viewportRatio))
+                        local scroll_bar_height = math.max(0, math.floor((h-34)*viewportRatio))
 
                         -- local scroll_bar_height=(max_scroll*(h-34)/scroll_height)
                         -- local scroll_bar_height=math.min(scroll_bar_height,h)
@@ -847,13 +847,20 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
                         UiTranslate(0,-bar_scroll)
                         UiColor(1,1,1,1)
                         -- if (scroll_bar_height+h-(17*2)) > 1 then
-                            UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scroll_bar_height-7),1,1)
+                        UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scroll_bar_height),1,1)
+                        if UiIsMouseInRect(17,scroll_bar_height) and InputDown('lmb') then
+                            local vec2d = ui2DAdd(window.scrollPos, deltaMouse).y
+                            window.scrollPos = window.scrollPos + vec2d
+                        end
                         -- else
                             -- UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',17,2,1,1)
                         -- end
                     UiPop()
                 else
                 end
+                function ui2DAdd(a, b)
+                    return { x = a + b.x, y = a + b.y }
+                end                
             UiPop()
             UiWindow(w,h-1,true)
             if scroll_height > h then
@@ -1141,8 +1148,9 @@ end
 ---@param Text string Simple, display the text
 ---@param height integer Height for the the `UiTextButton`
 ---@param fontSize integer Size of the text
+---@param customization table you can only change the font path
 ---@return table fontPathAndSize Get the font path and the size that is used
-function uic_text( Text, height, fontSize )
+function uic_text( Text, height, fontSize, customization )
     if customization == nil then
         customization = {
             font = tgui_ui_assets.."/Fonts/TAHOMA.TTF"

@@ -229,16 +229,22 @@ function initDrawTGUI( TABLEwindows )
                         UiPop()
                     end
                 UiPop()
-                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
-                UiTranslate(12,8)
+                -- UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
+                UiTranslate(12,0)
                 UiColor(1,1,1,1)
-                UiText(v.title)
+                uic_text(v.title, 32, 12, {
+                    font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF"
+                })
             UiPop()
             UiPush()
                 UiColorFilter(1,1,1,globalWindowOpacity)
                 UiAlign("top right")
                 UiTranslate(UiWidth()-10,10)
-                UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
+                UiPush()
+                    UiTranslate(-1,1)
+                    UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
+                UiPop()
+                UiColor(1,1,1,0.3)
                 -- UiRect(11,11)
                 if UiIsMouseInRect(11,11) and InputDown('lmb') then
                     -- Nothing
@@ -323,7 +329,7 @@ function initDrawTGUI( TABLEwindows )
                         UiPush()
                             UiTranslate(-10,-10)
                             UiAlign("middle center")
-                            if UiIsMouseInRect(1200,1200) and InputDown('lmb') and last == i then
+                            if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
                                 -- UiRect(25,25)
                                 -- if cursor_x < -cursor_x+v.minSize.w then
                                 --     v.size.w = v.minSize.w

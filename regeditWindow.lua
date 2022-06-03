@@ -352,9 +352,6 @@ function registerRegedit( prePath )
                                             regExplorer_doubleclick_timer = 0
                                         end
                                     end
-                                    if regExplorer_doubleclick_timer == 1 then
-                                        SetValue('regExplorer_doubleclick_timer',0,"linear",0.3)
-                                    end
                                     if UiIsMouseInRect(UiWidth(),14) and InputPressed('rmb') then
                                         SetString('TGUI.regExplorer.deletePath',window.StringViewer.path.."."..v)
                                         SetBool('TGUI.regExplorer.itemHighlight', true)
@@ -413,6 +410,9 @@ function registerRegedit( prePath )
                             -- end
                                 UiPop()
                                 UiTranslate(0,14)
+                            end
+                            if regExplorer_doubleclick_timer == 1 then
+                                SetValue('regExplorer_doubleclick_timer',0,"linear",0.3)
                             end
 
                         end )

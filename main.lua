@@ -94,6 +94,11 @@ function init()
     SetInt('TGUI.settings.colors.text.disabled.r', 255)
     SetInt('TGUI.settings.colors.text.disabled.g', 255)
     SetInt('TGUI.settings.colors.text.disabled.b', 255)
+    --
+    SetInt('TGUI.settings.colors.hover.r', 255)
+    SetInt('TGUI.settings.colors.hover.g', 255)
+    SetInt('TGUI.settings.colors.hover.b', 255)
+    
 end
 TGUI_debug_show_windowMinsize = false
 uic_debug_checkHit = false
