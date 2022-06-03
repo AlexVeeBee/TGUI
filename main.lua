@@ -1418,14 +1418,25 @@ function draw(dt)
                                             textPadding = 8
                                         })
                                         UiTranslate(0,26)
-                                        uic_menubar(UiWidth(), {
-                                            {
-                                                title = "Menubar style 1",
-                                                contents = {
-                                                    {type="", text="Hello there"}
+                                        UiPush()
+                                            uic_menubar(UiWidth()/2, {
+                                                {
+                                                    title = "Menubar style 1",
+                                                    contents = {
+                                                        {type="", text="Hello there"}
+                                                    }
                                                 }
-                                            }
-                                        }, false, {})
+                                            }, false, {borderTop = true, borderBottom = false})
+                                            UiTranslate(UiCenter(),0)
+                                            uic_menubar(UiWidth()/2, {
+                                                {
+                                                    title = "Menubar style 1",
+                                                    contents = {
+                                                        {type="", text="Hello there"}
+                                                    }
+                                                }
+                                            }, false, {borderBottom = true , borderTop = false})
+                                        UiPop()
                                         UiTranslate(0,26)
                                         uic_menubar(UiWidth(), {
                                             {
@@ -1683,11 +1694,3 @@ function draw(dt)
 --     -- end)
 --     lastMouse = mouse
 end
-
-local TGUI_Test = {} -- The main table
-
-function TGUI_Test.Mult(a, b)
-  return a * b
-end
-
-return TGUI_Test

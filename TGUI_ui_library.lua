@@ -8,7 +8,7 @@
 ░░░╚═╝░░░░╚═════╝░░╚═════╝░╚═╝  ░╚═════╝░╚═╝  ╚══════╝╚═╝╚═════╝░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚═╝░░░╚═╝░░░
 
 Name: TGUI UI Library
-Version: 0.4
+Version: 0.8
 Author: AlexVeeBee
 Credit: iaobardar (Help with the dropdown menu being on top)
 How it works:
@@ -258,6 +258,7 @@ function uic_drawContextMenu()
                                         UiTranslate(1,0)
                                         UiRect(c.w-2+24,24)
                                     UiPop()
+                                    UiColor(c255(24),c255(24),c255(24),1)
                                     if v.type == "button" or v.type == "toggle" then
                                         c.hoverOnce = false
                                         c.keepSubmenuOpen = false
@@ -273,6 +274,7 @@ function uic_drawContextMenu()
                             -- uic_text(_itemsHovering)
                             if not v.disabled then
                                 UiPush()
+                                    UiColor(1,1,1,1)
                                     -- UiTranslate(24,0)
                                     if UiBlankButton(c.w+24,24) then
                                         if v.type == "button" or v.type == "toggle" then
@@ -366,6 +368,7 @@ function uic_drawContextMenu()
                                 if(v.disabled ) then UiColor(c255(24),c255(24),c255(24),1) end
                                 uic_text(v.text, 24)
                             UiPop()
+                            UiColor(1,1,1,1)
                             if(v.disabled ) then
                                 UiPush()
                                     UiColor(0.1,0.1,0.1,0.4)
@@ -651,6 +654,8 @@ function uic_menubar(w, items ,extraContent , customization)
         customization = {
             showBorder = true,
             AllBorders = false,
+            borderTop = true,
+            borderBottom = true,
             textPadding = 4
         }
     end
@@ -663,6 +668,12 @@ function uic_menubar(w, items ,extraContent , customization)
         end
         if customization.textPadding == nil then
             customization.textPadding = 4
+        end
+        if customization.borderTop == nil then
+            customization.borderTop = true
+        end
+        if customization.borderBottom == nil then
+            customization.borderBottom = true
         end
     else
         error("customization is not a table type")
@@ -690,7 +701,9 @@ function uic_menubar(w, items ,extraContent , customization)
                     UiPush()
                         UiWindow(w,t.height,true)
                         local cursor_x, cursor_y = UiGetMousePos()
-                        uic_Register_Contextmenu_at_cursor(v.contents,-cursor_x,-cursor_y+24)
+                        if uic_draw_contextmenu == false then
+                            uic_Register_Contextmenu_at_cursor(v.contents,-cursor_x,-cursor_y+24)
+                        end
                         -- UiPush()
                         --     UiRect(cursor_x,cursor_y)
                         --     uic_contextMenu_contents.items[1].x = uic_contextMenu_contents.items[1].x - cursor_x
@@ -708,8 +721,15 @@ function uic_menubar(w, items ,extraContent , customization)
         UiPop()
         if customization.showBorder then
             if not customization.AllBorders then
-                UiTranslate(0,23)
-                UiImageBox(tgui_ui_assets..'/textures/line_dark.png',w,1,0,0)
+                if customization.borderBottom then
+                    UiPush()
+                        UiTranslate(0,23)
+                        UiImageBox(tgui_ui_assets..'/textures/line_dark.png',w,1,0,0)
+                    UiPop()
+                end
+                if customization.borderTop then
+                    UiImageBox(tgui_ui_assets..'/textures/line_white.png',w,1,0,0)
+                end
             else
                 UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w,24,1,1)
             end
@@ -1024,7 +1044,9 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
         end
         -- uic_text(window.tabOpen)
         UiPush()
-            
+            if not UiIsMouseInRect(w,h) then
+                UiDisableInput()
+            end
             contents[window.tabOpen]["Content"](extraContent)
         UiPop()
     UiPop()    

@@ -90,14 +90,14 @@ function registerRegedit( prePath )
                     for i, v in ipairs(listKeys) do scrollHeight = scrollHeight + 14 end
                     UiPush()
                         local AllowBack = false
-                        DebugWatch("BackHistoryNumber",window.StringViewer.BackHistoryNumber)
+                        -- DebugWatch("BackHistoryNumber",window.StringViewer.BackHistoryNumber)
                         for i, v in pairs(window.StringViewer.history) do
                             if window.StringViewer.historyPos == i then
                                 window.StringViewer.historyPos = i
                             end
                             if i > 1 then
                                 AllowBack = true
-                                DebugWatch("BackHistoryNumber path",window.StringViewer.history[#window.StringViewer.history].path)
+                                -- DebugWatch("BackHistoryNumber path",window.StringViewer.history[#window.StringViewer.history].path)
                                 window.StringViewer.BackHistoryNumber = #window.StringViewer.history
                             else
                                 AllowBack = false
