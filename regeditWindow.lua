@@ -1,3 +1,6 @@
+---Create a registry explorer window
+---@param prePath string Have pre-selected path
+---@return table Window The window object
 function registerRegedit( prePath )
     if prePath == nil then
         prePath = "game"

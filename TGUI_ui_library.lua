@@ -749,9 +749,22 @@ end
 ---@param content function Content to the scroll area container
 ---@param extraContent any Additional content to be called to the container
 function uic_scroll_Container(window,w,h,border,scroll_height, content, extraContent)
-    if window.scrollfirstFrame then
+    if window.scrollfirstFrame == nil or window.scrollfirstFrame == true  then
         window.scrollPos = 0
-        
+        --
+        window.mouse_pos_thum = {}
+        window.pos_thum = {}
+        --
+        window.mouse_pos_thum.lastMouse = { x = 0, y = 0 }
+        window.mouse_pos_thum.mouse = { x = 0, y = 0 }
+        window.mouse_pos_thum.deltaMouse = { x = window.mouse_pos_thum.mouse.x - window.mouse_pos_thum.lastMouse.x, y = window.mouse_pos_thum.mouse.y - window.mouse_pos_thum.lastMouse.y }            
+        window.mouse_pos_thum.mouseMoved = window.mouse_pos_thum.deltaMouse.x ~= 0 or window.mouse_pos_thum.deltaMouse.y ~= 0
+        --
+        window.pos_thum.lastMouse = { x = 0, y = 0 }
+        window.pos_thum.mouse = { x = 0, y = 0 }
+        window.pos_thum.deltaMouse = { x = window.pos_thum.mouse.x - window.pos_thum.lastMouse.x, y = window.pos_thum.mouse.y - window.pos_thum.lastMouse.y }            
+        window.pos_thum.mouseMoved = window.pos_thum.deltaMouse.x ~= 0 or window.pos_thum.deltaMouse.y ~= 0
+        --
         window.scrollfirstFrame = false
     end
     
@@ -803,7 +816,7 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
         if scroll_height > h then
             is_overflow = true
         end
-        if UiIsMouseInRect(w,h) then
+        if UiIsMouseInRect(w,h) or window.keepScrolling == true then
         else
             UiDisableInput()
         end
@@ -823,9 +836,6 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
                         UiImage(tgui_ui_assets..'/textures/arrow_doen.png',image)
                     UiPop()
                 UiPop()
-                local mouse = { x = 0, y = 0 }
-                mouse.x, mouse.y = UiGetMousePos()
-                local deltaMouse = { x = mouse.x - lastMouse.x, y = mouse.y - lastMouse.y }            
                 if is_overflow then
                     UiPush()    
                         -- local factor = scroll_height/(h-20)
@@ -847,10 +857,46 @@ function uic_scroll_Container(window,w,h,border,scroll_height, content, extraCon
                         UiTranslate(0,-bar_scroll)
                         UiColor(1,1,1,1)
                         -- if (scroll_bar_height+h-(17*2)) > 1 then
+                        window.oldScrollPos = window.scrollPos
                         UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scroll_bar_height),1,1)
-                        if UiIsMouseInRect(17,scroll_bar_height) and InputDown('lmb') then
-                            local vec2d = ui2DAdd(window.scrollPos, deltaMouse).y
-                            window.scrollPos = window.scrollPos + vec2d
+                        if GetBool("TGUI.interactingWindow") == false then
+                            UiPush()
+                            -- UiWindow(17,scroll_bar_height,false)
+                            if UiIsMouseInRect(17,scroll_bar_height) or window.keepScrolling == true and InputDown('lmb') then
+                                UiPush()
+                                    UiAlign('center middle')
+                                    UiTranslate(window.mouse_pos_thum.mouse.x, window.mouse_pos_thum.mouse.y)
+                                    -- UiRect(window.deltaMouse.x, window.deltaMouse.y)
+                                    -- UiWindow(200,scroll_bar_height,false)
+                                    -- UiColor(1,1,0,0.3)
+                                    -- UiRect(750,scroll_bar_height+750)
+                                    if UiIsMouseInRect(750,scroll_bar_height+750) and InputDown('lmb') then 
+                                        window.pos_thum.mouse.x, window.pos_thum.mouse.y = UiGetMousePos()
+                                        window.pos_thum.deltaMouse = { x = window.pos_thum.mouse.x - window.pos_thum.lastMouse.x, y = window.pos_thum.mouse.y - window.pos_thum.lastMouse.y }            
+                                        window.pos_thum.mouseMoved = window.pos_thum.deltaMouse.x ~= 0 or window.pos_thum.deltaMouse.y ~= 0                                
+                                        local vec2d = ui2DAdd(-scroll, window.pos_thum.deltaMouse).y
+                                        window.scrollPos = -vec2d
+                                        if window.scrollPos >= 0 then
+                                            window.scrollPos = 0
+                                        end
+                                        if window.scrollPos <= max_scroll then
+                                            window.scrollPos = max_scroll
+                                        end                    
+                                        -- DebugWatch('Scroll',InputValue("mousedy")/(scroll_height/h))
+                                        -- local mouseWheel = InputDown('')
+                                        -- window.scrollPos = window.scrollPos-InputValue("mousedy")+(h-34*scroll_bar_height)
+                                        window.keepScrolling = true
+                                    end
+                                UiPop()
+                            end
+                            if UiIsMouseInRect(17,scroll_bar_height) and window.keepScrolling == false and not InputDown('lmb') then
+                                window.mouse_pos_thum.mouse.x, window.mouse_pos_thum.mouse.y = UiGetMousePos()
+                            end
+                            UiAlign('center middle')
+                            if InputReleased('lmb') or not UiIsMouseInRect(750,scroll_bar_height+750) then
+                                window.keepScrolling = false
+                            end
+                            UiPop()
                         end
                         -- else
                             -- UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',17,2,1,1)

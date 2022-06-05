@@ -181,13 +181,16 @@ function initDrawTGUI( TABLEwindows )
                         UiAlign("middle center")
                         if UiIsMouseInRect(v.size.w+2000, 1600) and v.disableDrag == false and InputDown('lmb') and last == i then
                             v.keepMoving = true
-                            TABLEwindows[i].pos = Vec2DAdd(TABLEwindows[i].pos, deltaMouse)
+                            v.pos = Vec2DAdd(v.pos, deltaMouse)
+                            SetBool('TGUI.interactingWindow',true)
                         else
+                            SetBool('TGUI.interactingWindow',false)
                             v.keepMoving = false
                         end
                     UiPop()
                 end
                 if InputReleased('lmb') and v.keepMoving then
+                    SetBool('TGUI.interactingWindow',false)
                     v.keepMoving = false
                 end
                 UiPush()
@@ -330,6 +333,7 @@ function initDrawTGUI( TABLEwindows )
                             UiTranslate(-10,-10)
                             UiAlign("middle center")
                             if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
+                                SetBool('TGUI.interactingWindow',true)
                                 -- UiRect(25,25)
                                 -- if cursor_x < -cursor_x+v.minSize.w then
                                 --     v.size.w = v.minSize.w
@@ -376,10 +380,11 @@ function initDrawTGUI( TABLEwindows )
                        if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
                        if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
                     end
-                    if InputReleased('lmb') and v.keepResizing then
-                        v.disableDrag = false
-                        v.keepResizing = false
-                    end
+                end
+                if InputReleased('lmb') and v.keepResizing then
+                    SetBool('TGUI.interactingWindow',false)
+                    v.disableDrag = false
+                    v.keepResizing = false
                 end
             UiPop()
         UiPop()
@@ -441,6 +446,7 @@ function initDrawTGUI( TABLEwindows )
             UiText('[TGUI.MANAGER]: invalid argument',18)
         UiPop()
     return end
+    SetBool('TGUI.interactingWindow',false)
 end
 
 function Vec2DAdd(a, b)
