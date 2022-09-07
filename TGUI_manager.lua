@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 --[[
 
 ████████╗░██████╗░██╗░░░██╗██╗  ███╗░░░███╗░█████╗░███╗░░██╗░█████╗░░██████╗░███████╗██████╗░
@@ -126,7 +127,7 @@ function initDrawTGUI( TABLEwindows )
         end
     end
 
-    if (#activeWindows > 0) then 
+    if (#TABLEwindows > 0) then 
         if not GetBool('tgui.disableInput') then
             UiMakeInteractive()
         end

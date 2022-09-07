@@ -3,7 +3,7 @@
 #include "./regeditWindow.lua"
 
 function init( ... )
-    activeWindows = {}
+    ALL_WINDOWS_OPEN = {}
     tgui_ui_assets = "MOD/ui/TGUI_resources"
     globalWindowOpacity = 1
 
@@ -22,7 +22,7 @@ function regExplorer( prePath )
         prePath = "game"
     end
 
-    table.insert(activeWindows ,registerRegedit(prePath))
+    table.insert(ALL_WINDOWS_OPEN ,registerRegedit(prePath))
 end
 
 function hex2rgb(hex)
@@ -97,9 +97,21 @@ function draw()
                             end}
                         }
                     }, {
-                        label="Options", contents = {}
+                        label="Options", contents = {
+                            {type="submenu", text="Load Presets", items = {
+                                {type="", text="Empty..."}
+                            }},
+                            {type="button", text="Create New Preset", action=function() end},
+                            {type="divider"},
+                            {type="button", text="Restore Settings to Default", action=function() end},
+                        }
                     }, {
-                        label="Help", contents = {}
+                        label="Help", contents = {
+                            {type="button", text="View Help", action=function() end},
+                            {type="button", text="Send Feedback", action=function() end},
+                            {type="divider"},
+                            {type="button", text="About TGUI Options", action=function() end},
+                        }
                     }
                 }, false, {
                     showBorder = true,
@@ -138,6 +150,6 @@ function draw()
         end, false)
     UiPop()
 
-    initDrawTGUI(activeWindows)
+    initDrawTGUI(ALL_WINDOWS_OPEN)
     uic_drawContextMenu()
 end

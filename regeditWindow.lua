@@ -124,12 +124,12 @@ function registerRegedit( prePath )
                         if #listKeys == 0 then
                             SetInt('TGUI.regExplorer.HoveringItem',0)
                         end
-                        uic_scroll_Container(window.ListScrollContainer, UiWidth(), UiHeight(), false, scrollHeight, function()
+                        uic_scroll_Container(window.ListScrollContainer, UiWidth(), UiHeight(), false, scrollHeight, 0, function()
                             SetBool('TGUI.regExplorer.itemHover',false)
                             if window.StringViewer.openNewReghWindow then
                                 window.StringViewer.openNewReghWindow = false
                                 window.focused = false
-                                    table.insert(activeWindows ,{
+                                    table.insert(ALL_WINDOWS_OPEN ,{
                                         firstFrame = true,
                                         title = "New registry/key",
                                         -- DATA
@@ -175,12 +175,59 @@ function registerRegedit( prePath )
                                     })
                                 -- end)
                             end
+                            function dump_reg()
+                                table.insert(ALL_WINDOWS_OPEN ,{
+                                    firstFrame = true,
+                                    title = "Delete path",
+                                    padding = 0,
+                                    pos = {x = 180, y = 200},
+                                    size = {w = 400, h = 130},
+                                    minSize = {w = 0, h = 0},
+                                    startMiddle = true,
+                                    allowResize = false,
+                                    doNotHide = true,
+                                    clip = false,
+                                    content = function(warningWindow)
+                                        UiTranslate(12,0)
+                                        UiPush()
+                                            uic_text("WATNING: you are about to dump a registry. Are you sure?", 24)
+                                            UiTranslate(0,24)
+                                            uic_checkbox("I am sure to dump this registry", "TGUI.regExplorer.dumpreg" ,500 )
+                                            UiTranslate(0,24)
+                                            UiText('REG: '..GetString("TGUI.regExplorer.dumpPath"))
+                                        UiPop()
+                                        UiAlign('bottom right')
+                                        UiTranslate(0,UiHeight())
+                                        UiTranslate(UiWidth()-24,-12)
+                                        uic_button_func(0, "No", 60, 24, false, "", function()
+                                            warningWindow.closeWindow = true
+                                        end)
+                                        UiTranslate(-75,0)
+                                        uic_button_func(0, "Yes", 60, 24, not GetBool('TGUI.regExplorer.dumpreg'), "", function()
+                                            -- ClearKey(window.StringViewer.directPath)
+                                            SetBool('TGUI.regExplorer.dumpreg',false)
+                                            local keys = ListKeys(GetString("TGUI.regExplorer.dumpPath"))
+                                            for i,v in ipairs(listKeys) do
+                                                ClearKey(GetString("TGUI.regExplorer.dumpPath").."."..v)
+                                                DebugPrint('delete: ' .. v)
+                                            end
+                                            warningWindow.closeWindow = true
+                                        end)
+                                    end
+                                })
+
+                            end
+                            -- CONTEXT: NOT SELECTING ITEM
                             if GetInt('TGUI.regExplorer.HoveringItem') == 0 and InputPressed('rmb') then
                                 if window.StringViewer.blockedReg == false then
                                     uic_Register_Contextmenu_at_cursor({
                                         {type = "button", text="Create registry/Key here", action=function()
                                             SetString('TGUI.regExplorer.newDirPath',window.StringViewer.path)
                                             window.StringViewer.openNewReghWindow = true
+                                        end},
+                                        {type = "button", text="Dump current registry", action=function()
+                                            SetString('TGUI.regExplorer.dumpPath',window.StringViewer.path)
+                                            dump_reg()
                                         end},
                                     }, window)
                                 else
@@ -189,7 +236,7 @@ function registerRegedit( prePath )
                                     }, window)
                                 end
                             end
-
+                            -- KEYS LISTING
                             for i, v in ipairs(listKeys) do
                                 scrollHeight = scrollHeight + 14
                                 UiPush()
@@ -197,7 +244,7 @@ function registerRegedit( prePath )
                                         -- uic_button_func(0, "Open path", 100, 24, false, "", function()
                                             window.StringViewer.openDeletePathWindow = false
                                             window.focused = false
-                                            table.insert(activeWindows ,{
+                                            table.insert(ALL_WINDOWS_OPEN ,{
                                                 firstFrame = true,
                                                 title = "Delete path",
                                                 padding = 0,
@@ -233,7 +280,7 @@ function registerRegedit( prePath )
                                     if window.StringViewer.openEditReghWindow then
                                         window.StringViewer.openEditReghWindow = false
                                         window.focused = false
-                                            table.insert(activeWindows ,{
+                                            table.insert(ALL_WINDOWS_OPEN ,{
                                                 firstFrame = true,
                                                 title = "Edit registry",
                                                 -- DATA
@@ -318,8 +365,10 @@ function registerRegedit( prePath )
             
                                     if UiIsMouseInRect(UiWidth(),14) then
                                         UiPush()
-                                            UiColor(c255(255),c255(156),c255(0),1)
-                                            UiRect(UiWidth(),14)
+                                            if GetBool('TGUI.regExplorer.itemHighlight') == false then
+                                                UiColor(c255(255),c255(156),c255(0),1)
+                                                UiRect(UiWidth(),14)
+                                            end
                                         UiPop()
                                         SetInt('TGUI.regExplorer.HoveringItem',i)
                                     else
@@ -373,6 +422,10 @@ function registerRegedit( prePath )
                                                     window.StringViewer.directPath = window.StringViewer.path.."."..v
                                                     window.StringViewer.openDeletePathWindow = true
                                                 end},
+                                                {type = "button", text="Dump current registry", action=function()
+                                                    SetString('TGUI.regExplorer.dumpPath',window.StringViewer.path.."."..v)
+                                                    dump_reg()
+                                                end},
                                                 {type="divider"},
                                                 {type = "button", text="Create registry/Key in selected registry", action=function()
                                                     SetString('TGUI.regExplorer.newDirPath',window.StringViewer.path.."."..v)
@@ -387,7 +440,7 @@ function registerRegedit( prePath )
                                             uic_Register_Contextmenu_at_cursor({
                                                 {type = "button", text="Open registry in new window", action=function()
                                                     SetString('TGUI.regExplorer.openNew',window.StringViewer.path.."."..v)
-                                                end},
+                                                end}
                                             }, window)
                                         end
                                     end
@@ -474,7 +527,7 @@ function registerRegedit( prePath )
                     UiAlign('top right')
                     uic_button_func(0, "Open path", 100, 24, false, "", function()
                         window.focused = false
-                        table.insert(activeWindows ,{
+                        table.insert(ALL_WINDOWS_OPEN ,{
                             testFirstFrame = true,
                             firstFrame = true,
                             title = "Open path",
@@ -554,7 +607,7 @@ function registerRegedit( prePath )
                     UiTranslate(-110,0)
                     uic_button_func(0, "Help", 100, 24, false, "", function()
                         window.focused = false
-                        table.insert(activeWindows ,{
+                        table.insert(ALL_WINDOWS_OPEN ,{
                             testFirstFrame = true,
                             firstFrame = true,
                             title = "Help",
@@ -609,6 +662,7 @@ function registerRegedit( prePath )
                                 UiTranslate(219,0)
                                 UiPush()
                                     UiWindow(UiWidth()-229,UiHeight()-2,true)
+                                    UiImageBox('./ui/TGUI_resources/textures/outline_inner_normal_dropdown.png',UiWidth(), UiHeight(),1,1)
                                         UiWordWrap(UiWidth())
                                         local titleText = uic_text(Helpindow.helpSections[Helpindow.helpSectionsView].title, 24, 20)
                                     
