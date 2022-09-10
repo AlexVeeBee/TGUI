@@ -207,9 +207,9 @@ function registerRegedit( prePath )
                                             -- ClearKey(window.StringViewer.directPath)
                                             SetBool('TGUI.regExplorer.dumpreg',false)
                                             local keys = ListKeys(GetString("TGUI.regExplorer.dumpPath"))
-                                            for i,v in ipairs(listKeys) do
+                                            for i,v in ipairs(keys) do
                                                 ClearKey(GetString("TGUI.regExplorer.dumpPath").."."..v)
-                                                DebugPrint('delete: ' .. v)
+                                                DebugPrint('delete: ' .. GetString("TGUI.regExplorer.dumpPath") .. "." .. v)
                                             end
                                             warningWindow.closeWindow = true
                                         end)
@@ -422,8 +422,13 @@ function registerRegedit( prePath )
                                                     window.StringViewer.directPath = window.StringViewer.path.."."..v
                                                     window.StringViewer.openDeletePathWindow = true
                                                 end},
-                                                {type = "button", text="Dump current registry", action=function()
+                                                {type="divider"},
+                                                {type = "button", text="Dump selected registry", action=function()
                                                     SetString('TGUI.regExplorer.dumpPath',window.StringViewer.path.."."..v)
+                                                    dump_reg()
+                                                end},
+                                                {type = "button", text="Dump current registry", action=function()
+                                                    SetString('TGUI.regExplorer.dumpPath',window.StringViewer.path)
                                                     dump_reg()
                                                 end},
                                                 {type="divider"},

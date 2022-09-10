@@ -110,6 +110,9 @@ uic_debug_show_hitboxes_gameMenu = true
 isFirstFrame = true
 NewWindowPopup = false
 
+window_Test_progressBar = 0;
+window_Test_progressBar2 = 0;
+
 function GlobalWindowAddTest()
     table.insert(ALL_WINDOWS_OPEN ,{
         firstFrame = true,
@@ -172,8 +175,64 @@ function draw(dt)
                         action = function( ... )
                             SetBool('TGUI.menu.show',false);
                         end
-                    }
-                })
+                    },
+                    {
+                        text = "TGUI UI-LIBRARY CUSTOM WINDOW",
+                        action = function( ... )
+                            SetBool('TGUI.menu.show',false);
+                            NewWindowPopup = false
+                            table.insert(ALL_WINDOWS_OPEN ,{
+                                testFirstFrame = true,
+                                -- DATA
+                                    tab1 = {tabFirstFrame = true, },
+                                    tab2 = {tabFirstFrame = true, },
+                                    scrollArea = {scrollfirstFrame = true,},
+                                    dropdown_1 = {firstFrame = true, tooltipId = 1, open = false},
+                                    dropdown_2 = {firstFrame = true, tooltipId = 2, open = false},
+                                    textBox_test = {focused = false},
+                                    textBox_test2 = {focused = false},
+                                --
+                                scrollHeight = 1500,
+                                scrollConHeight = 500,
+                                firstFrame = true,
+                                title = "TGUI UI-LIBRARY CUSTOM WINDOW",
+                                padding = 0,
+                                pos = {x = 180, y = 200},
+                                size = {w = 1026, h = 628},
+                                minSize = {w =600, h= 400},
+                                startMiddle = true,
+                                clip = true,
+                                content = function(window)
+                                    uic_menubar(UiWidth(),{
+                                        {
+                                            title = "Settings",
+                                            contents = {
+                                                {type="text", text = "Something goes here, idk", items = {
+                                                }},
+                                            }
+                                        },
+                                    },window, {});
+                                    UiTranslate(0, 24);
+                                    uic_tab_container(window.tab1, 100, 500, false, true, {
+                                        ["open_default"] = 1,
+                                        {
+                                            title = "All",
+                                            ["Content"] = function(MainWindow)
+
+                                            end
+                                        }
+                                    }, window)
+                                end
+                            })
+                        end
+                    },
+                    {
+                        text = "OPEN OLD MENU",
+                        action = function( ... )
+                            SetBool('TGUI.menu.show',false);
+                            NewWindowPopup = true;
+                        end
+                    }})
             UiPop()
         UiPop()
     end
@@ -395,80 +454,8 @@ function draw(dt)
                             textBox_test2 = {focused = false},
                             tableContainer = {
                                 tableColumnNames = {
-                                    {label="Test 1",w=0}, {label="column test 2",w=0},
-                                    {label="Test 3",w=0}, {label="column test 4",w=0},
                                 },
                                 table = {
-                                    {
-                                        24,
-                                        "test"
-                                    },
-                                    {
-                                        "test",
-                                        24
-                                    },
-                                    {
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },
-                                    {
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },{
-                                        "EEEEEEEEEEE",
-                                        24,
-                                        {},
-                                        "eee",
-                                    },
                                 },
                             },
                             listbox = {
@@ -667,21 +654,21 @@ function draw(dt)
                                     title = "UI component: Table container",
                                     ["Content"] = function(MainWindow)
                                         UiTranslate(10,10)
-                                        uic_tableview_container(MainWindow.tableContainer, UiWidth()-140, UiHeight()-20, false, true, true, MainWindow.tableContainer.tableColumnNames,MainWindow.tableContainer.table)
+                                        uic_tableview_container(window.tableContainer, UiWidth()-140, UiHeight()-20, false, true, true, window.tableContainer.tableColumnNames,window.tableContainer.table)
                                         UiTranslate(UiWidth()-120,0)
                                         uic_button_func(0, "Empty Table", 100, 24, false, "", function ()
-                                            MainWindow.tableContainer.table = {}
-                                            MainWindow.tableContainer.tableColumnNames = {}
+                                            window.tableContainer.table = {}
+                                            window.tableContainer.tableColumnNames = {}
                                             -- for i, v in ipairs(MainWindow.tableContainer) do
 
                                             -- end
                                         end)
                                         UiTranslate(0,28)
                                         uic_button_func(0, "Small Table", 100, 24, false, "", function ()
-                                            MainWindow.tableContainer.tableColumnNames = {
+                                            window.tableContainer.tableColumnNames = {
                                                 {label="1",w=0}, {label="2",w=0},
                                             }
-                                            MainWindow.tableContainer.table = {
+                                            window.tableContainer.table = {
                                                 {
                                                     24,
                                                     "test",
@@ -692,12 +679,12 @@ function draw(dt)
                                         end)
                                         UiTranslate(0,28)
                                         uic_button_func(0, "Testing Table", 100, 24, false, "", function ()
-                                            MainWindow.tableContainer.tableColumnNames = {
+                                            window.tableContainer.tableColumnNames = {
                                                 {label="Test 1",w=0}, {label="column test 2",w=0},
                                                 {label="Test 3",w=0}, {label="column test 4",w=0},
                                                 {label="Test 5",w=0}, {label="column test 6",w=0},
                                             }
-                                            MainWindow.tableContainer.table = {
+                                            window.tableContainer.table = {
                                                 {
                                                     24,
                                                     "test"
@@ -1005,92 +992,128 @@ function draw(dt)
                                             AllBorders = true
                                         })
                                         UiTranslate(0,32)
-
-                                        uic_listBox_container(window.listbox, 160, GetInt("TGUI.test.listbox.h"), false, true, true, {
-                                            -- array with theres keys, keyItem and text
-                                            {
-                                                keyItem = "1",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "2",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "3",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "4",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "5",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "6",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "7",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "8",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "9",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "10",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "11",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "12",
-                                                text = "Hello there"
-                                            },
-                                            {
-                                                keyItem = "13",
-                                                text = "Hello 13"
-                                            },
-                                            {
-                                                keyItem = "14",
-                                                text = "Hello 14"
-                                            },
-                                            {
-                                                keyItem = "15",
-                                                text = "Hello 15"
-                                            },
-                                            {
-                                                keyItem = "16",
-                                                text = "Hello 16"
-                                            },
-                                            {
-                                                keyItem = "17",
-                                                text = "Hello 17"
-                                            }
-                                        }, {
-                                            key = "savegame.mod.multiSelect_test",
-                                            multiSelect = true,
-                                        });
-                                        UiTranslate(0,16)
+                                            UiPush()
+                                            uic_listBox_container(window.listbox, 160, GetInt("TGUI.test.listbox.h"), false, true, true, {
+                                                -- array with theres keys, keyItem and text
+                                                {
+                                                    keyItem = "1",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "2",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "3",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "4",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "5",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "6",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "7",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "8",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "9",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "10",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "11",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "12",
+                                                    text = "Hello there"
+                                                },
+                                                {
+                                                    keyItem = "13",
+                                                    text = "Hello 13"
+                                                },
+                                                {
+                                                    keyItem = "14",
+                                                    text = "Hello 14"
+                                                },
+                                                {
+                                                    keyItem = "15",
+                                                    text = "Hello 15"
+                                                },
+                                                {
+                                                    keyItem = "16",
+                                                    text = "Hello 16"
+                                                },
+                                                {
+                                                    keyItem = "17",
+                                                    text = "Hello 17"
+                                                }
+                                            }, {
+                                                key = "savegame.mod.multiSelect_test",
+                                                multiSelect = false,
+                                            });
+                                            UiTranslate(0,16)
+                                            UiPush()
+                                                uic_button_func(0, "Add", 100, 24,false, false, function() 
+                                                    local i = GetInt("TGUI.test.listbox.h");
+                                                    SetInt("TGUI.test.listbox.h", i+1);
+                                                end);
+                                                UiTranslate(0,28)
+                                                uic_button_func(0, "Remove", 100, 24,false, false, function() 
+                                                    local i = GetInt("TGUI.test.listbox.h");
+                                                    SetInt("TGUI.test.listbox.h", i-1);
+                                                end);
+                                            UiPop()
+                                        UiPop()
                                         UiPush()
-                                            uic_button_func(0, "Add", 100, 24,false, false, function() 
-                                                local i = GetInt("TGUI.test.listbox.h");
-                                                SetInt("TGUI.test.listbox.h", i+1);
-                                            end);
-                                            UiTranslate(0,28)
-                                            uic_button_func(0, "Remove", 100, 24,false, false, function() 
-                                                local i = GetInt("TGUI.test.listbox.h");
-                                                SetInt("TGUI.test.listbox.h", i-1);
-                                            end);
+                                            UiPush()
+                                                UiTranslate(180,0)
+                                                uic_progressBar( 4, 24, window_Test_progressBar, 5, {} )
+                                                UiTranslate(0,28)
+                                                uic_progressBar( 8, 24, window_Test_progressBar, 5, {} )
+                                                UiTranslate(0,28)
+                                                uic_progressBar( 12, 24, window_Test_progressBar, 5, {} )
+                                                UiTranslate(0,28)
+                                                uic_progressBar( 32, 24, window_Test_progressBar, 5, {} )
+                                                UiTranslate(0,28)
+                                                uic_progressBar( 32, 24, window_Test_progressBar2, 10, {} )
+                                            UiPop()
+                                            UiPush()
+                                            UiTranslate(180+180,0)
+                                                uic_progressBar( 4, 24, window_Test_progressBar2, 10, {} )
+                                                UiTranslate(0,28)
+                                                uic_progressBar( 8, 24, window_Test_progressBar2, 10, {} )
+                                                UiTranslate(0,28)
+                                                uic_progressBar( 12, 24, window_Test_progressBar2,10, {} )
+                                            UiPop()
+                                            if window_Test_progressBar == 5 then
+                                                window_Test_progressBar = 0
+                                            end
+                                            if window_Test_progressBar == 0 then
+                                                SetValue("window_Test_progressBar", 5, "linear", 5)
+                                            end
+                                            if  window_Test_progressBar2 == 10 then
+                                                window_Test_progressBar2 = 0 
+                                            end
+                                            if window_Test_progressBar2 == 0 then
+                                                SetValue("window_Test_progressBar2", 10, "linear", 1)
+                                            end
+
                                         UiPop()
                                     end
                                 },
@@ -1183,7 +1206,7 @@ function draw(dt)
         if GetBool('tgui.disableInput') then
             SetBool('tgui.disableInput',false)
         else
-            NewWindowPopup = true
+            SetBool('TGUI.menu.show',true);
         end
     end
     if (#ALL_WINDOWS_OPEN > 0) then 
@@ -1191,7 +1214,7 @@ function draw(dt)
             UiTranslate(30,100)
             UiCreateWindow(120,100,false,"Window settings",8,function()
                 if uic_button(0,"New window",UiWidth(),24) then
-                    NewWindowPopup=true
+                    SetBool('TGUI.menu.show',true);
                 end
                 UiTranslate(0,28)
                 uic_checkbox("disable input", "tgui.disableInput", 100)

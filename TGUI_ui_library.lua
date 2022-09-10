@@ -1292,7 +1292,10 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                 UiDisableInput()
             end
             -- UiWindow(w,h,clip)
+            if (extraContent ==not nil) then
             contents[window.tabOpen]["Content"](extraContent)
+            else contents[window.tabOpen]["Content"]("Missing Contents")
+            end
         UiPop()
     UiPop()    
     UiTranslate(0,h)
@@ -1318,6 +1321,7 @@ end
 --- (string|number)...}
 ---```
 function uic_tableview_container(window,w,h,clip,border,makeinner,nameContents,itemsContents)
+    -- local s, r = pcall()
     if window.firstFrame == nil then
         window.totalWidth = 0
         window.totalHeight = 0
@@ -1554,76 +1558,27 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
         end
         UiTranslate(1,1)
         UiPush()
-            -- uic_container(w, h, true, false, false, function()
-                -- uic_scroll_Container(window.tableScroll, w-1, h-1, false, #contents*17, w-1 , function()
-                --     UiPush()
-                --         for i, v in ipairs(contents) do
-                --             UiPush()
-                --             UiColor(0,0,0,0)
-                --             local text = uic_text(v.text , 17, 15)
-                --             UiPop()
-                --             if options.multiSelect then
-                --                 if HasKey(options.key..".multiSelect."..v.keyItem) then
-                --                     UiPush()
-                --                         UiColor(c255(255),c255(156),c255(0),1)
-                --                         UiRect(UiWidth(),text.height)
-                --                     UiPop()     
-                --                 end
-                --             else
-                --                 if GetString(options.key) == v.text then
-                --                     UiPush()
-                --                         UiColor(c255(255),c255(156),c255(0),1)
-                --                         UiRect(UiWidth(),text.height)
-                --                     UiPop()     
-                --                 end
-                --             end
-
-                --             local text = uic_text(v.text , 17, 15)
-                --             UiPush()
-                --                 UiFont(text.font,text.size)
-                --                 local txt_w, _ = UiGetTextSize(v)
-                --             UiPop()
-                --             -- UiPush()
-                --             --     UiColor(c255(255),c255(0),c255(0),1)
-                --             --     UiRect(w,text.height)
-                --             -- UiPop()     
-                --             if UiBlankButton(UiWidth(),text.height) then
-                --                 if options.multiSelect then
-                --                     if HasKey(options.key..".multiSelect."..v.keyItem) then
-                --                         ClearKey(options.key..".multiSelect."..v.keyItem)
-                --                     else
-                --                         SetString(options.key..".multiSelect."..v.keyItem, v.text)
-                --                     end
-                --                 else
-                --                     SetString(options.key,v.text)
-                --                 end
-                --             end
-                --             -- UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',txt_w,17,1,1)
-                --             UiTranslate(0,text.height);
-                --         end
-                --     UiPop()
-                --     UiTranslate(0,17)
-                -- end )
-            -- end)
-            -- SCROLL CONTAINER
             do
                 -- if style.scrollbar == nil then style.scrollbar = true end
                 if window.scrollcontainer.scrollfirstFrame == nil or window.scrollcontainer.scrollfirstFrame == true  then
+                    window.scrollcontainer.showScrollbar = false;
+                    window.scrollcontainer.showWidth = 0;
+                    --
                     window.scrollcontainer.contentsScroll = 0;
                     window.scrollcontainer.scrollYPos = 0;
                     --
-                    window.scrollcontainer.mouse_pos_thum = {}
-                    window.scrollcontainer.pos_thum = {}
+                    window.scrollcontainer.mouse_pos_thum = {};
+                    window.scrollcontainer.pos_thum = {};
                     --
-                    window.scrollcontainer.mouse_pos_thum.lastMouse = { x = 0, y = 0 }
-                    window.scrollcontainer.mouse_pos_thum.mouse = { x = 0, y = 0 }
-                    window.scrollcontainer.mouse_pos_thum.deltaMouse = { x = window.scrollcontainer.mouse_pos_thum.mouse.x - window.scrollcontainer.mouse_pos_thum.lastMouse.x, y = window.scrollcontainer.mouse_pos_thum.mouse.y - window.scrollcontainer.mouse_pos_thum.lastMouse.y }            
-                    window.scrollcontainer.mouse_pos_thum.mouseMoved = window.scrollcontainer.mouse_pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.mouse_pos_thum.deltaMouse.y ~= 0
+                    window.scrollcontainer.mouse_pos_thum.lastMouse = { x = 0, y = 0 };
+                    window.scrollcontainer.mouse_pos_thum.mouse = { x = 0, y = 0 };
+                    window.scrollcontainer.mouse_pos_thum.deltaMouse = { x = window.scrollcontainer.mouse_pos_thum.mouse.x - window.scrollcontainer.mouse_pos_thum.lastMouse.x, y = window.scrollcontainer.mouse_pos_thum.mouse.y - window.scrollcontainer.mouse_pos_thum.lastMouse.y };
+                    window.scrollcontainer.mouse_pos_thum.mouseMoved = window.scrollcontainer.mouse_pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.mouse_pos_thum.deltaMouse.y ~= 0;
                     --
-                    window.scrollcontainer.pos_thum.lastMouse = { x = 0, y = 0 }
-                    window.scrollcontainer.pos_thum.mouse = { x = 0, y = 0 }
-                    window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y - window.scrollcontainer.pos_thum.lastMouse.y }            
-                    window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0
+                    window.scrollcontainer.pos_thum.lastMouse = { x = 0, y = 0 };
+                    window.scrollcontainer.pos_thum.mouse = { x = 0, y = 0 };
+                    window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y - window.scrollcontainer.pos_thum.lastMouse.y };
+                    window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0;
                     --
                     window.scrollcontainer.scrollfirstFrame = false
                 end
@@ -1631,20 +1586,15 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
         
                 local max_scroll_Y = h_items_visible;
                 local contentsScroll = window.scrollcontainer.contentsScroll;
+                local is_overflow_Y = false;
                 -- DebugPrint(max_scroll_Y)
 
                 if #contents > (h_items_visible) then
-                    max_scroll_Y = (#contents - h_items_visible) else
-                    max_scroll_Y = 0
+                    max_scroll_Y = (#contents - h_items_visible) window.scrollcontainer.showWidth = 17; is_overflow_Y = true; else
+                    max_scroll_Y = 0; window.scrollcontainer.showWidth = 0; is_overflow_Y = false;
                 end
                 if UiIsMouseInRect(w,h_items_visible*19) then
-                    local scrollY = InputValue("mousewheel");
-                    local scrollTest = 0;
-                    -- scrollTest = window.scrollcontainer.scrollYPos + scrollY;
-                    -- window.scrollcontainer.scrollYPos = window.scrollcontainer.scrollYPos + math.abs(scrollY);
                     window.scrollcontainer.contentsScroll = window.scrollcontainer.contentsScroll - InputValue("mousewheel");
-                    DebugPrint( contentsScroll );
-
                 end
                 if window.scrollcontainer.contentsScroll <= 0 then
                     window.scrollcontainer.contentsScroll = 0
@@ -1653,7 +1603,80 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                     window.scrollcontainer.contentsScroll = max_scroll_Y
                 end
                 UiPush()
-                    UiWindow(w-1, h_items_visible*19, true, true)
+                    UiWindow(w-1 , h_items_visible*19, true, true)
+                    if is_overflow_Y then
+                        local scrollY = window.scrollcontainer.contentsScroll
+                        UiPush()    
+                            -- local factor = scroll_height/(h-20)
+                            -- local factor;
+                            UiAlign('top left')
+                            UiTranslate(0,17)
+                            UiTranslate(w-18,0)
+                            UiColor(c255(191), c255(191), c255(191), 0.5)
+                            UiRect(17,h_items_visible*19-34)
+                            
+                            local bar_scroll_Y=scrollY*((h_items_visible*19-34)/(#contents))
+                            local viewportRatio_height = h_items_visible*19 / #contents*19
+                            local scrollY_bar_height = math.max(0, math.floor((h_items_visible-34)*viewportRatio_height))
+                            UiColor(c255(191), c255(191), c255(191), 1)
+                            UiTranslate(0, bar_scroll_Y)
+                            UiColor(1,1,1,1) --scrollY
+                            -- if (scroll_bar_height+h-(17*2)) > 1 then
+                            -- window.oldscrollYPos = window.scrollYPos
+                            UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scrollY_bar_height),1,1)
+                            if GetBool("TGUI.interactingWindow") == false then
+                                UiPush()
+                                -- UiWindow(17,scroll_bar_height,false)
+                                if UiIsMouseInRect(17,scrollY_bar_height) or window.scrollcontainer.keepScrolling == true and InputDown('lmb') then
+                                    UiPush()
+                                        UiAlign('center middle')
+                                        UiTranslate(window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y)
+                                        -- UiRect(window.scrollcontainer.deltaMouse.x, window.scrollcontainer.deltaMouse.y)
+                                        -- UiWindow(200,scroll_bar_height,false)
+                                        -- UiColor(1,1,0,0.3)
+                                        -- UiRect(750,scroll_bar_height+750)
+                                        if UiIsMouseInRect(750,scrollY_bar_height+750) and InputDown('lmb') then 
+                                            window.scrollcontainer.pos_thum.mouse.x, window.scrollcontainer.pos_thum.mouse.y = UiGetMousePos()
+                                            window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y + window.scrollcontainer.pos_thum.lastMouse.y }
+                                            window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0
+                                            local vec2d = ui2DAdd(window.scrollcontainer.contentsScroll, window.scrollcontainer.pos_thum.deltaMouse).y
+                                            window.scrollcontainer.contentsScroll = math.floor( vec2d/4 ) ;
+                                            DebugPrint( math.floor( vec2d/4 ) );
+                                            if window.scrollcontainer.contentsScroll <= 0 then
+                                                window.scrollcontainer.contentsScroll = 0
+                                            end
+                                            if window.scrollcontainer.contentsScroll >= max_scroll_Y then
+                                                window.scrollcontainer.contentsScroll = max_scroll_Y
+                                            end
+                                            -- if window.scrollcontainer.contentsScroll >= 0 then
+                                            --     window.scrollcontainer.contentsScroll = 0
+                                            -- end
+                                            -- if window.scrollcontainer.contentsScroll <= max_scroll_Y then
+                                            --     window.scrollcontainer.contentsScroll = max_scroll_Y
+                                            -- end                    
+                                            -- DebugWatch('Scroll',InputValue("mousedy")/(scroll_height/h))
+                                            -- local mouseWheel = InputDown('')
+                                            -- window.scrollcontainer.scrollYPos = window.scrollcontainer.scrollYPos-InputValue("mousedy")+(h-34*scroll_bar_height)
+                                            window.scrollcontainer.keepScrolling = true
+                                        end
+                                    UiPop()
+                                end
+                                if UiIsMouseInRect(17,scrollY_bar_height) and window.scrollcontainer.keepScrolling == false and not InputDown('lmb') then
+                                    window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y = UiGetMousePos()
+                                end
+                                UiAlign('center middle')
+                                if InputReleased('lmb') or not UiIsMouseInRect(750,scrollY_bar_height+750) then
+                                    window.scrollcontainer.keepScrolling = false
+                                end
+                                UiPop()
+                            end
+                            -- else
+                                -- UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',17,2,1,1)
+                            -- end
+                        UiPop()
+                    else
+                    end
+        
                     for i=1,h_items_visible do
                         local s, r = pcall(function( ... )
                             local v = contents[i+contentsScroll];
@@ -1666,21 +1689,21 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                                     if HasKey(options.key..".multiSelect."..v.keyItem) then
                                         UiPush()
                                             UiColor(c255(255),c255(156),c255(0),1)
-                                            UiRect(UiWidth(),19)
+                                            UiRect(UiWidth() - window.scrollcontainer.showWidth,19)
                                         UiPop()     
                                     end
                                 else
-                                    if GetString(options.key) == v.text then
+                                    if GetString(options.key) == v.keyItem then
                                         UiPush()
                                             UiColor(c255(255),c255(156),c255(0),1)
-                                            UiRect(UiWidth(),19)
+                                            UiRect(UiWidth()  - window.scrollcontainer.showWidth,19)
                                         UiPop()     
                                     end
                                 end
 
                                 local text = uic_text(v.text , 17, 15)
 
-                                if UiBlankButton(UiWidth(),text.height) then
+                                if UiBlankButton(UiWidth()  - window.scrollcontainer.showWidth,text.height) then
                                     if options.multiSelect then
                                         if HasKey(options.key..".multiSelect."..v.keyItem) then
                                             ClearKey(options.key..".multiSelect."..v.keyItem)
@@ -1688,7 +1711,7 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                                             SetString(options.key..".multiSelect."..v.keyItem, v.text)
                                         end
                                     else
-                                        SetString(options.key,v.text)
+                                        SetString(options.key,v.keyItem)
                                     end
                                 end
                             UiPop()
@@ -1719,53 +1742,6 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                         --     end
                         -- end
                     end
-
-                    -- UiPush()
-                    --     for i, v in ipairs(contents) do
-                    --         UiPush()
-                    --         UiColor(0,0,0,0)
-                    --         local text = uic_text(v.text , 17, 15)
-                    --         UiPop()
-                    --         if options.multiSelect then
-                    --             if HasKey(options.key..".multiSelect."..v.keyItem) then
-                    --                 UiPush()
-                    --                     UiColor(c255(255),c255(156),c255(0),1)
-                    --                     UiRect(UiWidth(),text.height)
-                    --                 UiPop()     
-                    --             end
-                    --         else
-                    --             if GetString(options.key) == v.text then
-                    --                 UiPush()
-                    --                     UiColor(c255(255),c255(156),c255(0),1)
-                    --                     UiRect(UiWidth(),text.height)
-                    --                 UiPop()     
-                    --             end
-                    --         end
-
-                    --         local text = uic_text(v.text , 17, 15)
-                    --         UiPush()
-                    --             UiFont(text.font,text.size)
-                    --             local txt_w, _ = UiGetTextSize(v)
-                    --         UiPop()
-                    --         -- UiPush()
-                    --         --     UiColor(c255(255),c255(0),c255(0),1)
-                    --         --     UiRect(w,text.height)
-                    --         -- UiPop()     
-                    --         if UiBlankButton(UiWidth(),text.height) then
-                    --             if options.multiSelect then
-                    --                 if HasKey(options.key..".multiSelect."..v.keyItem) then
-                    --                     ClearKey(options.key..".multiSelect."..v.keyItem)
-                    --                 else
-                    --                     SetString(options.key..".multiSelect."..v.keyItem, v.text)
-                    --                 end
-                    --             else
-                    --                 SetString(options.key,v.text)
-                    --             end
-                    --         end
-                    --         -- UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',txt_w,17,1,1)
-                    --         UiTranslate(0,text.height);
-                    --     end
-                    -- UiPop()
                 UiPop()
             end
         UiPop() 
@@ -2112,6 +2088,61 @@ function uic_dropdown(width, key, items, toolTipText)
         end
     UiPop()    
 end
+
+---@param w integer
+---@param h integer
+---@param current integer
+---@param total integer
+---@param style table
+function uic_progressBar( w, h, current, total, style )
+    if style == nil or style == {} then 
+        style = {
+            barColor = { r=255, g=156, b=0, a=1},
+            BackgroundImageStyle = {
+                image = tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png",
+            }
+        }
+    end
+    if style.BackgroundImageStyle == nil then 
+        style.BackgroundImageStyle = {}
+        if style.BackgroundImageStyle.image == nil then
+            style.BackgroundImageStyle.image = tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png"
+        end
+    end
+    UiPush()
+        if style.BackgroundImageStyle.image then
+            UiPush()
+                UiImageBox(style.BackgroundImageStyle.image,w*(11)+5, 24,1,1,1,1)
+            UiPop()
+        end
+        UiTranslate(1,1);
+        UiTranslate(2,3);
+        UiPush()
+            -- Credit: 1ssnl.
+            local size = 9
+            local padding = 2
+            local progress = current/total
+            local j = w
+            for i=1, j do
+            if progress < i/j then
+                break
+            end
+            UiPush()
+            UiColor(c255(255), c255(156), c255(0), 1)
+            UiRect(9, 16)
+            UiPop()        
+            UiTranslate(size+padding, 0)
+            end
+        UiPop()
+        UiPush()
+            UiTranslate(-3,2);
+            UiColor(c255(255), c255(0), c255(0), 1)
+            UiRect(current/total*w*(11)+5, 2 )
+            UiColor(c255(255), c255(255), c255(255), 1)
+        UiPop()
+    UiPop()
+end
+
 -- 
 -- function uic_slider(key,min,max)
 --     UiPush()
