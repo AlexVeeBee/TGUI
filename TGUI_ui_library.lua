@@ -20,6 +20,9 @@ function init()
     currentid = 0
     CreatedWindows = {
     }
+    MasterStyles = {
+        borderPadding = 1,
+    }
 end
 
 ---Register mod
@@ -810,6 +813,8 @@ function uic_menubar(w, items ,extraContent , customization)
         end
     UiPop()
 end
+---@alias ScrollContainerStyling # Table ScrollContainerStyling
+---| "clip" # Default: false -- Whether to clip the content or not | Teardown api description: Clip content outside window
 
 ---Make a scroll container
 ---@param window table The root window
@@ -817,15 +822,9 @@ end
 ---@param h integer height of the scroll area
 ---@param border boolean whether to have the border or not
 ---@param scroll_height integer How much this container can be scrolled
+---@param scroll_width integer How much this container can be scrolled
 ---@param content function Content to the scroll area container
----@param style? table Style the scroll area 
----```
------format: style
----{
----   clip = (boolean), -- Default: false -- Whether to clip the content or not
----   -- Teardoen api description: Clip content outside window
----}
----```
+---@param style? ScrollContainerStyling Style the scroll area 
 ---@param extraContent? any Additional content to be called to the container
 function uic_scroll_Container(window,w,h,border,scroll_height, scroll_width, content, style, extraContent, customization)
     if style == nil then style = {clip = false} end
@@ -951,11 +950,14 @@ function uic_scroll_Container(window,w,h,border,scroll_height, scroll_width, con
             UiDisableInput()
         end
         UiPush()
-            
-            local window_w = w-1
-            local window_h = h-1
+            local scrollAreaContainer_w = 0
+            local scrollAreaContainer_h = 0
+
+            local window_w = w
+            local window_h = h
             --
             if scroll_height > h then
+                scrollAreaContainer_w = 18
                 window_w = w-17
                 window_h = scroll_height-17
             else
@@ -963,19 +965,17 @@ function uic_scroll_Container(window,w,h,border,scroll_height, scroll_width, con
             end
             --
             if scroll_width > w then
+                scrollAreaContainer_h = 18
                 window_w = scroll_width-17
             else
                 max_scroll_X = 0
             end
             --
             uic_container(w-2,h-1, true, false, false, function()
+                UiWindow(w-scrollAreaContainer_w,h-scrollAreaContainer_h,true,true)
                 if scroll_width > w-2 then UiTranslate(scrollX,0) end
                 if scroll_height > h-2 then UiTranslate(0,scrollY) end
-                -- UiPush()
-                --     UiColor(1,0,1,0.3)
-                --     UiRect(window_w,window_h)
-                -- UiPop()
-                UiWindow(window_w,window_h,style.clip)
+                UiWindow(window_w,window_h,style.clip, style.clip)
                 content(extraContent)
             end)
         UiPop()
@@ -2031,6 +2031,174 @@ function uic_button_func(buttinid, text, width, height, disabled, toolTipText, o
     UiPop()
 end
 
+---Create spin button
+---@param key string
+---@param direction string Display what direction this buttons
+---@param disabled? boolean Disable to buttons
+---@param onClick? function
+---@param config? table
+function uic_spinbuttons( key, direction, disabled, onClick, config )
+    if config == nil then config = {
+        min = nil, max = nil, autotranslate = nil, increments = 1
+    } end
+    if config then
+        if config.min == nil then config.min = nil end
+        if config.max == nil then config.max = nil end
+        if config.autotranslate then config.autotranslate = nil end 
+        if config.increments == nil then config.increments = 1 end
+    end
+
+    function buttonIcon(path, disabled , action)
+        UiPush()
+            local ico_w, ico_h = UiGetImageSize(path)
+            local padding = 8
+            UiWindow(ico_w+padding, ico_h+padding, false)
+            UiAlign("left top")
+            if not disabled then
+                if UiBlankButton(ico_w+padding, ico_h+padding) then
+                    action()
+                end
+                if UiIsMouseInRect(ico_w+padding, ico_h+padding) then
+                    if not InputDown('lmb') then
+                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                    else
+                        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                        UiTranslate(1,1)
+                    end
+                else
+                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                end
+                UiColor(1,1,1,1)
+            else
+                UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                UiColor(0.1,0.1,0.1,0.8)
+            end
+            UiTranslate((ico_w+padding)/2, (ico_h+padding)/2)
+            UiAlign("center middle")
+            UiImage(path)
+        UiPop()
+    end
+
+    UiPush()
+        local i = GetInt(key);
+        local UPButtonDisabled = false;
+        local DOWNButtonDisabled = false;
+        if not disabled then
+            if type(config.min) == "number" then if config.min >= i then DOWNButtonDisabled = true; end end
+            if type(config.max) == "number" then if config.max <= i then UPButtonDisabled = true; end end
+            if config.min == not nil then DOWNButtonDisabled = true; end    
+            if config.max == not nil then UPButtonDisabled = true; end
+        else
+            UPButtonDisabled = true;
+            DOWNButtonDisabled = true;
+            UiColorFilter(1,1,1, 0.5)
+        end
+
+        buttonIcon(tgui_ui_assets.."/textures/arrow_up.png", UPButtonDisabled, function()
+            if onClick == not nil then onClick() end
+            if config.max == nil or config.max-1 >= i then 
+                SetInt(key, i+config.increments)
+            end
+        end)
+        UiTranslate(0, 18)
+        buttonIcon(tgui_ui_assets.."/textures/arrow_down.png", DOWNButtonDisabled, function()
+            if onClick == not nil then onClick() end
+            if config.min == nil or config.min+1 <= i then 
+                SetInt(key, i-config.increments)
+            end
+        end)
+
+    UiPop()
+end
+
+---Create spin controls
+---@param key string key for the number
+---@param w number
+---@param disabled? boolean
+---@param onClick? function
+---@param config? table
+function uic_spincontrol(key, direction, w, disabled, onClick, config)
+    if config == nil then config = {
+        min = nil, max = nil, autotranslate = false, increments = 1
+    } end
+    if config then
+        if config.min == nil then config.min = nil end
+        if config.max == nil then config.max = nil end
+        if config.autotranslate == nil then config.autotranslate = false end 
+        if config.increments == nil then config.increments = 1 end
+    end
+
+    function buttonIcon(path, disabled , action)
+        UiPush()
+            local ico_w, ico_h = UiGetImageSize(path)
+            local paddingW = 8
+            local paddingH = 4
+            UiWindow(ico_w+paddingW, ico_h+paddingH, false)
+            UiAlign("left top")
+            if not disabled then
+                if UiBlankButton(ico_w+paddingW+1, ico_h+paddingH+1) then
+                    action()
+                end
+                if UiIsMouseInRect(ico_w+paddingW, ico_h+paddingH) then
+                    if not InputDown('lmb') then
+                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                    else
+                        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                        UiTranslate(1,1)
+                    end
+                else
+                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                end
+                UiColor(1,1,1,1)
+            else
+                UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                UiColor(0.1,0.1,0.1,0.8)
+            end
+            UiTranslate((ico_w+paddingW)/2, (ico_h+paddingH)/2)
+            UiAlign("center middle")
+            UiImage(path)
+        UiPop()
+    end
+
+    UiPush()
+        UiPush()
+            local i = GetInt(key);
+            local UPButtonDisabled = false;
+            local DOWNButtonDisabled = false;
+            if not disabled then
+                if type(config.min) == "number" then if config.min >= i then DOWNButtonDisabled = true; end end
+                if type(config.max) == "number" then if config.max <= i then UPButtonDisabled = true; end end
+                if config.min == not nil then DOWNButtonDisabled = true; end    
+                if config.max == not nil then UPButtonDisabled = true; end
+            else
+                local UPButtonDisabled = true;
+                local DOWNButtonDisabled = true;
+                UiColorFilter(1,1,1, 0.5)
+            end
+            buttonIcon(tgui_ui_assets.."/textures/arrow_up.png", UPButtonDisabled, function()
+                if onClick == not nil then onClick() end
+                if config.max == nil or config.max-1 >= i then 
+                    SetInt(key, i+config.increments)
+                end
+            end)
+            UiTranslate(0, 12)
+            buttonIcon(tgui_ui_assets.."/textures/arrow_down.png", DOWNButtonDisabled, function()
+                if onClick == not nil then onClick() end
+                if config.min == nil or config.min+1 <= i then 
+                    SetInt(key, i-config.increments)
+                end
+            end)
+        UiPop()
+        UiTranslate(0, 0)
+        UiPush()
+            UiTranslate(17, 0)
+            UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png", w, 24, 1, 1)
+            
+            uic_text(GetInt(key), 24, 18)
+        UiPop()
+    UiPop()
+end
+
 
 ---Make a divider ( like an hr in html )
 ---@note This function does not include `UiPush()` and `UiPop()`
@@ -2090,11 +2258,10 @@ function uic_dropdown(width, key, items, toolTipText)
 end
 
 ---@param w integer
----@param h integer
 ---@param current integer
 ---@param total integer
 ---@param style table
-function uic_progressBar( w, h, current, total, style )
+function uic_progressBar( w,current, total, style )
     if style == nil or style == {} then 
         style = {
             barColor = { r=255, g=156, b=0, a=1},
@@ -2134,12 +2301,12 @@ function uic_progressBar( w, h, current, total, style )
             UiTranslate(size+padding, 0)
             end
         UiPop()
-        UiPush()
-            UiTranslate(-3,2);
-            UiColor(c255(255), c255(0), c255(0), 1)
-            UiRect(current/total*w*(11)+5, 2 )
-            UiColor(c255(255), c255(255), c255(255), 1)
-        UiPop()
+        -- UiPush()
+        --     UiTranslate(-3,2);
+        --     UiColor(c255(255), c255(0), c255(0), 1)
+        --     UiRect(current/total*w*(11)+5, 2 )
+        --     UiColor(c255(255), c255(255), c255(255), 1)
+        -- UiPop()
     UiPop()
 end
 
@@ -2316,16 +2483,18 @@ Tags: Ui Library
 ]]
 -- -@return integer height Height of the menu
 
+---@alias GameMenuStyling # Table GameMenuStyling
+---| "textAlgin" # Default: "left" params: {"left"|"center"|"right"}
+---| "buttonHeight" # Default: 14 `number`
+---| "fontSize" # Default: 13 `number`
+---| "font" # Default: "tgui_ui_assets.."/Fonts/TAHOMABD.TTF" 'string'
+
 ---Make a list of buttons
 ---@param t table A controller for the list of buttons and the height 
 ---@param width integer Width of the menu 
 ---@param contents table Lists of buttons
 ---@param extraContent any Additional content to be called to the list
----@param style table? {textAlign = "left"|"center"|"right", buttonHeight = (number), fontSize = (number)}
----@paramStyle textAlign `{"left"|"center"|"right"}`
----@paramStyle buttonHeight `number`
----@paramStyle fontSize `number`
----@paramStyle font `string`
+---@param style GameMenuStyling? `table` customize the menu style
 ---```
 ----- format: contents
 ---{

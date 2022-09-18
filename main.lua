@@ -1083,23 +1083,23 @@ function draw(dt)
                                         UiPush()
                                             UiPush()
                                                 UiTranslate(180,0)
-                                                uic_progressBar( 4, 24, window_Test_progressBar, 5, {} )
+                                                uic_progressBar( 4,window_Test_progressBar, 5, {} )
                                                 UiTranslate(0,28)
-                                                uic_progressBar( 8, 24, window_Test_progressBar, 5, {} )
+                                                uic_progressBar( 8,window_Test_progressBar, 5, {} )
                                                 UiTranslate(0,28)
-                                                uic_progressBar( 12, 24, window_Test_progressBar, 5, {} )
+                                                uic_progressBar( 12,window_Test_progressBar, 5, {} )
                                                 UiTranslate(0,28)
-                                                uic_progressBar( 32, 24, window_Test_progressBar, 5, {} )
+                                                uic_progressBar( 32,window_Test_progressBar, 5, {} )
                                                 UiTranslate(0,28)
-                                                uic_progressBar( 32, 24, window_Test_progressBar2, 10, {} )
+                                                uic_progressBar( 32,window_Test_progressBar2, 10, {} )
                                             UiPop()
                                             UiPush()
                                             UiTranslate(180+180,0)
-                                                uic_progressBar( 4, 24, window_Test_progressBar2, 10, {} )
+                                                uic_progressBar( 4,window_Test_progressBar2, 10, {} )
                                                 UiTranslate(0,28)
-                                                uic_progressBar( 8, 24, window_Test_progressBar2, 10, {} )
+                                                uic_progressBar( 8,window_Test_progressBar2, 10, {} )
                                                 UiTranslate(0,28)
-                                                uic_progressBar( 12, 24, window_Test_progressBar2,10, {} )
+                                                uic_progressBar( 12,window_Test_progressBar2,10, {} )
                                             UiPop()
                                             if window_Test_progressBar == 5 then
                                                 window_Test_progressBar = 0
@@ -1113,7 +1113,20 @@ function draw(dt)
                                             if window_Test_progressBar2 == 0 then
                                                 SetValue("window_Test_progressBar2", 10, "linear", 1)
                                             end
-
+                                            -- 
+                                            UiTranslate(180,140)
+                                            uic_spinbuttons("TGUI.spinbutton", "", true, function() end, {
+                                                min = 0,
+                                            })
+                                            UiPush()
+                                                UiTranslate(18,0)
+                                                uic_text(GetInt("TGUI.spinbutton"), 32, 18)
+                                            UiPop()
+                                            UiTranslate(64,0)
+                                            uic_spincontrol("TGUI.spinbutton", "", 75, false, function() end, {
+                                                max = 3,
+                                                min = 0
+                                            })
                                         UiPop()
                                     end
                                 },
@@ -1130,6 +1143,10 @@ function draw(dt)
                                         uic_scroll_Container(window.scrollArea,UiWidth()-24,window.scrollConHeight, true, window.scrollHeight, 300 ,function(extraContent)
                                             UiTranslate(12,0)
                                             UiText('i am at the top')
+                                            UiPush()
+                                                UiTranslate(0, 32)
+                                                UiRect(1000, 24)
+                                            UiPop()
                                             UiPush()
                                                 UiTranslate(12,UiHeight()-200)
                                                 UiPush()
