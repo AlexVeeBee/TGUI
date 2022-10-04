@@ -1,5 +1,5 @@
 #include "./TGUI_ui_library.lua"
-#include "./TGUI_manager.lua"
+#include "TGUI_manager.lua"
 #include "./regeditWindow.lua"
 
 --[[
@@ -132,12 +132,17 @@ function GlobalWindowAddTest()
 end
 local mainMenuContents = {
 
-}
+}   
 
 function function_name()
     DebugPrint('lololol')
 end
-
+SetInt("TGUI.tabStyle.tabHeight", 25)
+SetInt("TGUI.tabStyle.paddingRight", 20)
+SetInt("TGUI.tabStyle.paddingLeft", 0)
+SetString("TGUI.textbox.test", "left")
+SetString("TGUI.textbox.test2", "center")
+SetString("TGUI.textbox.test3", "right")
 function draw(dt)
     if HasKey('TGUI.register.mod') then
         local itemNumber = 1
@@ -191,6 +196,7 @@ function draw(dt)
                                     dropdown_2 = {firstFrame = true, tooltipId = 2, open = false},
                                     textBox_test = {focused = false},
                                     textBox_test2 = {focused = false},
+                                    textBox_test3 = {focused = false},
                                 --
                                 scrollHeight = 1500,
                                 scrollConHeight = 500,
@@ -346,24 +352,23 @@ function draw(dt)
                     SetBool('TGUI.menu.show',true)
                 end )
                 UiTranslate(0,28);
-                if uic_button(0,"Tiny window",UiWidth(),24) then
-                        NewWindowPopup = false
-                        table.insert(ALL_WINDOWS_OPEN ,{
-                            firstFrame = true,
-                            title = "Hello title",
-                            padding = 2,
-                            opacity = 1,
-                            pos = {x = 800, y = 200},
-                            size = {w = 128, h = 72},
-                            clip = false,
-                            allowResize = false,
-                            content = function(window)
-                                if uic_button(2,"Close window",UiWidth(),32, false, "Tool tip hello world") then
-                                    window.closeWindow = true
-                                end
-                            end ,
-                        })
-            
+                if uic_button(0,"Tiny window",UiWidth(),24, false, "tiny window") then
+                   NewWindowPopup = false
+                   table.insert(ALL_WINDOWS_OPEN ,{
+                       firstFrame = true,
+                       title = "Hello title",
+                       padding = 2,
+                       opacity = 1,
+                       pos = {x = 800, y = 200},
+                       size = {w = 128, h = 72},
+                       clip = false,
+                       allowResize = false,
+                       content = function(window)
+                           if uic_button(2,"Close window",UiWidth(),32, false, "Tool tip hello world") then
+                               window.closeWindow = true
+                           end
+                       end ,
+                   })
                 end
                 UiTranslate(0,28);
                 if uic_button(0,"Big window",UiWidth(),24) then
@@ -416,12 +421,38 @@ function draw(dt)
                                         end
                                     },
                                     {
-                                        ["title"] = "tab 2",
+                                        ["title"] = "Tab Style Test",
                                         ["Content"] = function ()
-                                            UiText('I am tab 3')
+                                            uic_text('Tab style test', 24 , 15)
+                                            UiTranslate(0, 24)
+                                            -- tabHeight
+                                            uic_text('Tab Height', 18 , 15)
+                                            UiTranslate(0, 24)
+                                            UiPush()
+                                            UiTranslate(5, 0)
+                                            uic_slider(window,128,"TGUI.tabStyle.tabHeight",{25,90},1)
+                                            UiPop()
+                                            UiTranslate(0, 24)
+                                            uic_text('Padding Right', 18 , 15)
+                                            UiTranslate(0, 24)
+                                            UiPush()
+                                            UiTranslate(5, 0)
+                                            uic_slider(window,128,"TGUI.tabStyle.paddingRight",{0,70},1)
+                                            UiPop()
+                                            UiTranslate(0, 24)
+                                            uic_text('Padding left', 18 , 15)
+                                            UiTranslate(0, 24)
+                                            UiPush()
+                                            UiTranslate(5, 0)
+                                            uic_slider(window,128,"TGUI.tabStyle.paddingLeft",{0,70},1)
+                                            UiPop()
                                         end
                                     },
-                                })
+                                }, false, {
+                                    tabHeight =         GetInt("TGUI.tabStyle.tabHeight"),
+                                    tabPaddingRight =   GetInt("TGUI.tabStyle.paddingRight"),
+                                    tabPaddingLeft =    GetInt("TGUI.tabStyle.paddingLeft"),
+                                }, dt)
                                 UiPush()
                                     UiTranslate(UiWidth()-32,3)
                                     UiAlign('top right')
@@ -452,6 +483,9 @@ function draw(dt)
                             dropdown_2 = {firstFrame = true, tooltipId = 2, open = false},
                             textBox_test = {focused = false},
                             textBox_test2 = {focused = false},
+                            textBox_test3 = {focused = false},
+                            sliderTest = {},
+                            sliderPaddingTest = {},
                             tableContainer = {
                                 tableColumnNames = {
                                 },
@@ -463,6 +497,40 @@ function draw(dt)
                                     firstFrame = true,
                                     scrollfirstFrame = true,
                                 },
+                            },
+                            treeview = {
+                                tableScroll = {
+                                    firstFrame = true,
+                                    scrollfirstFrame = true,
+                                },
+                                contents = {
+                                    "1",
+                                    "2",
+                                    {
+                                        itemText = "Extras",
+                                        "3",
+                                        "4",
+                                        "5",
+                                        {
+                                            itemText = "Sub Extras",
+                                            "a",
+                                            "b",
+                                            "c"
+                                        },
+                                    },
+                                    {
+                                        itemText = "More Extras",
+                                        "6",
+                                        "7",
+                                        "8"
+                                    },
+                                    {
+                                        itemText = "Even More Extras",
+                                        "9",
+                                        "10",
+                                        "11"
+                                    },
+                                }
                             },
                         --
                         scrollHeight = 1500,
@@ -512,144 +580,13 @@ function draw(dt)
                             UiPush()
                             uic_tab_container(window.tab1,UiWidth()-32-300, UiHeight()-(12+32), false, true, {
                                 ["open_default"] = 1,
-                                {
-                                    title = "UI component: Container",
-                                    ["Content"] = function()
-                                        UiTranslate(10,10)
-                                        -- UiTranslate(0,24)
-                                        uic_container(300, UiHeight()-(20), false, true, true, function(window) 
-                                            UiPush()
-                                                if UiIsMouseInRect(UiWidth(),UiHeight()-100) and InputPressed('rmb') then
-                                                    uic_Register_Contextmenu_at_cursor({
-                                                        {type = "button", text="Button", action=function()
-                                                        end},
-                                                        {type = "button", disabled=true, text="Disabled Button", action=function()
-                                                        end},
-                                                        {type = "toggle", key = "TGUI.context.toggleTest",text="Toggle", action=function()
-                                                        end},
-                                                        {type = "toggle", disabled=true ,key = "TGUI.context.toggleTest",text="Disabled Toggle", action=function()
-                                                        end},
-                                                        {type = "submenu", text="Submenu", items={
-                                                            {type = "button", text="Submenu Button", action=function()
-                                                            end},
-                                                            {type = "button", disabled=true, text="Disabled Submenu Button", action=function()
-                                                            end},
-                                                            {type="divider"},
-                                                            {type = "submenu", text="submenu within a submenu", items={
-                                                                {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                end},
-                                                                {type="divider"},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                                                                {type = "submenu", text="submenu within a submenu", items={
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                    {type = "button",disabled=true, text="Submenu Button", action=function()
-                                                                    end},
-                                                                }},
-                            
-                                                            }},
-                                                            {type = "submenu",disabled=GetBool('TGUI.test.ContextMenu.ItemDisabled'), text="Disabled submenu", items={
-                                                                {type = "button", text="Submenu Button", action=function()
-                                                                end},
-                                                            }},
-                                                            {type="divider"},
-                                                            {type = "toggle", key = "TGUI.test.ContextMenu.ItemDisabled",text="Disable submenu", action=function()
-                                                            end},
-                                                        }},
-                                                        {type = "submenu",disabled=true, text="Disabled Submenu", items={}},
-
-                                                        {type="divider"},
-                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        {type="divider"},
-                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Disabled Button", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                        -- {type = "button", disabled=true, text="Context menu overfill", action=function()end},
-                                                    }, window)
-                                                end
-            
-                                                UiTranslate(0,UiHeight() - 26)
-                                                UiPush()
-                                                    UiTranslate(24,-24)
-                                                    uic_checkbox("Exit window? ","iam.key", 100,false)
-                                                UiPop()
-                                        
-                                                uic_divider(UiWidth(),false)
-                                                UiTranslate(UiWidth(),6)
-                                                UiAlign("right top")
-                                                if uic_button(0,"Yes",150,20,not GetBool('iam.key')) then 
-                                                    window.closeWindow = true
-                                                end
-                                            UiPop()
-                                        end, window)
-                                    end
-                                },
+                                -- {
+                                --     title = "UI component: Container",
+                                --     ["Content"] = function()
+                                --         UiTranslate(10,10)
+                                --         -- UiTranslate(0,24)
+                                --     end
+                                -- },
                                 {
                                     title = "UI component: Table container",
                                     ["Content"] = function(MainWindow)
@@ -847,98 +784,211 @@ function draw(dt)
                                     ["Content"] = function(MainWindow)
                                         UiPush()
                                             UiTranslate(12,12)
-                                            uic_text("Dropdowns", 24)
-                                            UiTranslate(0,24)
-                                            uic_dropdown(250, "TGUI.dropdown.test", {
-                                                {
-                                                    text = "On top Render Test 1",
-                                                    keyVal = "renderTopTest1"
-                                                },
-                                                {
-                                                    text = "On top Render Test 2",
-                                                    keyVal = "renderTopTest2"
-                                                },
-                                            }, false)
-                                            UiTranslate(0,26)
-                                            uic_dropdown(250, "TGUI.dropdown.test", {
-                                                {
-                                                    text = "On top Render Test 1",
-                                                    keyVal = "renderTopTest1"
-                                                },
-                                                {
-                                                    text = "On top Render Test 2",
-                                                    keyVal = "renderTopTest2"
-                                                },                                                
-                                                {
-                                                    text = "On top Render Test 1",
-                                                    keyVal = "renderTopTest1"
-                                                },
-                                                {
-                                                    text = "On top Render Test 2",
-                                                    keyVal = "renderTopTest2"
-                                                },
-
-                                            }, false)
-                                            -- UiTranslate(20,20)
-                                            -- UiTranslate(0,32)
-                                            -- uic_dropdown(MainWindow.dropdown_1, 100, "TGUI.dropdown.lol", {
-                                            --     "1", "2", "3"
-                                            -- }, {
-                                            --     "tiem_1",
-                                            --     "tiem_2",
-                                            --     "tiem_3",
-                                            -- }, false, "")
-                                            -- -- UiTranslate(120,0)
-                                            -- UiTranslate(0,-32)
-                                            -- uic_dropdown(MainWindow.dropdown_2, 100, "TGUI.dropdown.lol2", {
-                                            --     "january", "february", "march", "april", "may", "june", "july", "august", "september", "octeober" , "november", "december"
-                                            -- }, {
-                                            --     "m1",
-                                            --     "m2",
-                                            --     "m3",
-                                            --     "m4",
-                                            --     "m5",
-                                            --     "m6",
-                                            --     "m7",
-                                            --     "m8",
-                                            --     "m9",
-                                            --     "m10",
-                                            --     "m11",
-                                            --     "m12",
-                                                
-                                            -- }, false, "")
-                                        UiPop()
-                                        UiPush()
-                                            UiTranslate(270,12)
-                                            uic_text("Radio selection", 24)
-                                            UiTranslate(0,24)
-                                            uic_radio_button("TGUI.test.radio.t1", "easy", "Easy", 130)
-                                            UiTranslate(0,18)
-                                            uic_radio_button("TGUI.test.radio.t1", "medium", "Medium", 130)
-                                            UiTranslate(0,18)
-                                            uic_radio_button("TGUI.test.radio.t1", "hard", "Hard", 130)
-                                            UiTranslate(0,18)
-                                            uic_radio_button("TGUI.test.radio.t1", "WTF", "WTF", 130)
-                                        UiPop()
-                                        UiPush()
-                                            UiTranslate(382,12)
-                                            uic_text("Textboxes", 24)
-                                            UiTranslate(0,24)                
-                                            local textbox_text = uic_textbox("TGUI.textbox.test", 300, window.textBox_test)
                                             UiPush()
-                                                UiTranslate(0,25)
-                                                _ = uic_textbox("TGUI.textbox.test2", 300, window.textBox_test2)
-                                                UiTranslate(0,25)
-                                                uic_dropdown( 100, "TGUI.dropdown.lol", {
+                                                uic_text("Dropdowns", 24)
+                                                UiTranslate(0,24)
+                                                uic_dropdown(250, "TGUI.dropdown.test", {
                                                     {
-                                                        text = "1"
-                                                    }
+                                                        text = "On top Render Test 1",
+                                                        keyVal = "renderTopTest1"
+                                                    },
+                                                    {
+                                                        text = "On top Render Test 2",
+                                                        keyVal = "renderTopTest2"
+                                                    },
                                                 }, false)
+                                                UiTranslate(0,26)
+                                                uic_dropdown(250, "TGUI.dropdown.test", {
+                                                    {
+                                                        text = "january",
+                                                        keyVal = "m1"
+                                                    },
+                                                    {
+                                                        text = "february",
+                                                        keyVal = "m2"
+                                                    },                                                
+                                                    {
+                                                        text = "march",
+                                                        keyVal = "m4"
+                                                    },
+                                                    {
+                                                        text = "april",
+                                                        keyVal = "m4"
+                                                    },
+
+                                                }, false)
+                                                -- UiTranslate(20,20)
+                                                -- UiTranslate(0,32)
+                                                -- uic_dropdown(MainWindow.dropdown_1, 100, "TGUI.dropdown.lol", {
+                                                --     "1", "2", "3"
+                                                -- }, {
+                                                --     "tiem_1",
+                                                --     "tiem_2",
+                                                --     "tiem_3",
+                                                -- }, false, "")
+                                                -- -- UiTranslate(120,0)
+                                                -- UiTranslate(0,-32)
+                                                -- uic_dropdown(MainWindow.dropdown_2, 100, "TGUI.dropdown.lol2", {
+                                                --     "january", "february", "march", "april", "may", "june", "july", "august", "september", "octeober" , "november", "december"
+                                                -- }, {
+                                                --     "m1",
+                                                --     "m2",
+                                                --     "m3",
+                                                --     "m4",
+                                                --     "m5",
+                                                --     "m6",
+                                                --     "m7",
+                                                --     "m8",
+                                                --     "m9",
+                                                --     "m10",
+                                                --     "m11",
+                                                --     "m12",
+                                                    
+                                                -- }, false, "")
                                             UiPop()
-                                            UiTranslate(310,0)
-                                            uic_button_func(0, "Print", 100, 24, false, "", function()
-                                                DebugPrint(textbox_text)
-                                            end, textbox_text)
+                                            UiTranslate(260,0)
+                                            UiPush()
+                                                uic_text("Textboxes", 24)
+                                                UiTranslate(0,24)                
+                                                local textbox_text = uic_textbox("TGUI.textbox.test", 300, window.textBox_test, { textColor = {r=255, g=0, b=0}}, "left align")
+                                                UiPush()
+                                                    UiTranslate(0,25)
+                                                    _ = uic_textbox("TGUI.textbox.test2", 300, window.textBox_test2, {textAlgin = "center", textColor = {r=0, g=255, b=0}}, "center align")
+                                                    UiTranslate(0,25)
+                                                    _ = uic_textbox("TGUI.textbox.test3", 300, window.textBox_test3, {textAlgin = "right", textColor = {r=0, g=0, b=255}}, "right algin")
+                                                --     UiTranslate(0,25)
+                                                --     uic_dropdown( 100, "TGUI.dropdown.lol", {
+                                                --         {
+                                                --             text = "1"
+                                                --         }
+                                                --     }, false)
+                                                UiPop()
+                                                UiTranslate(310,0)
+                                                uic_button_func(0, "Print", 100, 24, false, "", function()
+                                                    DebugPrint(textbox_text)
+                                                end, textbox_text)
+                                                UiTranslate(0, 32)
+                                                -- local d, s = UiTextButton("hello", 24, 128)
+                                                -- DebugPrint(s)    
+                                            UiPop()
+                                            UiTranslate(420,0)
+                                            UiPush()
+                                            -- math.sin(GetTime())*200+300
+                                                uic_container(300, 150, true, true, true, function(window) 
+                                                    UiPush()
+                                                    UiPush()
+                                                        UiRect(30,30)
+                                                        UiAlign('bottom left')
+                                                        UiTranslate(0, UiHeight())
+                                                        UiRect(30,30)
+                                                    UiPop()
+                                                    UiPush()
+                                                        UiAlign('top right')
+                                                        UiTranslate(UiWidth(), 0)
+                                                        UiRect(30,30)
+                                                        UiAlign('bottom right')
+                                                        UiTranslate(0, UiHeight())
+                                                        UiRect(30,30)
+                                                    UiPop()
+                                                    UiPush()
+                                                        UiAlign('center middle')
+                                                        UiTranslate(UiCenter(), UiMiddle())
+                                                        UiRect(30,30)
+                                                        UiPush()
+                                                            uic_slider(window.sliderPaddingTest ,128,"TGUI.containerPadding",{0,64},1)
+                                                        UiPop()
+                                                    UiPop()
+                                                    UiPop()
+                                        
+                                                    -- UiPush()
+                                                    --     if UiIsMouseInRect(UiWidth(),UiHeight()-50) and InputPressed('rmb') then
+                                                    --         uic_Register_Contextmenu_at_cursor({
+                                                    --             {type = "button", text="Button", action=function()
+                                                    --             end},
+                                                    --             {type = "button", disabled=true, text="Disabled Button", action=function()
+                                                    --             end},
+                                                    --             {type = "toggle", key = "TGUI.context.toggleTest",text="Toggle", action=function()
+                                                    --             end},
+                                                    --             {type = "toggle", disabled=true ,key = "TGUI.context.toggleTest",text="Disabled Toggle", action=function()
+                                                    --             end},
+                                                    --             {type = "submenu", text="Submenu", items={
+                                                    --                 {type = "button", text="Submenu Button", action=function()
+                                                    --                 end},
+                                                    --                 {type = "button", disabled=true, text="Disabled Submenu Button", action=function()
+                                                    --                 end},
+                                                    --                 {type="divider"},
+                                                    --                 {type = "submenu", text="submenu within a submenu", items={
+                                                    --                     {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                     end},
+                                                    --                     {type="divider"},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                                    --                     {type = "submenu", text="submenu within a submenu", items={
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                         {type = "button",disabled=true, text="Submenu Button", action=function()
+                                                    --                         end},
+                                                    --                     }},
+                                    
+                                                    --                 }},
+                                                    --                 {type = "submenu",disabled=GetBool('TGUI.test.ContextMenu.ItemDisabled'), text="Disabled submenu", items={
+                                                    --                     {type = "button", text="Submenu Button", action=function()
+                                                    --                     end},
+                                                    --                 }},
+                                                    --                 {type="divider"},
+                                                    --                 {type = "toggle", key = "TGUI.test.ContextMenu.ItemDisabled",text="Disable submenu", action=function()
+                                                    --                 end},
+                                                    --             }},
+                                                    --             {type = "submenu",disabled=true, text="Disabled Submenu", items={}},
+
+                                                    --             {type="divider"},
+                                                    --             {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                    --             {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                    --             {type="divider"},
+                                                    --             {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                    --             {type = "button", disabled=true, text="Disabled Button", action=function()end},
+                                                    --         }, window)
+                                                    --     end
+                    
+                                                    --     UiTranslate(0,UiHeight() - 26)
+                                                    --     UiPush()
+                                                    --         UiTranslate(24,-24)
+                                                    --         uic_checkbox("Exit window? ","iam.key", 100,false)
+                                                    --     UiPop()
+                                                
+                                                    --     uic_divider(UiWidth(),false)
+                                                    --     UiTranslate(UiWidth(),6)
+                                                    --     UiAlign("right top")
+                                                    --     if uic_button(0,"Yes",150,20,not GetBool('iam.key')) then 
+                                                    --         window.closeWindow = true
+                                                    --     end
+                                                    -- UiPop()
+                                                end, window, {
+                                                    Padding = GetInt("TGUI.containerPadding")
+                                                })
+                                            UiPop()
                                         UiPop()
                                         UiTranslate(0,92)
                                         UiPush()
@@ -993,93 +1043,116 @@ function draw(dt)
                                         })
                                         UiTranslate(0,32)
                                             UiPush()
-                                            uic_listBox_container(window.listbox, 160, GetInt("TGUI.test.listbox.h"), false, true, true, {
-                                                -- array with theres keys, keyItem and text
-                                                {
-                                                    keyItem = "1",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "2",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "3",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "4",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "5",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "6",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "7",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "8",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "9",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "10",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "11",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "12",
-                                                    text = "Hello there"
-                                                },
-                                                {
-                                                    keyItem = "13",
-                                                    text = "Hello 13"
-                                                },
-                                                {
-                                                    keyItem = "14",
-                                                    text = "Hello 14"
-                                                },
-                                                {
-                                                    keyItem = "15",
-                                                    text = "Hello 15"
-                                                },
-                                                {
-                                                    keyItem = "16",
-                                                    text = "Hello 16"
-                                                },
-                                                {
-                                                    keyItem = "17",
-                                                    text = "Hello 17"
-                                                }
-                                            }, {
-                                                key = "savegame.mod.multiSelect_test",
-                                                multiSelect = false,
-                                            });
-                                            UiTranslate(0,16)
+                                                UiPush()
+                                                uic_listBox_container(window.listbox, 160, GetInt("TGUI.test.listbox.h"), false, true, true, {
+                                                    -- array with theres keys, keyItem and text
+                                                    {
+                                                        keyItem = "1",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "2",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "3",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "4",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "5",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "6",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "7",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "8",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "9",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "10",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "11",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "12",
+                                                        text = "Hello there"
+                                                    },
+                                                    {
+                                                        keyItem = "13",
+                                                        text = "Hello 13"
+                                                    },
+                                                    {
+                                                        keyItem = "14",
+                                                        text = "Hello 14"
+                                                    },
+                                                    {
+                                                        keyItem = "15",
+                                                        text = "Hello 15"
+                                                    },
+                                                    {
+                                                        keyItem = "16",
+                                                        text = "Hello 16"
+                                                    },
+                                                    {
+                                                        keyItem = "17",
+                                                        text = "Hello 17"
+                                                    }
+                                                }, {
+                                                    key = "savegame.mod.multiSelect_test",
+                                                    multiSelect = GetBool("TGUI.listbox.enabledMulty"),
+                                                });
+                                                UiTranslate(0,24)
+                                                uic_checkbox("Enable multiSelect", "TGUI.listbox.enabledMulty", 300, false)
+                                                UiTranslate(0,16)
+                                                UiPush()
+                                                    uic_button_func(0, "Add", 100, 24,false, false, function() 
+                                                        local i = GetInt("TGUI.test.listbox.h");
+                                                        SetInt("TGUI.test.listbox.h", i+1);
+                                                    end);
+                                                    UiTranslate(0,28)
+                                                    uic_button_func(0, "Remove", 100, 24,false, false, function() 
+                                                        local i = GetInt("TGUI.test.listbox.h");
+                                                        SetInt("TGUI.test.listbox.h", i-1);
+                                                    end);
+                                                UiPop()
+                                                UiTranslate(0,64)
+                                                UiPush()
+                                                    uic_text("Radio selection", 24)
+                                                    UiTranslate(0,24)
+                                                    uic_radio_button("TGUI.test.radio.t1", "easy", "Easy", 130)
+                                                    UiTranslate(0,18)
+                                                    uic_radio_button("TGUI.test.radio.t1", "medium", "Medium", 130)
+                                                    UiTranslate(0,18)
+                                                    uic_radio_button("TGUI.test.radio.t1", "hard", "Hard", 130)
+                                                    UiTranslate(0,18)
+                                                    uic_radio_button("TGUI.test.radio.t1", "WTF", "WTF", 130)
+                                                UiPop()
+                                            UiPop()
                                             UiPush()
-                                                uic_button_func(0, "Add", 100, 24,false, false, function() 
-                                                    local i = GetInt("TGUI.test.listbox.h");
-                                                    SetInt("TGUI.test.listbox.h", i+1);
-                                                end);
-                                                UiTranslate(0,28)
-                                                uic_button_func(0, "Remove", 100, 24,false, false, function() 
-                                                    local i = GetInt("TGUI.test.listbox.h");
-                                                    SetInt("TGUI.test.listbox.h", i-1);
-                                                end);
+                                            UiTranslate(175, 0)
+                                            uic_treeView_container(window.treeview, 160, GetInt("TGUI.test.listbox.h"),function(c)
+                                                DebugPrint(c)
+                                            end, window.treeview.contents )
                                             UiPop()
                                         UiPop()
+                                        UiTranslate(180,0)
                                         UiPush()
                                             UiPush()
                                                 UiTranslate(180,0)
@@ -1115,18 +1188,48 @@ function draw(dt)
                                             end
                                             -- 
                                             UiTranslate(180,140)
-                                            uic_spinbuttons("TGUI.spinbutton", "", true, function() end, {
+                                            uic_checkbox("Disavled spin controls", "TGUI.spin.disable", 300, false)
+                                            UiTranslate(0,24)
+                                            uic_spinbuttons("TGUI.spinbutton", "", GetBool("TGUI.spin.disable"), function() end, {
                                                 min = 0,
                                             })
                                             UiPush()
-                                                UiTranslate(18,0)
-                                                uic_text(GetInt("TGUI.spinbutton"), 32, 18)
+                                                UiTranslate(24,0)
+                                                uic_spinbuttons("TGUI.spinbutton", "", GetBool("TGUI.spin.disable"), function() end, {
+                                                    min = 0,
+                                                    buttonDirection = "X"
+                                                })
                                             UiPop()
+                                            -- UiPush()
+                                            --     UiTranslate(18,0)
+                                            --     -- uic_text(GetInt("TGUI.spinbutton"), 32, 18)
+                                            -- UiPop()
                                             UiTranslate(64,0)
-                                            uic_spincontrol("TGUI.spinbutton", "", 75, false, function() end, {
+                                            uic_spincontrol("TGUI.spinbutton", "", 75, GetBool("TGUI.spin.disable"), function() end, {
                                                 max = 3,
                                                 min = 0
                                             })
+                                            UiTranslate(-64,48)
+                                            UiPush()
+                                                UiPush()
+                                                    uic_container(64,32,true, true, false, function( ... )
+                                                        UiTranslate(0, 24)
+                                                    end, false, {})
+                                                UiPop()
+                                                UiTranslate(64,0)
+                                                UiPush()
+                                                    uic_container(128,32,true, true, false, function( ... )
+                                                    end, false, {
+                                                        LabelText = "123 123 123"
+                                                    })
+                                                UiPop()
+                                            UiPop()
+                                            UiPush()
+                                                UiTranslate(0,48)
+                                                uic_slider(window.sliderTest,128,"TGUI.slider",{0,10},1, "lmao")
+                                                UiTranslate(0,8)
+                                                uic_text(GetInt("TGUI.slider"), 24,20)
+                                            UiPop()
                                         UiPop()
                                     end
                                 },
@@ -1141,12 +1244,13 @@ function draw(dt)
                                     ["Content"] = function()
                                         UiTranslate(12,12)
                                         uic_scroll_Container(window.scrollArea,UiWidth()-24,window.scrollConHeight, true, window.scrollHeight, 300 ,function(extraContent)
+                                            UiPush()
+                                                UiTranslate(0, 0)
+                                                UiColor(0, 0, 0, 0.2)
+                                                UiRect(500, 24)
+                                            UiPop()
                                             UiTranslate(12,0)
                                             UiText('i am at the top')
-                                            UiPush()
-                                                UiTranslate(0, 32)
-                                                UiRect(1000, 24)
-                                            UiPop()
                                             UiPush()
                                                 UiTranslate(12,UiHeight()-200)
                                                 UiPush()
@@ -1230,9 +1334,9 @@ function draw(dt)
         UiPush()  
             UiTranslate(30,100)
             UiCreateWindow(120,100,false,"Window settings",8,function()
-                if uic_button(0,"New window",UiWidth(),24) then
+                uic_button_func(0, "New Window", UiWidth(), 24, false, "", function()
                     SetBool('TGUI.menu.show',true);
-                end
+                end)
                 UiTranslate(0,28)
                 uic_checkbox("disable input", "tgui.disableInput", 100)
             end)
@@ -1241,11 +1345,6 @@ function draw(dt)
 
     initDrawTGUI(ALL_WINDOWS_OPEN)
     uic_drawContextMenu()
-    uic_tooltip()
-
-
-
-
     --     if (isFirstFrame) then
 --         isFirstFrame = false
 

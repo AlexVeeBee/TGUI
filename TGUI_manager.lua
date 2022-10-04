@@ -82,39 +82,60 @@ local pos = {}
 
 ---TGUI MANAGER: UI INIT
 -----------------------------
----Manager for createing a window and moving it
---
----Params to create a window
----@options focused - Focused window
----@options closeWindow - Close the window.
----@options startMiddle - Start in the middle of your screen.
----@options allowResize - Allow the window to be resized.
----@Default-value: true
----half important:
-----
----@options tabFirstFrame - if you have a tab widget, then this must be added
----Important:
-----
----@important firstFrame = true - adds options in the first frame
----@important padding - adds padding around the window
----@important title - Title of the window
----@important pos = `{x = (int), y = (int)}` - Position of the window
----@important size = `{w = (int), h = (int)}` - Size of the window
----@not_in_use opacity
 ---@param TABLEwindows table Where all the windows are stored
-function initDrawTGUI( TABLEwindows )
-    -- if TABLEwindows == nil then 
-    --     UiPush()
-    --     UiTranslate(UiCenter(),50)
-    --     UiAlign('center middle')
-    --     UiColor(0,0,0,1)
-    --     UiRect(UiWidth(),50)
-    --     UiColor(1,1,1,1)
-    --     UiFont("MOD/ui/TGUI_resources/Fonts/TAHOMABD.TTF", 24)
-    --     UiText('[TGUI.Main]: invalid table',move)
-    --     UiPop()
-    --     -- DebugPrint('[TGUI.Main]: invalid table')
-    -- return end
+---@param style? table Style the window
+---Manager for creating a window and moving it
+--
+--- Params to create a window
+--
+------------------
+--- options:
+----
+---- window param: focused - Focused window
+---- closeWindow - Close the window.
+---- options: startMiddle - Start in the middle of your screen.
+---- options: allowResize - default: true - Allow the window to be resized.
+------------------
+--- half important:
+----
+---- options: tabFirstFrame - if you have a tab widget, then this must be added
+------------------
+--- Important:
+----
+---- important: firstFrame = true - adds options in the first frame
+---- important: padding - adds padding around the window
+---- important: title - Title of the window
+---- important: pos = `{x = (int), y = (int)}` - Position of the window
+---- important: size = `{w = (int), h = (int)}` - Size of the window
+---- opacity - no in use
+------------------ 
+--- style:
+----
+--- color format: 255 range - Alpha range: 200
+---- `style.focusBackgroundColor` default: `{r=160,g=160,b=160,a=150}` - 
+---- `style.unfocusedBackgroundColor` default: `{r=28,g=28,b=28,a=64}` - 
+---- `style.TitleBar.titleColor` default: `{r=255,g=255,b=255,a=200}` -
+function initDrawTGUI( TABLEwindows, style )
+    if style == nil then
+        style = {
+            focusBackgroundColor = {r=160,g=160,b=160,a=150},
+            unfocusedBackgroundColor = {r=28,g=28,b=28,a=64},
+            -- WindowTitleFont 
+            TitleBar = {
+                titleColor = {r=255,g=255,b=255,a=200},
+                padding = 0
+            }
+        }
+    end
+    if style then
+        if style.focusBackgroundColor == nil then style.focusBackgroundColor = {r=160,g=160,b=160,a=150} end
+        if style.unfocusedBackgroundColor == nil then style.unfocusedBackgroundColor = {r=28,g=28,b=28,a=64} end
+        if style.TitleBar == nil then
+            style.TitleBar = {}
+            if style.TitleBar.titleColor == nil then style.TitleBar.titleColor = {r=255,g=255,b=255,a=200} end
+            if style.TitleBar.padding == nil then style.TitleBar.padding = 0 end
+        end
+    end
     if GetBool('tgui.disableInput') then
         if opacityEnabled == false then
             SetValue('globalWindowOpacity',0.3,"linear",0.3)
@@ -154,8 +175,9 @@ function initDrawTGUI( TABLEwindows )
             table.remove(TABLEwindows, v)
             return false
         end
-        if v.firstFrame then v.focused = false v.prefocused = false v.closeWindow = false v.keepMoving = false v.keepResizing = false v.disableDrag = false
+        if v.firstFrame or v.firstFrame == nil then v.focused = false; v.prefocused = false; v.closeWindow = false; v.keepMoving = false; v.keepResizing = false; v.disableDrag = false;
             v.Dragging = false
+            if v.hideTitleBar == nil then v.hideTitleBar = false end
             if v.minSize == nil then v.minSize = {w = 160,h = 160,} end
             if v.allowResize == nil then v.allowResize = true end
             v.firstFrame = false
@@ -198,14 +220,14 @@ function initDrawTGUI( TABLEwindows )
                     UiAlign('top left')
                     UiColorFilter(1,1,1,globalWindowOpacity)
                     if last == i then
-                        UiColor(c255(160), c255(160), c255(160),c200(150))
+                        UiColor(c255(style.focusBackgroundColor.r), c255(style.focusBackgroundColor.g), c255(style.focusBackgroundColor.b),c200(style.focusBackgroundColor.a))
                         v.focused = true
                         if v.prefocused == false then
                             v.prefocused = true
                         end
                         if UiBlankButton(v.size.w, v.size.h) then end
                     else
-                        UiColor(c255(28), c255(28), c255(28),c200(64))
+                        UiColor(c255(style.unfocusedBackgroundColor.r), c255(style.unfocusedBackgroundColor.g), c255(style.unfocusedBackgroundColor.b),c200(style.unfocusedBackgroundColor.a))
                         v.focused = false
                         if v.prefocused == true then
                             v.prefocused = false
@@ -235,7 +257,7 @@ function initDrawTGUI( TABLEwindows )
                 UiPop()
                 -- UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
                 UiTranslate(12,0)
-                UiColor(1,1,1,1)
+                UiColor(c255(style.TitleBar.titleColor.r), c255(style.TitleBar.titleColor.g), c255(style.TitleBar.titleColor.b), c200(style.TitleBar.titleColor.a))
                 uic_text(v.title, 32, 12, {
                     font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF"
                 })
@@ -446,7 +468,7 @@ function initDrawTGUI( TABLEwindows )
             UiTranslate(0,UiMiddle()-100)
             UiText('[TGUI.MANAGER]: invalid argument',18)
         UiPop()
-    return end
+    end
     SetBool('TGUI.interactingWindow',false)
 end
 

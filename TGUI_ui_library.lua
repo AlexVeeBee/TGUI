@@ -22,6 +22,18 @@ function init()
     }
     MasterStyles = {
         borderPadding = 1,
+        UiImageBox = {
+            UICCONTAINER = {
+                pathimgeInner = tgui_ui_assets..'/textures/outline_inner_normal.png',
+                pathimgeOutter = tgui_ui_assets..'/textures/outline_outer_normal.png',
+                pathimgeTab = tgui_ui_assets..'/textures/outline_outer_tab_container.png',
+                BorderWidth = 1,
+                BorderHeight = 1,
+            },
+            UISLIDER = {
+                -- pathimageSliderBox = 
+            }
+        }
     }
 end
 
@@ -87,6 +99,7 @@ uic_draw_contextmenu,uic_contextMenu_getCursor,uic_isCursorInside = false, false
         --      }
         --  }
 local draw_dropdown,draw_dropdown_contents,draw_dropdown_extra,draw_dropdown_pos = false, {}, {}, {x=0,y=0,w=0,h=0, posCalc={x=0,y=0}}
+local draw_tooltip, draw_tooltip_text, draw_tooltip_pos, draw_tooltip_params  = false, "TEST TEST", {x=200,y=200,w=20,h=20, posCalc={x=0,y=0}, mouse= { x = 0, y = 0 }}, {popInTimer = 0}
 
 uic_contextMenu_contents = {
     submenuItems = {
@@ -171,41 +184,28 @@ winfake = {
     }
 }
 
+---❗ [OBSOLETE] ❗
+-------
+---- this function will be removed in the future
+---- use uic_drawContextMenu instead
+--
 ---This function must be called after all of the ui
+---@deprecated
 function uic_tooltip()
-    UiPush()
-        if not uic_tooltip_enabled then
-            mouse_x,mouse_y = UiGetMousePos()
-        end
-        if uic_tooltip_enabled then
-            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
-            local t_text_w,t_text_h = UiGetTextSize(uic_tooltip_text)
-            UiAlign('top left')
-            UiTranslate(mouse_x,mouse_y +20)
-            UiImageBox(tgui_ui_assets..'/textures/hint.png',t_text_w,t_text_h,1,1)
-            UiColor(c255(136),c255(84),c255(30),1)
-            UiText(uic_tooltip_text)
-        end
-    UiPop()
-end
-function uic_tooltip_hover(id, open)
-    if open then
-        if uic_tooltip_hover_id == id then
-            if uic_tooltip_hover_timer == 1 then
-                SetValue('uic_tooltip_hover_timer',0,"linear",1)
-            end
-            if uic_tooltip_hover_timer == 0 then
-                uic_tooltip_enabled = true
-            end
-        else
-            uic_tooltip_enabled = false
-            uic_tooltip_hover_timer = 1
-            uic_tooltip_hover_id = id
-        end
-    else 
-        uic_tooltip_enabled = false
-        uic_tooltip_hover_timer = 1
-    end
+    -- UiPush()
+    --     if not uic_tooltip_enabled then
+    --         mouse_x,mouse_y = UiGetMousePos()
+    --     end
+    --     if uic_tooltip_enabled then
+    --         UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
+    --         local t_text_w,t_text_h = UiGetTextSize(uic_tooltip_text)
+    --         UiAlign('top left')
+    --         UiTranslate(mouse_x,mouse_y +20)
+    --         UiImageBox(tgui_ui_assets..'/textures/hint.png',t_text_w,t_text_h,1,1)
+    --         UiColor(c255(136),c255(84),c255(30),1)
+    --         UiText(uic_tooltip_text)
+    --     end
+    -- UiPop()
 end
 
 _globalContextMenu_isCursorInside = false;
@@ -594,8 +594,8 @@ function uic_drawContextMenu()
                         UiPop()
                         if UiBlankButton(c.w-scroll_width,bu_he) then
                             draw_dropdown = false
-                            SetString(draw_dropdown_extra.key,v.keyVal)
-                            SetString(draw_dropdown_extra.key..".dropdwon.val",v.text)
+                            SetString(draw_dropdown_extra.key..".dropdwon.text",v.text)
+                            SetString(draw_dropdown_extra.key..".dropdwon.val",v.keyVal)
                         end
                         -- UiPush()
                         --     UiTranslate(0,-he)
@@ -613,6 +613,26 @@ function uic_drawContextMenu()
         UiPop()
     else
         draw_dropdown_contents = {}
+    end
+    if draw_tooltip then
+        local mouse_x,mouse_y = UiGetMousePos();
+        draw_tooltip_pos.mouse.x = mouse_x;
+        draw_tooltip_pos.mouse.y = mouse_y;
+
+        UiPush()
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
+            local t_text_w,t_text_h = UiGetTextSize(draw_tooltip_text)
+            UiAlign('top left')
+            UiTranslate(draw_tooltip_pos.mouse.x,draw_tooltip_pos.mouse.y +20)
+            UiImageBox(tgui_ui_assets..'/textures/hint.png',t_text_w,t_text_h,1,1)
+            UiColor(c255(136),c255(84),c255(30),1)
+            UiText(draw_tooltip_text)
+        UiPop()
+    else
+        local mouse_x,mouse_y = UiGetMousePos();
+        draw_tooltip_pos.mouse.x = mouse_x;
+        draw_tooltip_pos.mouse.y = mouse_y;
+        draw_tooltip_text = ""
     end
 end
 
@@ -652,6 +672,32 @@ function UiCreateWindow(width,height,clip,title,padding,content)
     UiPop()
 end
 
+---Create a hitbox for tooltips to display
+---@param w integer with
+---@param h integer height
+---@param text string text of the tooltip
+---@param dt any draw param
+function uic_tooltipHitbox( w,h, active ,text )
+    DebugPrint(draw_tooltip_params.popInTimer)
+    UiPush()
+    if active then
+        if UiIsMouseInRect(w, h) then
+            draw_tooltip_params.popInTimer = draw_tooltip_params.popInTimer + 0.1
+            if draw_tooltip_params.popInTimer > 2 then
+                draw_tooltip_params.popInTimer = 2
+                draw_tooltip = true
+            end
+            draw_tooltip_text = text;
+        else
+            if draw_tooltip == true then
+                -- draw_tooltip_params.popInTimer = 0
+                -- draw_tooltip = false
+            end
+        end
+    end
+    UiPop()
+end
+
 --[[ widgets ]]
 
 ---Create a container widget
@@ -662,57 +708,93 @@ end
 ---@param border boolean Adds the border to the container
 ---@param content function function: UI
 ---@param ectraContent any? Additional content to be called to the container
----@param customize table? Customize the container
-function uic_container(width,height,clip,border,makeinner,content, ectraContent, customization)
-    if customization == nil then
-        customization = {
-            HaveUiWindow = true,
+---@param style table? Customize the container
+-- `Autotranslate`Default: "Y" -- directions: "X" or "Y". Letters must be capitalized
+-- `HaveUiWindow`Default: true
+-- `LabelText`Default: "" -- left empty for no label text
+-- `LabelFont`Default: LabelFont = tgui_ui_assets.."/Fonts/TAHOMABD.TTF",
+function uic_container(width,height,clip,border,makeinner,content, ectraContent, style)
+    if style == nil then
+        style = {
+            Padding = 0,
+            BorderPadding = 1,
+            Autotranslate = "Y",
+            LabelText = nil,
+            LabelFont = tgui_ui_assets.."/Fonts/TAHOMABD.TTF",
         }
     else
-        if customization.HaveUiWindow == nil then
-            customization.HaveUiWindow = true
-        end
+        if style.Padding == nil then style.Padding = 0 end
+        if style.BorderPadding == nil then style.BorderPadding = 1 end
+        if style.Autotranslate == nil then style.Autotranslate = "Y" end
+        if style.LabelText == nil then style.LabelText = nil end
+        if style.LabelFont == nil then style.LabelFont = tgui_ui_assets.."/Fonts/TAHOMABD.TTF" end
     end
+
     UiPush()
-        if(not border) then 
-            if (customization.HaveUiWindow) then
-                UiWindow(width,height,clip,true) 
-            end
-        end
         if border then
-            if makeinner then
-                UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',width,height,1,1)
+            if type(style.LabelText) == "nil" then
+                if makeinner then
+                    UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',width,height,1,1)
+                else
+                    UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',width,height,1,1)
+                end
             else
-                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',width,height,1,1)
+                UiImageBox(tgui_ui_assets..'/textures/outline_outer_tab_container.png',width,height,1,1)
+                UiPush()
+                    UiImageBox(tgui_ui_assets..'/textures/line_white.png',8,1,0,0)
+                    UiTranslate(8, 0)
+                    UiPush()
+                        UiTranslate(0, -12)
+                        local t = uic_text(style.LabelText, 24, 13, { font = style.LabelFont });
+                    UiPop()
+                    UiTranslate((t.width), 0)
+                    UiImageBox(tgui_ui_assets..'/textures/line_white.png',(width-t.width-9),1,0,0)
+                UiPop()
             end
         end
-        if(border) then 
-            if (customization.HaveUiWindow) then
-                UiWindow(width-2,height-2,clip,true) 
-            end
         
-            UiTranslate(1,1)
-        end
+        -- UiWindow(width-2,height-2,clip,true) 
+        UiTranslate(style.BorderPadding, style.BorderPadding);
+        UiTranslate(style.Padding, style.Padding);
+        UiWindow((width+(style.BorderPadding*2)-(style.Padding*2)-3), (height+(style.BorderPadding*2)-(style.Padding*2)-3), clip, clip)
+        -- if (clip) then
+        -- end
+        -- UiTranslate(1,1)
         -- UiTranslate(1,1)
         -- UiWindow(width,height,false)
         UiPush()
             content(ectraContent)
         UiPop()    
     UiPop()    
-    UiTranslate(0,height)
+    if height-style.Padding < style.Padding then
+        UiPush()
+            UiColor(1, 0, 0, 0)
+            local t = uic_text("Height too small for padding", 24, 18)
+            UiColor(0.4, 0, 0, 0.8)
+            UiRect(width, t.height)
+        UiPop()
+        UiPush()
+            uic_text("Height too small for padding", 24, 18)
+        UiPop()
+    end
+    if style.Autotranslate == "Y" then
+        UiTranslate(0,height)
+    end
+    if style.Autotranslate == "X" then
+        UiTranslate(width,0)
+    end
 end
----@alias menubarCustom # Table customization
----| "showBorder" # Default: true
----| "AllBorders" # Default: false
----| "borderTop" # Default: true
----| "borderBottom" # Default: true
----| "textPadding" # Default: 4
 
 ---@param w integer width of the menubar
 ---@param items table What should show in the menubar `{title = "Text", contents = {TGUI.contextmenu format}}`
 ---@contextmenu format: `{type = "(empty is just text)"|"divider"|"button"|"toggle"|"submenu"`(to insert items do ,`items = {--[[TGUI.contextmenu format]]}`)`}`
 ---@param extraContent any? Additional content to be called to the menubar
----@param customization menubarCustom? `table` customize the menubar
+---@param customization table? `table` customize the menubar
+---- `showBorder` Default: true
+---- `AllBorders` Default: false
+---- `borderTop` Default: true
+---- `borderBottom` Default: true
+---- `textPadding` Default: 4
 function uic_menubar(w, items ,extraContent , customization)
     if customization == nil then
         customization = {
@@ -1119,36 +1201,66 @@ end
 ---  } , ... 
 ---}
 --```
----@param extraContent any Additional content to be called to the container and all the available tabs
-function uic_tab_container(window, w,h,clip,border,contents, extraContent)
+---@param extraContent? any Additional content to be called to the container and all the available tabs
+---@param style? table Style the tab container
+-----------
+---## style
+---- `tabHeight` default: 25, Height of the tabs
+---- `tabPaddingRight` default: 20, Padding right of the tabs for the text
+---- `tabPaddingLeft` default: 0, Padding left of the tabs for the text
+---- `tabTextSize` default: 15, Text size of the tab
+-----------
+---@param dt? any The draw
+function uic_tab_container(window, w,h,clip,border,contents, extraContent, style, dt)
+    -- if window.tabFirstFrame == true or window.tabFirstFrame == nil then
+        if style == nil then
+            style = {
+                tabHeight = 25,
+                tabPaddingRight = 20,
+                tabPaddingLeft = 0,
+                tabTextSize = 15
+            }
+        else
+            if style.tabHeight == nil then style.tabHeight = 25 end
+            if style.tabPaddingRight == nil then style.tabPaddingRight = 20 end
+            if style.tabPaddingLeft == nil then style.tabPaddingLeft = 0 end
+            if style.tabTextSize == nil then style.tabTextSize = 15 end
+        end
+    -- end
     local line_width = w
     UiPush()
         UiWindow(w,h,clip,clip)
         UiPush()
+            local all_tab_width = 0
+            local tab_height = style.tabHeight
+            local right_padding = style.tabPaddingRight
+            local left_padding = style.tabPaddingLeft
             UiPush()
-                UiTranslate(0,24)
+                UiTranslate(0,tab_height-1)
                 if border then
-                    UiImageBox(tgui_ui_assets..'/textures/outline_outer_tab_container.png',w,h-24,1,1)
+                    UiImageBox(tgui_ui_assets..'/textures/outline_outer_tab_container.png',w,h-tab_height-1,1,1)
                 end
             UiPop()
             UiButtonImageBox('MOD',0,0,0,0,0,0)
             
-            local all_tab_width = 0
-            local tab_height = 25
-            local right_padding = 20
             if window.tabFirstFrame == true or window.tabFirstFrame == nil then
                 window.tabOpen = contents["open_default"]
                 window.overflow = false
                 window.tabScroll = 0
                 window.tabFirstFrame = false
+                window.tabFade = 0
+            end
+            if dt then
+                window.tabFade = window.tabFade + dt/0.2
+                if window.tabFade > 1 then
+                    window.tabFade = 1
+                end
+            else
+                window.tabFade = 1
             end
             UiPush()
             UiWindow(w,tab_height+1,true)
-            if window.overflow then
-                if UiIsMouseInRect(w,tab_height+1) then else
-                    UiDisableInput()
-                end
-            end
+            if window.overflow then if UiIsMouseInRect(w,tab_height+1) then else UiDisableInput() end end
             UiTranslate(window.tabScroll,0)
             for i, v in ipairs(contents) do
                 UiPush()
@@ -1157,24 +1269,18 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
                     tab_text_w,_ = UiGetTextSize(v.title)
                     UiPush()
                         local removeHeight = 3
-                        if window.tabOpen == i then
-                            removeHeight = 0
-                        end
+                        if window.tabOpen == i then removeHeight = 0 end
                         UiAlign('bottom left')
                         UiTranslate(0,tab_height)
-                        tab_width = tab_text_w+right_padding
+                        tab_width = tab_text_w+right_padding+left_padding
                         UiWindow(width,height,clip)
                         UiImageBox(tgui_ui_assets..'/textures/outline_outer_tab.png',tab_width,tab_height-removeHeight,1,1)
                         UiPush()
-                            UiDisableInput()
-                            UiTextButton(v.title,tab_text_w,tab_height-removeHeight)
+                            UiTranslate(style.tabPaddingLeft, 0)
+                            uic_text(v.title,tab_height-removeHeight, style.tabTextSize)
                         UiPop()
-                        if UiBlankButton(tab_width,tab_height-removeHeight) then 
-                            window.tabOpen = i
-                        end
-                        if removeHeight == 3 then
-                            UiImageBox(tgui_ui_assets..'/textures/line_white.png',tab_width,1,0,0)
-                        end
+                        if UiBlankButton(tab_width,tab_height-removeHeight) then window.tabOpen = i; if dt then window.tabFade = 0 end end
+                        if removeHeight == 3 then UiImageBox(tgui_ui_assets..'/textures/line_white.png',tab_width,1,0,0) end
                         UiAlign('top left')
                         UiPush()
                             -- DebugPrint(#contents.." == "..i)
@@ -1278,19 +1384,20 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent)
         UiPop()
         UiPush()
         if w > all_tab_width then
-            UiTranslate(all_tab_width-1,24)
+            UiTranslate(all_tab_width,tab_height-1)
             UiImageBox(tgui_ui_assets..'/textures/line_white.png',line_width,1,0,0)
         end
         UiPop()    
         if(border) then
             UiTranslate(1,tab_height)
-            UiWindow(w-2,h-tab_height-1,true)
+            UiWindow(w-2,h-tab_height-3,true)
         end
         -- uic_text(window.tabOpen)
         UiPush()
             if not UiIsMouseInRect(w,h) then
                 UiDisableInput()
             end
+            UiColorFilter(1, 1, 1, window.tabFade)
             -- UiWindow(w,h,clip)
             if (extraContent ==not nil) then
             contents[window.tabOpen]["Content"](extraContent)
@@ -1425,7 +1532,6 @@ function uic_tableview_container(window,w,h,clip,border,makeinner,nameContents,i
                 clip = false,
             })
             end, nil, {HaveUiWindow = false})
-
             
             -- SCROLL CONTAINER
             do
@@ -1524,18 +1630,10 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
     if options == nil then
         options = {}
     else
-        if options.key == nil then
-            error("You must specify a key")
-        end
-        if options.multiSelect == nil then
-            options.multiSelect = false
-        end
-        if options.onSelect == nil then
-            options.onSelect = function() end
-        end
-        if options.onDeSelect == nil then
-            options.onDeSelect = function() end
-        end
+        if options.key == nil then error("You must specify a key") end
+        if options.multiSelect == nil then options.multiSelect = false end
+        if options.onSelect == nil then options.onSelect = function() end end
+        if options.onDeSelect == nil then options.onDeSelect = function() end end
     end
     if window.scrollcontainer == nil then
         window.scrollcontainer = {};
@@ -1616,8 +1714,8 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                             UiRect(17,h_items_visible*19-34)
                             
                             local bar_scroll_Y=scrollY*((h_items_visible*19-34)/(#contents))
-                            local viewportRatio_height = h_items_visible*19 / #contents*19
-                            local scrollY_bar_height = math.max(0, math.floor((h_items_visible-34)*viewportRatio_height))
+                            local viewportRatio_height = h_items_visible / #contents
+                            local scrollY_bar_height = math.max(0, math.floor(((h_items_visible*19)-34)*viewportRatio_height))
                             UiColor(c255(191), c255(191), c255(191), 1)
                             UiTranslate(0, bar_scroll_Y)
                             UiColor(1,1,1,1) --scrollY
@@ -1747,7 +1845,106 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
         UiPop() 
     UiPop()
     UiTranslate(0, h_items_visible*19);
-end 
+end
+
+---Make a tree of items
+---@param window table Window table
+---@param w integer height of the tree container
+---@param h_items_visible integer height of the tree container
+---@param contents table contents for the tree
+---@param style? table Style the container
+---- `style.BackgroundColor` default: `{r=93,g=93,b=93,a=0.5}` - color range: 255 - alpha: 200
+---- `style.Border` default: false - show border around the container
+---- `style.BorderInnder` default: false - change the texture to make it inner 
+---- `style.BorderPadding` default: 1 - change the borderWidth and borderHeight 
+---- `style.Padding` default: 1 - change the borderWidth and borderHeight 
+function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
+    if style == nil then 
+        style = {
+            BackgroundColor = {r=93,g=93,b=93,a=100},
+            Border = true,
+            BorderInnder = true,
+            BorderPadding = 1,
+            BackgroundTextureInner = tgui_ui_assets.."/textures/outline_inner_normal.png",
+            BackgroundTextureOutter = tgui_ui_assets.."/textures/outline_outer_normal.png",
+        }
+    else
+        if style.BackgroundColor == nil then style.BackgroundColor = {r=93,g=93,b=93,a=100} end
+        if style.Border == nil then style.Border = true end
+        if style.BorderInnder == nil then style.BorderInnder = true end
+        if style.BorderPadding == nil then style.BorderPadding = 1 end
+        if style.BackgroundTextureInner == nil then BackgroundTextureInner = tgui_ui_assets.."/textures/outline_inner_normal.png" end
+        if style.BackgroundTextureOutter == nil then BackgroundTextureOutter = tgui_ui_assets.."/textures/outline_outer_normal.png" end
+    end
+    UiPush()
+        if not UiIsMouseInRect(w, h_items_visible*19+2) then
+            UiDisableInput()
+        end
+        if style.Border then
+            UiPush()
+                UiColor(c255(style.BackgroundColor.r),c255(style.BackgroundColor.g),c255(style.BackgroundColor.b),c200(style.BackgroundColor.a))
+                UiRect(w+1,(h_items_visible*19)+2)
+            UiPop()
+            if style.BorderInnder then
+                UiImageBox(style.BackgroundTextureInner,w+1,(h_items_visible*19)+2,style.BorderPadding,style.BorderPadding)
+            else
+                UiImageBox(style.BackgroundTextureOutter,w+1,(h_items_visible*19)+2,style.BorderPadding,style.BorderPadding)
+            end
+        end
+        UiTranslate(style.BorderPadding, style.BorderPadding);
+        UiTranslate(style.Padding, style.Padding);
+        UiWindow((w+(style.BorderPadding*2)-3), (h_items_visible*19+(style.BorderPadding*2)-2), true, true)
+
+        function displayName( t )
+            UiPush()
+                uic_text( t , 19, 15)
+            UiPop()
+        end
+        -- for i, v in ipairs(contents) do
+
+        -- end
+
+        function displayTree(content, extra)
+            local path = extra
+            if type(content) == "table" then
+                -- UiImage("path", opt_x0, opt_y0, opt_x1, opt_y1)
+                UiPush()
+                    UiTranslate(19/2, 19/2)
+                    UiAlign("center middle")
+                    if UiBlankButton(19, 19) then
+                        if content.hidden == nil then content.hidden = false else
+                            content.hidden = not content.hidden
+                        end
+                    end
+                    if content.hidden == false then
+                        UiImage(tgui_ui_assets.."/textures/arrow_down.png")
+                    else
+                        UiImage(tgui_ui_assets.."/textures/arrow_right.png")
+                    end
+                UiPop()
+                UiTranslate(19, 0)
+                displayName( content.itemText )
+                UiTranslate(0, 19)
+                if content.hidden == false then
+                    for i, v in ipairs(content) do
+                        displayTree(v, path.."."..content.itemText)
+                    end
+                end
+                UiTranslate(-19, -19)
+            elseif type(content) == "string" then
+                if UiBlankButton(w, 19) then
+                    
+                    onClick( "root"..path.."."..content );
+                end
+                displayName( content )
+            end
+            UiTranslate(0, 19)
+        end
+        for i, v in ipairs(contents) do
+            displayTree(v, "")
+        end
+    UiPop()
+end
 ---[[ UI ]]
     
 ---Display text
@@ -1755,7 +1952,10 @@ end
 ---@param height integer Height for the the `UiTextButton`
 ---@param fontSize integer Size of the text
 ---@param customization table? you can only change the font path
----@return table fontPathAndSize Get the font path and the size that is used
+---- `font` default: tgui_ui_assets.."/Fonts/TAHOMA.TTF", Font path
+---- use the function `UiColor()` to change the color of the text
+---@return table fontPathAndSize Get the font path and the size that is used to draw.
+---- {font, size -- font size, width ,height}
 function uic_text( Text, height, fontSize, customization )
     if customization == nil then
         customization = {
@@ -1808,11 +2008,7 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
             end
             if UiBlankButton(6 + no_v_h + hitWidth,20) then
                 if type(key) == "string" then
-                    if GetBool(key) then
-                        SetBool(key,false)
-                    else
-                        SetBool(key,true)
-                    end
+                    SetBool(key,not GetBool(key))
                 end
                 if type(key) == "boolean" then
                     if key then
@@ -1854,8 +2050,12 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
         return key
     end
 end
+-- UPDATE HISTORY --
+--[[
+    18/9/22 - Add a 'not' prefix to the SetInt line
+]]
 
----comment
+---Create a radio button
 ---@param key string Connected keys for the radio button
 ---@param setString string Set this string when the radio button is pressed
 ---@param Text string Display text to the right of the radio button
@@ -1876,13 +2076,19 @@ function uic_radio_button( key, setString, Text, hitboxWidth )
     UiPop()
 end
 
----Create a button
+---❗ [OBSOLETE] ❗
+-------
+---- this function will be removed in the future
+---- use uic_button_func instead
+--
+---Create a button 
 ---@param buttinid integer id of the button
 ---@param text string Display text on the button
 ---@param width integer Width of the button
 ---@param height integer Height of the button
----@param disabled? integer Disable the button
+---@param disabled? boolean Disable the button
 ---@return boolean boolean Returns true if the button is released, none otherwise
+---@deprecated
 function uic_button(buttinid, text, width, height, disabled, toolTipText)
     UiPush()
         UiWindow(width, height, false)
@@ -1954,14 +2160,29 @@ end
 ---@param text string Display text on the button
 ---@param width integer Width of the button
 ---@param height integer Height of the button
----@param disabled integer Disable the button
+---@param disabled boolean Disable the button
+---@param toolTipText string Show tooltip on the button -- not in use at the moment
 ---@param onClick function Do something when on the button on click
 ---@param extraContent? any Additional content to be called to the button
-function uic_button_func(buttinid, text, width, height, disabled, toolTipText, onClick, extraContent)
+---@param style? table Customize the button
+function uic_button_func(buttinid, text, width, height, disabled, toolTipText, onClick, extraContent, style)
+    if style == nil then
+        style = {
+            fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF",
+            fontSize = 14,
+            -- buttonTextureOuter = tgui_ui_assets.."/textures/outline_outer_normal.png",
+            -- buttonTextureUnner = tgui_ui_assets.."/textures/outline_inner_normal.png",
+            -- buttonTextureBorderWidth = 1,
+            -- buttonTextureBorderHeight = 1,
+        }
+    else
+        if style.fontPath == nil then style.fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF" end
+        if style.fontSize == nil then style.fontSize = 14 end
+    end
     UiPush()
         UiWindow(width, height, false)
         UiAlign("left top")
-        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 14)
+        UiFont(style.fontPath, style.fontSize)
         if disabled then
             UiDisableInput()
         end
@@ -2040,13 +2261,14 @@ end
 function uic_spinbuttons( key, direction, disabled, onClick, config )
     if config == nil then config = {
         min = nil, max = nil, autotranslate = nil, increments = 1
-    } end
-    if config then
+    } else
         if config.min == nil then config.min = nil end
         if config.max == nil then config.max = nil end
         if config.autotranslate then config.autotranslate = nil end 
         if config.increments == nil then config.increments = 1 end
+        if config.buttonDirection == nil then config.buttonDirection = "Y" end
     end
+
 
     function buttonIcon(path, disabled , action)
         UiPush()
@@ -2055,19 +2277,24 @@ function uic_spinbuttons( key, direction, disabled, onClick, config )
             UiWindow(ico_w+padding, ico_h+padding, false)
             UiAlign("left top")
             if not disabled then
+                UiPush()
+                UiTranslate(0,0)
                 if UiBlankButton(ico_w+padding, ico_h+padding) then
                     action()
                 end
-                if UiIsMouseInRect(ico_w+padding, ico_h+padding) then
-                    if not InputDown('lmb') then
-                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                UiPop()
+                UiPush()
+                    if UiIsMouseInRect(ico_w+padding, ico_h+padding) then
+                        if not InputDown('lmb') then
+                            UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                        else
+                            UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
+                            UiTranslate(1,1)
+                        end
                     else
-                        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
-                        UiTranslate(1,1)
+                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
                     end
-                else
-                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
-                end
+                UiPop()
                 UiColor(1,1,1,1)
             else
                 UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+padding, ico_h+padding,1,1,1,1)
@@ -2093,21 +2320,37 @@ function uic_spinbuttons( key, direction, disabled, onClick, config )
             DOWNButtonDisabled = true;
             UiColorFilter(1,1,1, 0.5)
         end
-
-        buttonIcon(tgui_ui_assets.."/textures/arrow_up.png", UPButtonDisabled, function()
+        function AddNum()
             if onClick == not nil then onClick() end
             if config.max == nil or config.max-1 >= i then 
                 SetInt(key, i+config.increments)
             end
-        end)
-        UiTranslate(0, 18)
-        buttonIcon(tgui_ui_assets.."/textures/arrow_down.png", DOWNButtonDisabled, function()
+        end
+        function LowerNum()
             if onClick == not nil then onClick() end
             if config.min == nil or config.min+1 <= i then 
                 SetInt(key, i-config.increments)
             end
-        end)
+        end
 
+        if config.buttonDirection == "X" then
+            buttonIcon(tgui_ui_assets.."/textures/arrow_left.png", DOWNButtonDisabled, function()
+                LowerNum()
+            end)
+            UiTranslate(18, 0)
+            buttonIcon(tgui_ui_assets.."/textures/arrow_right.png", UPButtonDisabled, function()
+                AddNum()
+            end)
+        else
+            buttonIcon(tgui_ui_assets.."/textures/arrow_up.png", UPButtonDisabled, function()
+                AddNum()
+            end)
+            UiTranslate(0, 18)
+            buttonIcon(tgui_ui_assets.."/textures/arrow_down.png", DOWNButtonDisabled, function()
+                LowerNum()
+            end)
+        end
+        
     UiPop()
 end
 
@@ -2136,19 +2379,24 @@ function uic_spincontrol(key, direction, w, disabled, onClick, config)
             UiWindow(ico_w+paddingW, ico_h+paddingH, false)
             UiAlign("left top")
             if not disabled then
-                if UiBlankButton(ico_w+paddingW+1, ico_h+paddingH+1) then
-                    action()
-                end
-                if UiIsMouseInRect(ico_w+paddingW, ico_h+paddingH) then
-                    if not InputDown('lmb') then
-                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
-                    else
-                        UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
-                        UiTranslate(1,1)
+                UiPush()
+                    UiTranslate(0,0)
+                    if UiBlankButton(ico_w+paddingW, ico_h+paddingH) then
+                        action()
                     end
-                else
-                    UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
-                end
+                UiPop()
+                UiPush()
+                    if UiIsMouseInRect(ico_w+paddingW, ico_h+paddingH) then
+                        if not InputDown('lmb') then
+                            UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                        else
+                            UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                            UiTranslate(1,1)
+                        end
+                    else
+                        UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
+                    end
+                UiPop()
                 UiColor(1,1,1,1)
             else
                 UiImageBox(tgui_ui_assets.."/textures/outline_outer_normal.png",ico_w+paddingW, ico_h+paddingH,1,1,1,1)
@@ -2171,8 +2419,8 @@ function uic_spincontrol(key, direction, w, disabled, onClick, config)
                 if config.min == not nil then DOWNButtonDisabled = true; end    
                 if config.max == not nil then UPButtonDisabled = true; end
             else
-                local UPButtonDisabled = true;
-                local DOWNButtonDisabled = true;
+                UPButtonDisabled = true;
+                DOWNButtonDisabled = true;
                 UiColorFilter(1,1,1, 0.5)
             end
             buttonIcon(tgui_ui_assets.."/textures/arrow_up.png", UPButtonDisabled, function()
@@ -2209,11 +2457,7 @@ function uic_divider(width, flip)
     return UiImageBox(tgui_ui_assets..'/textures/line_inner.png',width,2,1,1)
 end
 
---@param items_keys table List of items to set the current key value, example "`key.item = 'item 1'` or `savegame.quote = 'I'd like to have a coffee'` "
---@param goUp boolean? Instead of the dropdown menu spawning below, it spawns on top. (used if there is no space on the bottom)
-
-
----Create a dropdown menu | id is now window
+---Create a dropdown menu
 ---@note A registry will be added to the key: `.dropdwon.val`
 ---@param width integer Width of the dropdown menu and window
 ---@param key string Key for each dropdown menu (if all keys are the same for all dropdown menus, every one of them will show the same selected item)
@@ -2235,7 +2479,7 @@ function uic_dropdown(width, key, items, toolTipText)
         UiPush()
             UiTranslate(0,he/2)
             UiAlign("left middle")
-            uic_text(GetString(key..".dropdwon.val"), 24)
+            uic_text(GetString(key..".dropdwon.text"), 24)
         UiPop()
         -- UiRect(width, he)
         if UiBlankButton(width, he) then
@@ -2257,10 +2501,13 @@ function uic_dropdown(width, key, items, toolTipText)
     UiPop()    
 end
 
----@param w integer
----@param current integer
----@param total integer
----@param style table
+---Create a progress bar like a loading bar
+---@param w integer How many bars should there be
+---@param current integer The current position of the progress
+---@param total integer The total there is
+---@param style table Style the ui
+---- `barColor` default: `{ r=255, g=156, b=0, a=1}`, color the bars
+---- `BackgroundImageStyle.image` default: `tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png"` background and border 
 function uic_progressBar( w,current, total, style )
     if style == nil or style == {} then 
         style = {
@@ -2286,14 +2533,9 @@ function uic_progressBar( w,current, total, style )
         UiTranslate(2,3);
         UiPush()
             -- Credit: 1ssnl.
-            local size = 9
-            local padding = 2
-            local progress = current/total
-            local j = w
+            local size = 9;local padding = 2;local progress = current/total;local j = w
             for i=1, j do
-            if progress < i/j then
-                break
-            end
+            if progress < i/j then break end
             UiPush()
             UiColor(c255(255), c255(156), c255(0), 1)
             UiRect(9, 16)
@@ -2310,14 +2552,62 @@ function uic_progressBar( w,current, total, style )
     UiPop()
 end
 
--- 
--- function uic_slider(key,min,max)
---     UiPush()
---         SetFloat(key,UiSlider(tgui_ui_assets.."/ui/TGUI_resources/textures/Slider/Slider.png",'x',GetFloat(key),min,max))
---     UiPop()
--- end
+---create slider
+---@param window table the current window - make a table for this slider
+---@param key string value
+---@param range table `{min, max}`
+---@param roundv number Round the value
+---@param tooltip? string tooltip text
+---@return number Value Slider value
+---@return boolean Done Is done dragging
+function uic_slider(window ,w ,key,range,roundv, tooltip)
+    if window.tooltipActive == nil then window.tooltipActive = false end
+    -- Code from: Artzert´s Utilies -- Cedited: Artzert
+    local function round(x, n)
+        n = math.pow(10, n or 0); x = x * n; if x >= 0 then x = math.floor(x + 0.5) else x = math.ceil(x - 0.5) end
+        return x / n
+    end
+    
+    local function optionsSlider(w,val, min, max, roundd)
+        UiPush()
+            val = (val-min) / (max-min)
+            local done = false
+            UiImageBox(tgui_ui_assets.."/textures/slider/outline_inner_sliderbar.png", w, 4, 1, 1)
+            UiAlign("left middle")
+            UiTranslate(-8, 2)
+            val, done = UiSlider(tgui_ui_assets.."/textures/slider/Slider.png", "x", val*w, 0, w) / w
+            UiTranslate(w*val, 23)
+            val = round(val*(max-min)+min, roundd)
+        UiPop()
+        return val, done
+    end
+    --
 
-backspace_Timer = 1
+    UiPush()
+        UiWindow(w, 0, false)
+        uic_tooltipHitbox( w,24,window.tooltipActive ,tooltip )
+        if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
+        UiAlign("top left")
+        UiPush()
+            UiTranslate(0, 2)
+            UiAlign("left middle")
+            if UiIsMouseInRect(w, 16) then 
+                if tooltip then draw_tooltip_text = tooltip; window.tooltipActive = true end
+            else
+                if window.tooltipActive then
+                    draw_tooltip = false
+                    draw_tooltip_params.popInTimer = 0
+                    window.tooltipActive = false
+                end
+            end
+        UiPop()
+        local val,done = optionsSlider(w ,GetInt(key) ,range[1], range[2], roundv)
+        SetInt(key, val)
+    UiPop()
+    return val, done
+end
+
+backspace_Timer = 5
 
 function custom_UiInputText( string, w, h, window )
     -- UiRect(w,h)
@@ -2334,20 +2624,14 @@ function custom_UiInputText( string, w, h, window )
     end
     if window.focused then
         if InputDown('backspace') then
-            if backspace_Timer == 1 then
-                SetValue('backspace_Timer',0,"linear",1)
-            end
-            if backspace_Timer == 0 then
+            DebugPrint(backspace_Timer)
+            backspace_Timer = backspace_Timer - 0.1
+            if backspace_Timer <= 0 then
+                backspace_Timer = 0
                 return string:sub(1, -2)
-                -- DebugPrint(inputReturn:sub(1, -2))
             end
         end
-        if not InputDown('backspace') then
-            if not backspace_Timer == 1 and not backspace_Timer == 0 then
-                backspace_Timer = 1
-            end
-            backspace_Timer = 1
-        end
+        if not InputDown('backspace') then backspace_Timer = 5 end
     end
     if window.focused then
         if InputPressed("delete") or InputPressed('backspace') then
@@ -2373,23 +2657,47 @@ function custom_UiInputText( string, w, h, window )
     return string
 end
 
-
--- function uic_create_tooltip_hitbox( ... )
---     -- body
--- end
-
 ---Text Input
 ---@info Hright of textbox is 24
 ---@param key string Key for the input
 ---@param width integer width of the input
 ---@param window table Root window for the textbox
+---@param style? table Style the textbox
+---- `textAlgin` default: `left`, align text
+---- `fontSize` default: 15, text size
+---- `font` default: tgui_ui_assets.."/Fonts/TAHOMABD.TTF", Font path
+---- `textColor` default: {r=255, g=255, b=255}
+---- color range: rgb: 0 to 255
+---@param tooltip? string Tooltip text
 ---@return string inputText Text input string
-function uic_textbox(key, width, window )
+function uic_textbox(key , width, window, style, tooltip )
+    if style == nil then
+        style = {
+            textAlgin = "left",
+            fontSize = 15,
+            font = tgui_ui_assets.."/Fonts/TAHOMA.TTF",
+            textColor = {r=255, g=255, b=255}
+        }
+    else
+        if style.textAlgin == nil then style.textAlgin = "left" end
+        if style.fontSize == nil then style.fontSize = 15 end
+        if style.font == nil then style.font = tgui_ui_assets.."/Fonts/TAHOMA.TTF" end
+        if style.textColor == nil then style.textColor = {r=255, g=255, b=255} end
+    end
     UiPush()
-        if allowSpecialKeys == nil then
-            allowSpecialKeys = {enabled = false}
+        if window.tooltipActive == nil then window.tooltipActive = false end
+        uic_tooltipHitbox( width,24,window.tooltipActive ,tooltip )
+        if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
+        if UiIsMouseInRect(width, 24) then 
+            if tooltip then draw_tooltip_text = tooltip; window.tooltipActive = true end
+        else
+            if window.tooltipActive then
+                draw_tooltip = false
+                draw_tooltip_params.popInTimer = 0
+                window.tooltipActive = false
+            end
         end
-        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+        UiFont(style.font, 15)
         UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png",width, 24,1,1,1,1)
         local tW,tH = UiGetTextSize(GetString(key))
         UiPush()
@@ -2406,13 +2714,36 @@ function uic_textbox(key, width, window )
         UiPop()
         SetString(key, custom_UiInputText(GetString(key), width , 24 , window))
         if tW >= width-13 then
-            UiWindow(width,24,true)
+            if style.textAlgin == 'center' then
+                UiWindow(width,24,true,true)
+                UiTranslate(width-tW-13,0)
+            elseif style.textAlgin == 'left' then
+                UiWindow(width,24,true, true)
+                UiTranslate(width-tW-13,0)
+            end
+        else
+        end
+        if style.textAlgin == 'right' then
+            UiWindow(width,24,true,true)
             UiTranslate(width-tW-13,0)
         end
         UiTranslate(0,0)
         UiAlign('top left')
         UiDisableInput()
-        uic_text(GetString(key),24)
+        UiPush()
+            if style.textAlgin == 'center' then
+                if tW <= width-13 then
+                    UiTranslate((width/2)-8, 0);
+                    UiAlign("top center")
+                end
+            elseif style.textAlgin == 'right' then
+
+            end
+            UiColor(c255(style.textColor.r), c255(style.textColor.g), c255(style.textColor.b), 1)
+            uic_text(GetString(key),24,style.fontSize, {
+                font = style.font,
+            })
+        UiPop()
         local inputReturn = GetString(key)
     UiPop()
     return inputReturn
@@ -2447,21 +2778,6 @@ function uic_Register_Contextmenu_at_pos( x, y, contents, extraContents )
         c = contents,
         extrac = extraContents
     })
-    -- local w = window.w
-    -- local h = window.h
-    -- window.x = x
-    -- window.y = y
-    -- UiPush()
-    --     for i, v in ipairs(contents) do
-    --         if v.type == "button" then
-    --             UiDisableInput()
-    --             UiTextButton('text',w,h)
-    --             UiEnableInput()
-    --             if UiBlankButton(w,h) then
-    --            end
-    --         end
-    --     end
-    -- UiPop()
 end
 function BoolToString(b) 
     return b and "True" or "False";
@@ -2507,12 +2823,13 @@ Tags: Ui Library
 ---```
 function uic_CreateGameMenu_Buttons_list(t, width ,contents, extraContent, style)
     if style == nil then
-        style = {textAlgin = "left", buttonHeight = 14, fontSize = 13, font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF"}
+        style = {textAlgin = "left", buttonHeight = 14, fontSize = 13, font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF", centerButtons = false}
     else
         if style.textAlgin == nil    then style.textAlgin = "left"   end
         if style.buttonHeight == nil then style.buttonHeight = 14    end
         if style.fontSize == nil     then style.fontSize = 13        end
         if style.font == nil         then style.font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF" end
+        if style.centerButtons == nil then style.centerButtons = false end
     end
 
     local UIC_height = 0
@@ -2545,6 +2862,7 @@ function uic_CreateGameMenu_Buttons_list(t, width ,contents, extraContent, style
             end
         end
     UiPop()
+    if style.centerButtons then t.h = UIC_height end
     return UIC_height
 end
 
