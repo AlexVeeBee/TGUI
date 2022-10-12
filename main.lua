@@ -2,6 +2,7 @@
 #include "TGUI_manager.lua"
 #include "./regeditWindow.lua"
 
+
 --[[
 
     How to get TGUI working
@@ -134,15 +135,16 @@ local mainMenuContents = {
 
 }   
 
-function function_name()
-    DebugPrint('lololol')
-end
 SetInt("TGUI.tabStyle.tabHeight", 25)
 SetInt("TGUI.tabStyle.paddingRight", 20)
 SetInt("TGUI.tabStyle.paddingLeft", 0)
 SetString("TGUI.textbox.test", "left")
 SetString("TGUI.textbox.test2", "center")
 SetString("TGUI.textbox.test3", "right")
+-- -- --
+buttoncolor_r,buttoncolor_r_enabled,buttoncolor_r_dir = 0, true, "up";
+buttoncolor_g,buttoncolor_g_enabled,buttoncolor_g_dir = 0, false, "up";
+buttoncolor_b,buttoncolor_b_enabled,buttoncolor_b_dir = 0, false, "up";
 function draw(dt)
     if HasKey('TGUI.register.mod') then
         local itemNumber = 1
@@ -479,8 +481,9 @@ function draw(dt)
                             tab1 = {tabFirstFrame = true, },
                             tab2 = {tabFirstFrame = true, },
                             scrollArea = {scrollfirstFrame = true,},
-                            dropdown_1 = {firstFrame = true, tooltipId = 1, open = false},
-                            dropdown_2 = {firstFrame = true, tooltipId = 2, open = false},
+                            button_print = {tooltipActive = true},
+                            dropdown_1 = {firstFrame = true, tooltipActive = true, open = false},
+                            dropdown_2 = {firstFrame = true, tooltipActive = false, open = false},
                             textBox_test = {focused = false},
                             textBox_test2 = {focused = false},
                             textBox_test3 = {focused = false},
@@ -864,10 +867,39 @@ function draw(dt)
                                                 --     }, false)
                                                 UiPop()
                                                 UiTranslate(310,0)
-                                                uic_button_func(0, "Print", 100, 24, false, "", function()
+                                                uic_button_func(window.button_print, "Print", 100, 24, false, "Print a text to the debug console\nR: "..math.floor(buttoncolor_r).." G: "..math.floor(buttoncolor_g).." B: "..math.floor(buttoncolor_b).."\nR:"..buttoncolor_r_dir.." G:"..buttoncolor_g_dir.." b:"..buttoncolor_b_dir , function()
                                                     DebugPrint(textbox_text)
-                                                end, textbox_text)
+                                                end, textbox_text, {
+                                                    textcolornormal = {r=buttoncolor_r,g=buttoncolor_g,b=buttoncolor_b,a=200}
+                                                })
                                                 UiTranslate(0, 32)
+                                                if buttoncolor_r_enabled then
+                                                    if buttoncolor_r_dir == "up" then buttoncolor_r = buttoncolor_r + dt/0.005
+                                                    elseif buttoncolor_r_dir == "down" then buttoncolor_r = buttoncolor_r - dt/0.005
+                                                    end
+                                                    if buttoncolor_r >= 50 then buttoncolor_g_enabled = true end
+                                                    if buttoncolor_r >= 255 then buttoncolor_r_dir = "down"
+                                                    elseif buttoncolor_r <= 0 then buttoncolor_r_dir = "up"
+                                                    end
+                                                end
+                                                if buttoncolor_g_enabled then
+                                                    if buttoncolor_g_dir == "up" then buttoncolor_g = buttoncolor_g + dt/0.007
+                                                    elseif buttoncolor_g_dir == "down" then buttoncolor_g = buttoncolor_g - dt/0.005
+                                                    end
+                                                    if buttoncolor_g >= 82 then buttoncolor_b_enabled = true end
+                                                    if buttoncolor_g >= 255 then buttoncolor_g_dir = "down"
+                                                    elseif buttoncolor_g <= 0 then buttoncolor_g_dir = "up"
+                                                    end
+                                                end
+                                                if buttoncolor_b_enabled then
+                                                    if buttoncolor_b_dir == "up" then buttoncolor_b = buttoncolor_b + dt/0.010
+                                                    elseif buttoncolor_b_dir == "down" then buttoncolor_b = buttoncolor_b - dt/0.005
+                                                    end
+                                                    if buttoncolor_b >= 255 then buttoncolor_b_dir = "down"
+                                                    elseif buttoncolor_b <= 0 then buttoncolor_b_dir = "up"
+                                                    end
+                                                end
+
                                                 -- local d, s = UiTextButton("hello", 24, 128)
                                                 -- DebugPrint(s)    
                                             UiPop()
@@ -1226,7 +1258,7 @@ function draw(dt)
                                             UiPop()
                                             UiPush()
                                                 UiTranslate(0,48)
-                                                uic_slider(window.sliderTest,128,"TGUI.slider",{0,10},1, "lmao")
+                                                uic_slider( window.sliderTest , 128,"TGUI.slider",{0,10},1, "lmao")
                                                 UiTranslate(0,8)
                                                 uic_text(GetInt("TGUI.slider"), 24,20)
                                             UiPop()
@@ -1286,9 +1318,20 @@ function draw(dt)
                                     end
                                 },
                                 {
-                                    ["title"] = "short",
+                                    ["title"] = "Colors",
                                     ["Content"] = function()
-
+                                        UiTranslate(12, 12)
+                                        local bw,br,bg,bb = 19 ,buttoncolor_r, buttoncolor_g, buttoncolor_b
+                                        uic_progressBar(bw, buttoncolor_r, 255, {barColor = {r=255,g=0,b=0,a=1}})
+                                        UiTranslate(0, 28)
+                                        uic_progressBar(bw, buttoncolor_g, 255, {barColor = {r=0,g=255,b=0,a=1}})
+                                        UiTranslate(0, 28)
+                                        uic_progressBar(bw, buttoncolor_b, 255, {barColor = {r=0,g=0,b=255,a=1}})
+                                        UiTranslate(0, 28)
+                                        UiPush()
+                                            UiColor(c255(br),c255(bg),c255(bb), 1)
+                                            UiRect(32, 32)
+                                        UiPop()
                                     end
                                 },
                                 {

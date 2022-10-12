@@ -20,7 +20,7 @@ Valve´s original creation: VGUI ( Valve's proprietary Graphical User Interface 
 
 
 ---_
-local TGUI_has_error, TGUI_error_message = false, "";
+local TGUI_has_error, TGUI_error_message, TGUI_icon_fade, TGUI_icon_fade_direction, TGUI_icon_fade_loopcounter = false, nil, 1, "down", 0;
 local ScreenWidth, ScreenHeight = 0, 0;
 
 ---_
@@ -116,6 +116,12 @@ local pos = {}
 ---- `style.unfocusedBackgroundColor` default: `{r=28,g=28,b=28,a=64}` - 
 ---- `style.TitleBar.titleColor` default: `{r=255,g=255,b=255,a=200}` -
 function initDrawTGUI( TABLEwindows, style )
+    function winError( err )
+        if TGUI_has_error == false then
+            TGUI_has_error = true
+            TGUI_error_message = err
+        end
+    end
     if style == nil then
         style = {
             focusBackgroundColor = {r=160,g=160,b=160,a=150},
@@ -147,7 +153,22 @@ function initDrawTGUI( TABLEwindows, style )
             opacityEnabled = false
         end
     end
-
+    if TABLEwindows == nil then 
+        UiPush()
+            UiEnableInput() UiMakeInteractive() UiMute(1)
+            UiTranslate(UiCenter(),0)
+            UiAlign('center top')
+            UiColor(0,0,0,1)
+            UiRect(UiWidth(),UiHeight())
+            UiColor(1,1,1,1)
+            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
+            UiTranslate(0,UiMiddle()-100)
+            UiText('[TGUI.MANAGER]: missing argument',18)
+            UiTranslate(0,24)
+            UiText('Please add a table to the first param of this function',18)
+        UiPop()
+        return false
+    end
     if (#TABLEwindows > 0) then 
         if not GetBool('tgui.disableInput') then
             UiMakeInteractive()
@@ -176,7 +197,7 @@ function initDrawTGUI( TABLEwindows, style )
             return false
         end
         if v.firstFrame or v.firstFrame == nil then v.focused = false; v.prefocused = false; v.closeWindow = false; v.keepMoving = false; v.keepResizing = false; v.disableDrag = false;
-            v.Dragging = false
+            if v.dragging == nil then v.dragging = false end
             if v.hideTitleBar == nil then v.hideTitleBar = false end
             if v.minSize == nil then v.minSize = {w = 160,h = 160,} end
             if v.allowResize == nil then v.allowResize = true end
@@ -195,6 +216,33 @@ function initDrawTGUI( TABLEwindows, style )
             UiTranslate(v.pos.x,v.pos.y)    
             UiEnableInput()
             UiWindow(v.size.w ,v.size.h ,v.clip)
+            -- UiPush()
+            --     if v.disableDrag == true then
+            --         UiColor(1, 0, 0, 1) UiRect(v.size.w, 32)
+            --     end
+            -- UiPop()
+            UiPush()
+                if v.focused or v.doNotHide then
+                    UiPush()
+                    if v.keepMoving == false then
+                        UiTranslate(v.size.w, v.size.h)
+                        UiAlign("bottom right")
+                        if not UiIsMouseInRect(24, 24) and not v.keepResizing then
+                            UiAlign("top left")
+                            UiTranslate(-v.size.w, -v.size.h)
+                            UiTranslate(0, 32)
+                            if UiIsMouseInRect(v.size.w, v.size.h-32) and InputDown('lmb') then v.disableDrag = true v.allowResize = false
+                            elseif not UiIsMouseInRect(v.size.w, v.size.h-32) then if InputReleased('lmb') then v.disableDrag = false v.allowResize = true end end
+                            if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false v.allowResize = true end end
+                        else
+                            if UiIsMouseInRect(11, 11) and InputDown('lmb') then v.allowResize = true
+                            elseif not UiIsMouseInRect(11, 11) then if InputReleased('lmb') then v.allowResize = true end end
+                            if v.allowResize == false then if InputReleased('lmb') then v.allowResize = true end end
+                        end
+                    end
+                    UiPop()
+                end
+            UiPop()
             UiPush()
                 UiAlign("top left")
                 if UiIsMouseInRect(v.size.w, 32) or v.keepMoving and v.disableDrag == false and InputDown('lmb') and last == i then
@@ -274,8 +322,9 @@ function initDrawTGUI( TABLEwindows, style )
                 -- UiRect(11,11)
                 if UiIsMouseInRect(11,11) and InputDown('lmb') then
                     -- Nothing
-                elseif UiIsMouseInRect(11,11) then  v.disableDrag = true end
+                elseif UiIsMouseInRect(11,11) then v.disableDrag = true end
                 if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false end end
+                if v.disableDrag == true then if not UiIsMouseInRect(11,11) and not InputDown('lmb') then v.disableDrag = false end end
                 if UiBlankButton(11,11) then v.closeWindow = true end
             UiPop()
             UiPush()
@@ -295,7 +344,7 @@ function initDrawTGUI( TABLEwindows, style )
                             v.pos.y = MaxWindowPos.h
                         end
                         UiColorFilter(1,1,1,1)
-                        local success, err = pcall(function(v) 
+                        local success, err = pcall(function() 
                             if v.content == nil then
                                 -- v.content = function()
                                 --     UiWordWrap(UiWidth())
@@ -310,16 +359,15 @@ function initDrawTGUI( TABLEwindows, style )
                             else
                                 UiButtonImageBox('MOD',0,0,0,0,0,0)
                             end
+                            if v.keepResizing == true then
+                                UiDisableInput()
+                            end
                             v.content(v)
                         end, v)
 
                         if not success then
-                            -- if TABLEwindows == nil then 
                             TGUI_has_error = true
-                            TGUI_error_message = tostring(err)
-                            -- if file_exists("./info.txt") then DebugPrint('exists') end
-                            -- return end
-                            -- DebugPrint("caught error: "..tostring(err))
+                            TGUI_error_message = err
                         end
                     end
                 UiPop()
@@ -357,14 +405,6 @@ function initDrawTGUI( TABLEwindows, style )
                             UiAlign("middle center")
                             if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
                                 SetBool('TGUI.interactingWindow',true)
-                                -- UiRect(25,25)
-                                -- if cursor_x < -cursor_x+v.minSize.w then
-                                --     v.size.w = v.minSize.w
-                                -- end
-                                -- if cursor_y < -cursor_y+v.minSize.h then
-                                --     v.size.h = v.minSize.h
-                                -- end
-
                                 local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
                                 -- v.size = 
                                 if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
@@ -375,29 +415,13 @@ function initDrawTGUI( TABLEwindows, style )
                                         v.size.h = Vec2DAdd.h
                                     end
                                 end
-                                if Vec2DAdd.w-8 < cursor_x then
-                                    v.size.w = Vec2DAdd.w
-                                end
-                                if Vec2DAdd.h-8 < cursor_y then
-                                    v.size.h = Vec2DAdd.h
-                                end
-                                -- UiPush()
-                                --     UiTranslate(-cursor_x+v.minSize.w,-cursor_y+v.minSize.h)
-                                --     UiColor(1,0,0,1)
-                                --     UiRect(15,15)
-                                -- UiPop()
-
-                                if v.size.w < v.minSize.w then
-                                    v.size.w = v.minSize.w
-                                end
-                                if v.size.h < v.minSize.h then
-                                    v.size.h = v.minSize.h
-                                end
+                                if Vec2DAdd.w-8 < cursor_x then v.size.w = Vec2DAdd.w end
+                                if Vec2DAdd.h-8 < cursor_y then v.size.h = Vec2DAdd.h end
+                                if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
+                                if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
                                 v.disableDrag = true
                                 v.keepResizing = true
-                            else
-                                v.keepResizing = false
-                            end
+                            else v.keepResizing = false end
                         UiPop()
                     else
                        if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
@@ -420,53 +444,80 @@ function initDrawTGUI( TABLEwindows, style )
     end
     end 
     if TGUI_has_error then
+        local lineWidth = 700
         -- TGUI_error_message
         UiPush()
             UiEnableInput() UiMakeInteractive() UiMute(1)
-            UiTranslate(UiCenter(),0)
-            UiAlign('center top')
-            UiColor(0,0,0,1)
-            UiRect(UiWidth(),UiHeight())
-            UiColor(1,1,1,1)
-            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
-            UiTranslate(0,UiMiddle()-100)
-            UiText('[TGUI.MANAGER]: Woah, an actual error on screen',18)
-            UiText(TGUI_error_message)
-            if HasKey('TGUI.error') then
-                UiTranslate(0,48)
-                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 32)
-                UiText("Probable Cause")
-                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
-                UiTranslate(0,32)
-                UiText(GetString('TGUI.error'))
-            end
-            UiTranslate(0,100)
             UiPush()
-                UiAlign('center middle')
-                UiColor(0.3,0.3,0.3,1)
-                UiRect(90,45)
-                UiColor(1,1,1,1)
-                UiPush()
-                    UiTranslate(0,3)
-                    UiText("QUIT")
-                UiPop()
-                if UiBlankButton(90,45) then
-                    
-                end
-            UiPop()
-        UiPop()
-    end
-    if TABLEwindows == nil then 
-        UiPush()
-            UiEnableInput() UiMakeInteractive() UiMute(1)
-            UiTranslate(UiCenter(),0)
-            UiAlign('center top')
             UiColor(0,0,0,1)
             UiRect(UiWidth(),UiHeight())
-            UiColor(1,1,1,1)
-            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 24)
-            UiTranslate(0,UiMiddle()-100)
-            UiText('[TGUI.MANAGER]: invalid argument',18)
+            UiPop()
+            UiTranslate(UiCenter(),UiMiddle() -80)
+            UiPush()
+                if TGUI_icon_fade_loopcounter < 3 then
+                    do
+                        if TGUI_icon_fade_direction == "up" then
+                            TGUI_icon_fade = TGUI_icon_fade + 0.05
+                            if TGUI_icon_fade >= 1 then
+                                TGUI_icon_fade_loopcounter = TGUI_icon_fade_loopcounter + 1
+                                TGUI_icon_fade_direction = "down"
+                            end
+                        elseif TGUI_icon_fade_direction == "down" then
+                            TGUI_icon_fade = TGUI_icon_fade - 0.05
+                            if TGUI_icon_fade <= 0 then
+                            TGUI_icon_fade_direction = "up"
+                            end
+                        end
+                    end
+                end
+                UiColor(1, 1, 1, TGUI_icon_fade)
+                UiAlign("center bottom")
+                UiImage(tgui_ui_assets.."/textures/icons/warning.png")
+            UiPop()
+            UiTranslate(0, 6)
+            UiTranslate(-(lineWidth/2), 0)
+            UiPush()
+                UiRect(lineWidth, 2)
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 26)
+                UiPush()
+                    UiTranslate(lineWidth/2, 8)
+                    UiAlign("center top")
+                    UiColor(1, 0.8, 0.05, 1)
+                    local tx,ty=UiText("The TGUI system broke due to a leak or a bug in the code")
+                UiPop()
+                UiTranslate(0, ty+8)
+                UiRect(lineWidth, 2)
+                UiTranslate(0, 6)
+                UiWordWrap(lineWidth-100)
+                UiAlign("top left")
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 23)
+                UiPush()
+                    UiTranslate(lineWidth/2, 0)
+                    UiAlign("center top")
+                    local tx,ty=UiText("It is recommended you report this to a developer as soon as possible and show them how you got this error. It is also best you screenshot this screen just in case you can't get this error again.")
+                UiPop()
+                UiTranslate(0, ty+8)
+                UiRect(lineWidth, 2)
+                UiTranslate(0, 6)
+                UiPush()
+                    UiTranslate(lineWidth/2, 0)
+                    UiAlign("center top")
+                    local tx,ty=UiText("Cause of crash:")
+                UiPop()
+                UiTranslate(0, ty+8)
+                UiPush()
+                    local tx,ty=UiGetTextSize(tostring( TGUI_error_message ))
+                    -- UiAlign("left top")
+                    UiTranslate(lineWidth/2, 0)
+                    UiAlign("center top")
+                    UiWindow(lineWidth-100, ty)
+                    UiAlign("left top")
+                    UiColor(49/255, 49/255, 49/255, 1)
+                    UiRect(UiWidth(),UiHeight())
+                    UiColor(1,1,1,1)
+                    local tx,ty=UiText( tostring( TGUI_error_message ))
+                UiPop()
+            UiPop()
         UiPop()
     end
     SetBool('TGUI.interactingWindow',false)
