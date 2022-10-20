@@ -1,7 +1,8 @@
 ---Create a registry explorer window
 ---@param prePath string Have pre-selected path
+---@param dt any delta time
 ---@return table Window The window object
-function registerRegedit( prePath )
+registerRegedit = function ( prePath, dt )
     if prePath == nil then
         prePath = "game"
     end
@@ -151,7 +152,7 @@ function registerRegedit( prePath )
                                                 uic_text( "Name: ", 19)
                                                 UiPush()
                                                     UiTranslate(50,0)
-                                                    local textin = uic_textbox("TGUI.regExplorer.regNew",UiWidth()-72,editWindow.editVal )
+                                                    local textin = uic_textbox("TGUI.regExplorer.regNew", dt,UiWidth()-72,editWindow.editVal )
                                                 UiPop()
                                                 -- end
                                             UiPop()
@@ -162,15 +163,15 @@ function registerRegedit( prePath )
                                             if #textin == 0 then
                                                 txtBoxDoesNotHaveCharacters = true
                                             end
-                                            uic_button_func(0, "Close", 75, 24, false, "", function()
+                                            uic_button_func(0,dt, "Close", 75, 24, false, "", function()
                                                 editWindow.closeWindow = true
-                                            end)
+                                            end, nil)
                                             UiTranslate(-80,0)
-                                            uic_button_func(0, "Create", 75, 24, txtBoxDoesNotHaveCharacters, "", function()
+                                            uic_button_func(0,dt, "Create", 75, 24, txtBoxDoesNotHaveCharacters, "", function()
                                                 SetString(GetString("TGUI.regExplorer.newDirPath").."."..GetString('TGUI.regExplorer.regNew'),' ')
                                                 SetString('TGUI.regExplorer.regNew','')
                                                 editWindow.closeWindow = true
-                                            end)
+                                            end, nil)
                                         end
                                     })
                                 -- end)
@@ -199,11 +200,11 @@ function registerRegedit( prePath )
                                         UiAlign('bottom right')
                                         UiTranslate(0,UiHeight())
                                         UiTranslate(UiWidth()-24,-12)
-                                        uic_button_func(0, "No", 60, 24, false, "", function()
+                                        uic_button_func(0,dt, "No", 60, 24, false, "", function()
                                             warningWindow.closeWindow = true
-                                        end)
+                                        end, nil)
                                         UiTranslate(-75,0)
-                                        uic_button_func(0, "Yes", 60, 24, not GetBool('TGUI.regExplorer.dumpreg'), "", function()
+                                        uic_button_func(0,dt, "Yes", 60, 24, not GetBool('TGUI.regExplorer.dumpreg'), "", function()
                                             -- ClearKey(window.StringViewer.directPath)
                                             SetBool('TGUI.regExplorer.dumpreg',false)
                                             local keys = ListKeys(GetString("TGUI.regExplorer.dumpPath"))
@@ -212,7 +213,7 @@ function registerRegedit( prePath )
                                                 DebugPrint('delete: ' .. GetString("TGUI.regExplorer.dumpPath") .. "." .. v)
                                             end
                                             warningWindow.closeWindow = true
-                                        end)
+                                        end, nil)
                                     end
                                 })
 
@@ -265,14 +266,14 @@ function registerRegedit( prePath )
                                                     UiAlign('bottom right')
                                                     UiTranslate(0,UiHeight())
                                                     UiTranslate(UiWidth()-24,-12)
-                                                    uic_button_func(0, "No", 60, 24, false, "", function()
+                                                    uic_button_func(0,dt, "No", 60, 24, false, "", function()
                                                         warningWindow.closeWindow = true
-                                                    end)
+                                                    end, nil)
                                                     UiTranslate(-75,0)
-                                                    uic_button_func(0, "Yes", 60, 24, false, "", function()
+                                                    uic_button_func(0,dt, "Yes", 60, 24, false, "", function()
                                                         ClearKey(window.StringViewer.directPath)
                                                         warningWindow.closeWindow = true
-                                                    end)
+                                                    end, nil)
                                                 end
                                             })
                                         -- end)
@@ -308,7 +309,7 @@ function registerRegedit( prePath )
                                                         uic_text( "Value:", 19)
                                                         UiPush()
                                                         UiTranslate(50,0)
-                                                        local textin = uic_textbox("TGUI.regExplorer.regEdit",UiWidth()-72,editWindow.editVal )
+                                                        local textin = uic_textbox("TGUI.regExplorer.regEdit", dt,UiWidth()-72,editWindow.editVal )
                                                         UiPop()
                                                         local isNumber = not (textin == "" or textin:find("%D"))
                                                         UiTranslate(0,24)
@@ -337,18 +338,18 @@ function registerRegedit( prePath )
                                                     UiPop()
                                                     UiAlign('bottom right')
                                                     UiTranslate(UiWidth()-24,-12)
-                                                    uic_button_func(0, "Close", 75, 24, false, "", function()
+                                                    uic_button_func(0,dt, "Close", 75, 24, false, "", function()
                                                         editWindow.closeWindow = true
-                                                    end)
+                                                    end, nil)
                                                     UiTranslate(-80,0)
-                                                    uic_button_func(0, "Apply", 75, 24, editWindow.checkBox_see_live, "", function()
+                                                    uic_button_func(0,dt, "Apply", 75, 24, editWindow.checkBox_see_live, "", function()
                                                         if isNumber then
                                                             SetInt(window.StringViewer.directPath,textin*1)
                                                         elseif not isNumber then
                                                             SetString(window.StringViewer.directPath,textin)
                                                         end
                                                         editWindow.closeWindow = true
-                                                    end)
+                                                    end, nil)
                                                     if editWindow.checkBox_see_live then
                                                         if isNumber then
                                                             if (type(textin) == "number") then
@@ -500,19 +501,19 @@ function registerRegedit( prePath )
                         UiPush()
                             uic_text("current registry value",24)
                             UiTranslate(150,0)
-                            uic_textbox(window.StringViewer.path,UiWidth()-(208),window.regEditTextBox)
+                            uic_textbox(window.StringViewer.path, dt ,UiWidth()-(208),window.regEditTextBox, "Changes the value of current registry")
                         UiPop()
                         UiTranslate(0,26)
-                        UiPush()
-                            uic_text("New registry",24)
-                            UiTranslate(150,0)
-                            uic_textbox("TGUI.regExplorer.newDir",145,window.regNewTextbox)
-                            UiTranslate(150,0)
-                            uic_button_func(0, "Create a new registry",130, 24, false, "", function()
-                                SetString(window.StringViewer.path.."."..GetString('TGUI.regExplorer.newDir'),'')
-                                SetString('TGUI.regExplorer.newDir','')
-                            end)
-                        UiPop()
+                        -- UiPush()
+                        --     uic_text("New registry",24)
+                        --     UiTranslate(150,0)
+                        --     uic_textbox("TGUI.regExplorer.newDir",145,window.regNewTextbox, nil, "Create a new directory" ,dt)
+                        --     UiTranslate(150,0)
+                        --     uic_button_func(0,dt, "Create a new registry",130, 24, false, "", function()
+                        --         SetString(window.StringViewer.path.."."..GetString('TGUI.regExplorer.newDir'),'')
+                        --         SetString('TGUI.regExplorer.newDir','')
+                        --     end, nil)
+                        -- UiPop()
                     else
                         blockedReg = true
                         uic_text("Editing Disabled",14)
@@ -530,7 +531,7 @@ function registerRegedit( prePath )
                 UiPush()
                     UiTranslate(UiWidth()-24,8)
                     UiAlign('top right')
-                    uic_button_func(0, "Open path", 100, 24, false, "", function()
+                    uic_button_func(0, dt,"Open path", 100, 24, false, "", function()
                         window.focused = false
                         table.insert(ALL_WINDOWS_OPEN ,{
                             testFirstFrame = true,
@@ -548,69 +549,69 @@ function registerRegedit( prePath )
                             content = function(openPathWindow)
                                 UiPush()
                                     UiTranslate(12,0)
-                                    uic_button_func(0, "game", 150 - 24, 24, false, "", function()
+                                    uic_button_func(0,dt, "game", 150 - 24, 24, false, "", function()
                                         window.StringViewer.path = 'game'
                                         table.insert(window.StringViewer.history ,{
                                             path = "game",
                                             viewing = true,
                                         })
                                         openPathWindow.closeWindow = true
-                                    end)
+                                    end, nil)
                                     UiTranslate(0,30)
-                                    uic_button_func(0, "options", 150 - 24, 24, false, "", function()
+                                    uic_button_func(0,dt, "options", 150 - 24, 24, false, "", function()
                                         window.StringViewer.path = 'options'
                                         table.insert(window.StringViewer.history ,{
                                             path = "options",
                                             viewing = true,
                                         })
                                         openPathWindow.closeWindow = true
-                                    end)
+                                    end, nil)
                                     UiTranslate(0,30)
-                                    uic_button_func(0, "savegame", 150 - 24, 24, false, "", function()
+                                    uic_button_func(0,dt, "savegame", 150 - 24, 24, false, "", function()
                                         window.StringViewer.path = 'savegame'
                                         table.insert(window.StringViewer.history ,{
                                             path = "savegame",
                                             viewing = true,
                                         })
                                         openPathWindow.closeWindow = true
-                                    end)
+                                    end, nil)
                                     UiTranslate(0,30)
-                                    uic_button_func(0, "TGUI", 150 - 24, 24, false, "", function()
+                                    uic_button_func(0, dt,"TGUI", 150 - 24, 24, false, "", function()
                                         window.StringViewer.path = 'TGUI'
                                         table.insert(window.StringViewer.history ,{
                                             path = "TGUI",
                                             viewing = true,
                                         })
                                         openPathWindow.closeWindow = true
-                                    end, window)
+                                    end, nil)
                                 UiPop()
                                 UiPush()
                                     UiTranslate(160,0)
                                     uic_text("Custom Path", 18)
                                     UiTranslate(0,20)
-                                    uic_textbox("TGUI.regExplorer.openPath", 160, openPathWindow.txtbox_regOpenPath )
+                                    uic_textbox("TGUI.regExplorer.openPath",dt, 160, openPathWindow.txtbox_regOpenPath, nil, nil )
                                     UiTranslate(0,26)
                                     local disableButton = false
                                     if #GetString('TGUI.regExplorer.openPath') == 0 then
                                         disableButton = true
                                     end
 
-                                    uic_button_func(0, "Open", 60, 24, disableButton, "", function()
+                                    uic_button_func(0, dt,"Open", 60, 24, disableButton, "", function()
                                         window.StringViewer.path = GetString('TGUI.regExplorer.openPath')
                                         table.insert(window.StringViewer.history ,{
                                             path = GetString('TGUI.regExplorer.openPath'),
                                             viewing = true,
                                         })
                                         openPathWindow.closeWindow = true
-                                    end, window)
+                                    end, nil)
                                     UiTranslate(70,0)
                                     uic_text("items in registry: "..#ListKeys(GetString('TGUI.regExplorer.openPath')),24)
                                 UiPop()
                             end
                         })
-                    end)
+                    end, nil)
                     UiTranslate(-110,0)
-                    uic_button_func(0, "Help", 100, 24, false, "", function()
+                    uic_button_func(0, dt,"Help", 100, 24, false, "", function()
                         window.focused = false
                         table.insert(ALL_WINDOWS_OPEN ,{
                             testFirstFrame = true,
@@ -659,9 +660,9 @@ function registerRegedit( prePath )
                             content = function(Helpindow)
                                 UiPush()
                                     UiTranslate(12,0)
-                                    uic_button_func(0, "savegame.mod not opening", 180, 24, false, "", function()
+                                    uic_button_func(0,dt, "savegame.mod not opening", 180, 24, false, "", function()
                                         Helpindow.helpSectionsView = 1
-                                    end)
+                                    end, nil)
                                     UiTranslate(0,30)
                                 UiPop()
                                 UiTranslate(219,0)
@@ -676,7 +677,7 @@ function registerRegedit( prePath )
                                 UiPop()
                             end
                         })
-                    end)
+                    end, nil)
 
                 UiPop()
             end

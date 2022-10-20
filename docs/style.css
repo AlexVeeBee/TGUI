@@ -10,6 +10,9 @@ html {
     background: black;
     min-height: 100vh;
 }
+pre code {
+    font-family: Consolas;
+}
 .mainPage
 .sidebar-container
 button {
@@ -17,7 +20,42 @@ button {
     border: none;
     width: 100%;
 }
+.mainPage
+.widthButton
+button
+{
+    border-color: #596a8b;
+    /* border-width: 1px; */
+    /* border-left-style: outset ; */
+    /* border-right-style: outset ; */
+    font-size: 18px;
+    text-align: left;
+    width: 100%;
+    padding: 14px 12px;
+    background-color: #353b47;
+}
+.mainPage
+.widthButton
+button:hover
+{
+    border-left-color: rgb(29, 88, 143);
+    border-left-style: solid ;
+    border-left-width: 6px;
+    background: linear-gradient( to right, #596a8b, #353b47);
+}
+.mainPage
+.widthButton
+button:first-child
+{
+    border-top-style: outset ;
+}
 
+.mainPage
+.widthButton
+button:last-child
+{
+    border-bottom-style: outset;
+}
 button {
     background-color: transparent;
     border: none;

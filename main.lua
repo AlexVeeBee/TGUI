@@ -1,6 +1,6 @@
 #include "./TGUI_ui_library.lua"
 #include "TGUI_manager.lua"
-#include "./regeditWindow.lua"
+#include "regeditWindow.lua"
 
 
 --[[
@@ -9,9 +9,9 @@
 
     please include TGUI_manager.lua and TGUI_ui_library.lua with #include "./"
     how to create your own window
-    1. type talbe.insert() to insert
+    1. type table.insert() to insert
     2. use any name to have your windows created stored like: myWindowsTable = {}
-    3. type your table name into the first parameter of talbe.insert()
+    3. type your table name into the first parameter of table.insert()
     here is a liminal window settings table for the second parameter of talbe.insert(myWindowsTable, {})
         `{
             firstFrame = true,
@@ -41,7 +41,6 @@
         end ,
     })
 ]]
-
 function init()
     
     compass_ui_assets = "MOD/ui/TGUI_resources"
@@ -245,6 +244,10 @@ function draw(dt)
         UiPop()
     end
 
+    if HasKey('TGUI.regExplorer.openNew') then
+        table.insert(ALL_WINDOWS_OPEN, registerRegedit(GetString('TGUI.regExplorer.openNew'),dt))
+        ClearKey('TGUI.regExplorer.openNew')
+    end
 
     -- UiPush()
     --     UiTranslate(10,UiMiddle())
@@ -327,10 +330,6 @@ function draw(dt)
     end
 
     -- End of registry explorer code
-    if HasKey('TGUI.regExplorer.openNew') then
-        table.insert(ALL_WINDOWS_OPEN, registerRegedit(GetString('TGUI.regExplorer.openNew')))
-        ClearKey('TGUI.regExplorer.openNew')
-    end
     if NewWindowPopup then
         UiPush()
         UiMakeInteractive()
@@ -350,10 +349,10 @@ function draw(dt)
         --     UiTranslate(0,-10)
         --     UiImage('./ui/TGUI_resources/textures/menuLogo.png',image)
         -- UiPop()
-                uic_button_func(0,"DEBUG: show TGUI menu", UiWidth(),24, false, false, function()
-                    SetBool('TGUI.menu.show',true)
-                end )
-                UiTranslate(0,28);
+                -- uic_button_func(0,dt,"DEBUG: show TGUI menu", UiWidth(),24, false, false, function()
+                --     SetBool('TGUI.menu.show',true)
+                -- end, _ )
+                -- UiTranslate(0,28);
                 if uic_button(0,"Tiny window",UiWidth(),24, false, "tiny window") then
                    NewWindowPopup = false
                    table.insert(ALL_WINDOWS_OPEN ,{
@@ -432,21 +431,21 @@ function draw(dt)
                                             UiTranslate(0, 24)
                                             UiPush()
                                             UiTranslate(5, 0)
-                                            uic_slider(window,128,"TGUI.tabStyle.tabHeight",{25,90},1)
+                                            uic_slider(window,dt,128,"TGUI.tabStyle.tabHeight",{25,90},1)
                                             UiPop()
                                             UiTranslate(0, 24)
                                             uic_text('Padding Right', 18 , 15)
                                             UiTranslate(0, 24)
                                             UiPush()
                                             UiTranslate(5, 0)
-                                            uic_slider(window,128,"TGUI.tabStyle.paddingRight",{0,70},1)
+                                            uic_slider(window,dt,128,"TGUI.tabStyle.paddingRight",{0,70},1)
                                             UiPop()
                                             UiTranslate(0, 24)
                                             uic_text('Padding left', 18 , 15)
                                             UiTranslate(0, 24)
                                             UiPush()
                                             UiTranslate(5, 0)
-                                            uic_slider(window,128,"TGUI.tabStyle.paddingLeft",{0,70},1)
+                                            uic_slider(window,dt,128,"TGUI.tabStyle.paddingLeft",{0,70},1)
                                             UiPop()
                                         end
                                     },
@@ -458,15 +457,15 @@ function draw(dt)
                                 UiPush()
                                     UiTranslate(UiWidth()-32,3)
                                     UiAlign('top right')
-                                    if uic_button(100,"Close",128,28) then
+                                    uic_button_func(_,dt,"Close",128,28, false, "", function()                                     
                                         window.closeWindow = true
-                                    end
+                                    end)
                                 UiPop()
                                 UiPush()
                                     UiTranslate(4,3)
                                     UiAlign('top left')
-                                    uic_button_func(100,"About TGUI",128,28,false,"",function(ALL_WINDOWS_OPEN)
-                                        aboutTGUI(ALL_WINDOWS_OPEN)
+                                    uic_button_func(_,dt,"About TGUI",128,28,false,"",function(ALL_WINDOWS_OPEN)
+                                        aboutTGUI(ALL_WINDOWS_OPEN, dt)
                                     end , ALL_WINDOWS_OPEN)
                                 UiPop()
                         end ,
@@ -596,7 +595,7 @@ function draw(dt)
                                         UiTranslate(10,10)
                                         uic_tableview_container(window.tableContainer, UiWidth()-140, UiHeight()-20, false, true, true, window.tableContainer.tableColumnNames,window.tableContainer.table)
                                         UiTranslate(UiWidth()-120,0)
-                                        uic_button_func(0, "Empty Table", 100, 24, false, "", function ()
+                                        uic_button_func(_, dt, "Empty Table", 100, 24, false, "", function ()
                                             window.tableContainer.table = {}
                                             window.tableContainer.tableColumnNames = {}
                                             -- for i, v in ipairs(MainWindow.tableContainer) do
@@ -604,7 +603,7 @@ function draw(dt)
                                             -- end
                                         end)
                                         UiTranslate(0,28)
-                                        uic_button_func(0, "Small Table", 100, 24, false, "", function ()
+                                        uic_button_func(_, dt, "Small Table", 100, 24, false, "", function ()
                                             window.tableContainer.tableColumnNames = {
                                                 {label="1",w=0}, {label="2",w=0},
                                             }
@@ -618,7 +617,7 @@ function draw(dt)
                                             }
                                         end)
                                         UiTranslate(0,28)
-                                        uic_button_func(0, "Testing Table", 100, 24, false, "", function ()
+                                        uic_button_func(_, dt, "Testing Table", 100, 24, false, "", function ()
                                             window.tableContainer.tableColumnNames = {
                                                 {label="Test 1",w=0}, {label="column test 2",w=0},
                                                 {label="Test 3",w=0}, {label="column test 4",w=0},
@@ -853,13 +852,13 @@ function draw(dt)
                                             UiPush()
                                                 uic_text("Textboxes", 24)
                                                 UiTranslate(0,24)                
-                                                local textbox_text = uic_textbox("TGUI.textbox.test", 300, window.textBox_test, { textColor = {r=255, g=0, b=0}}, "left align")
+                                                local textbox_text = uic_textbox("TGUI.textbox.test", dt, 300, window.textBox_test,  "left align", { textColor = {r=255, g=0, b=0}})
                                                 UiPush()
                                                     UiTranslate(0,25)
-                                                    _ = uic_textbox("TGUI.textbox.test2", 300, window.textBox_test2, {textAlgin = "center", textColor = {r=0, g=255, b=0}}, "center align")
+                                                    _ = uic_textbox("TGUI.textbox.test2", dt, 300, window.textBox_test2, "center align" , {textAlgin = "center", textColor = {r=0, g=255, b=0}})
                                                     UiTranslate(0,25)
-                                                    _ = uic_textbox("TGUI.textbox.test3", 300, window.textBox_test3, {textAlgin = "right", textColor = {r=0, g=0, b=255}}, "right algin")
-                                                --     UiTranslate(0,25)
+                                                    _ = uic_textbox("TGUI.textbox.test3", dt, 300, window.textBox_test3, "right align" , {textAlgin = "right", textColor = {r=0, g=0, b=255}})
+                                                    -- UiTranslate(0,25)
                                                 --     uic_dropdown( 100, "TGUI.dropdown.lol", {
                                                 --         {
                                                 --             text = "1"
@@ -867,9 +866,9 @@ function draw(dt)
                                                 --     }, false)
                                                 UiPop()
                                                 UiTranslate(310,0)
-                                                uic_button_func(window.button_print, "Print", 100, 24, false, "Print a text to the debug console\nR: "..math.floor(buttoncolor_r).." G: "..math.floor(buttoncolor_g).." B: "..math.floor(buttoncolor_b).."\nR:"..buttoncolor_r_dir.." G:"..buttoncolor_g_dir.." b:"..buttoncolor_b_dir , function()
+                                                uic_button_func(window.button_print, dt, "Print", 100, 24, false, "Print a text to the debug console\nR: "..math.floor(buttoncolor_r).." G: "..math.floor(buttoncolor_g).." B: "..math.floor(buttoncolor_b).."\nR:"..buttoncolor_r_dir.." G:"..buttoncolor_g_dir.." b:"..buttoncolor_b_dir , function()
                                                     DebugPrint(textbox_text)
-                                                end, textbox_text, {
+                                                end, _, {
                                                     textcolornormal = {r=buttoncolor_r,g=buttoncolor_g,b=buttoncolor_b,a=200}
                                                 })
                                                 UiTranslate(0, 32)
@@ -927,7 +926,7 @@ function draw(dt)
                                                         UiTranslate(UiCenter(), UiMiddle())
                                                         UiRect(30,30)
                                                         UiPush()
-                                                            uic_slider(window.sliderPaddingTest ,128,"TGUI.containerPadding",{0,64},1)
+                                                            uic_slider(window.sliderPaddingTest, dt ,128,"TGUI.containerPadding",{0,64},1)
                                                         UiPop()
                                                     UiPop()
                                                     UiPop()
@@ -1154,15 +1153,15 @@ function draw(dt)
                                                 uic_checkbox("Enable multiSelect", "TGUI.listbox.enabledMulty", 300, false)
                                                 UiTranslate(0,16)
                                                 UiPush()
-                                                    uic_button_func(0, "Add", 100, 24,false, false, function() 
+                                                    uic_button_func(_, dt, "Add", 100, 24,false, "", function() 
                                                         local i = GetInt("TGUI.test.listbox.h");
                                                         SetInt("TGUI.test.listbox.h", i+1);
-                                                    end);
+                                                    end, _);
                                                     UiTranslate(0,28)
-                                                    uic_button_func(0, "Remove", 100, 24,false, false, function() 
+                                                    uic_button_func(_, dt, "Remove", 100, 24,false, "", function() 
                                                         local i = GetInt("TGUI.test.listbox.h");
                                                         SetInt("TGUI.test.listbox.h", i-1);
-                                                    end);
+                                                    end, _);
                                                 UiPop()
                                                 UiTranslate(0,64)
                                                 UiPush()
@@ -1179,7 +1178,7 @@ function draw(dt)
                                             UiPop()
                                             UiPush()
                                             UiTranslate(175, 0)
-                                            uic_treeView_container(window.treeview, 160, GetInt("TGUI.test.listbox.h"),function(c)
+                                            uic_treeView_container(window.treeview,"TGUI.treeview_test", 160, GetInt("TGUI.test.listbox.h"),function(c)
                                                 DebugPrint(c)
                                             end, window.treeview.contents )
                                             UiPop()
@@ -1258,14 +1257,14 @@ function draw(dt)
                                             UiPop()
                                             UiPush()
                                                 UiTranslate(0,48)
-                                                uic_slider( window.sliderTest , 128,"TGUI.slider",{0,10},1, "lmao")
+                                                uic_slider( window.sliderTest ,dt, 128,"TGUI.slider",{0,10},1, "lmao")
                                                 UiTranslate(0,8)
                                                 uic_text(GetInt("TGUI.slider"), 24,20)
                                             UiPop()
                                         UiPop()
                                     end
                                 },
-                            }, window)
+                            }, window, {}, dt)
                             UiPop()
                             UiPush()
                             UiTranslate(UiWidth()-310,0)
@@ -1354,7 +1353,7 @@ function draw(dt)
                 UiTranslate(0,28);
                 if uic_button(0,"String viewer",UiWidth(),24) then
                     NewWindowPopup = false
-                    table.insert(ALL_WINDOWS_OPEN, registerRegedit())
+                    table.insert(ALL_WINDOWS_OPEN, registerRegedit(nil, dt))
                 end
                 UiTranslate(0,28);
                 -- uic_button_func(0,"function button",UiWidth(),24, false, "", function(contents)
@@ -1377,7 +1376,7 @@ function draw(dt)
         UiPush()  
             UiTranslate(30,100)
             UiCreateWindow(120,100,false,"Window settings",8,function()
-                uic_button_func(0, "New Window", UiWidth(), 24, false, "", function()
+                uic_button_func(_, dt, "New Window", UiWidth(), 24, false, "", function()
                     SetBool('TGUI.menu.show',true);
                 end)
                 UiTranslate(0,28)
@@ -1386,7 +1385,7 @@ function draw(dt)
         UiPop()
     end
 
-    initDrawTGUI(ALL_WINDOWS_OPEN)
+    initDrawTGUI(ALL_WINDOWS_OPEN, dt)
     uic_drawContextMenu()
     --     if (isFirstFrame) then
 --         isFirstFrame = false

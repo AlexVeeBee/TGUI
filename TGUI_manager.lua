@@ -1,3 +1,5 @@
+#include "require.lua"
+
 ---@diagnostic disable: undefined-global
 --[[
 
@@ -34,37 +36,39 @@ MaxWindowPos = {w = 0,h = 0,}
 -- end
 
 ---@param TABLEwindows table What table this window should display on
-function aboutTGUI(TABLEwindows)
+function aboutTGUI(TABLEwindows,dt)
     if TABLEwindows == nil then 
-        DebugPrint('[TGUI.aboutTGUI]: Param missing table.')
+        error("This parameter is required to display this window\nParam missing table")
         return
     end
-    table.insert(TABLEwindows ,{
-        firstFrame = true,
-        title = "About TGUI",
-        padding = 0, -- Padding left and right
-        pos = {x = 0, y = 0},
-        size = {w = 598, h = 132},
-        minSize = {w = 0, h =0},
-        startMiddle = true, allowResize = false,
-        clip = false, content = function(window)
-            UiPush()
-                UiTranslate(12,0)
-                UiText('TGUI - A VGUI Recreation')
-                UiTranslate(0,24)
-                UiText('Ported by: AlexVeeBee and NeoLights')
-                UiTranslate(0,16)
-                UiText('Valve´s original creation: VGUI ( Valve\'s proprietary Graphical User Interface )')
-            UiPop()
-            UiPush()
-                UiAlign("bottom right")
-                UiTranslate(UiWidth()-12,UiHeight()-12)
-                uic_button_func(0,"Close", 100,24,false,"", function (window)
-                    window.closeWindow = true
-                end, window)
-            UiPop()
-        end
-    })
+    if type(TABLEwindows) == "table" then 
+        table.insert(TABLEwindows ,{
+            firstFrame = true,
+            title = "About TGUI",
+            padding = 0, -- Padding left and right
+            pos = {x = 0, y = 0},
+            size = {w = 598, h = 132},
+            minSize = {w = 0, h =0},
+            startMiddle = true, allowResize = false,
+            clip = false, content = function(window)
+                UiPush()
+                    UiTranslate(12,0)
+                    UiText('TGUI - A VGUI Recreation')
+                    UiTranslate(0,24)
+                    UiText('Ported by: AlexVeeBee and NeoLights')
+                    UiTranslate(0,16)
+                    UiText('Valve´s original creation: VGUI ( Valve\'s proprietary Graphical User Interface )')
+                UiPop()
+                UiPush()
+                    UiAlign("bottom right")
+                    UiTranslate(UiWidth()-12,UiHeight()-12)
+                    uic_button_func(_,dt,"Close", 100,24,false,"", function (window)
+                        window.closeWindow = true
+                    end, window)
+                UiPop()
+            end
+        })
+    end
 end
 
 local opacityEnabled = false
@@ -79,10 +83,12 @@ isFirstFrame = true
 deleteTimer = 0
 
 local pos = {}
+local got_ver = false;
 
 ---TGUI MANAGER: UI INIT
 -----------------------------
 ---@param TABLEwindows table Where all the windows are stored
+---@param dt any Delta time
 ---@param style? table Style the window
 ---Manager for creating a window and moving it
 --
@@ -95,6 +101,7 @@ local pos = {}
 ---- closeWindow - Close the window.
 ---- options: startMiddle - Start in the middle of your screen.
 ---- options: allowResize - default: true - Allow the window to be resized.
+---- disableCloseButton: boolean - hide the close button
 ------------------
 --- half important:
 ----
@@ -115,7 +122,9 @@ local pos = {}
 ---- `style.focusBackgroundColor` default: `{r=160,g=160,b=160,a=150}` - 
 ---- `style.unfocusedBackgroundColor` default: `{r=28,g=28,b=28,a=64}` - 
 ---- `style.TitleBar.titleColor` default: `{r=255,g=255,b=255,a=200}` -
-function initDrawTGUI( TABLEwindows, style )
+function initDrawTGUI( TABLEwindows, dt, style )
+    SetString("TGUI.Version","0.8.9-2 - ALPHA");
+
     function winError( err )
         if TGUI_has_error == false then
             TGUI_has_error = true
@@ -191,16 +200,17 @@ function initDrawTGUI( TABLEwindows, style )
     if not TGUI_has_error then
     for i, v in pairs(TABLEwindows) do
         -- INIT
-        if v.firstFrame == nil then
-            DebugPrint('FirstFrame Missing')
-            table.remove(TABLEwindows, v)
-            return false
-        end
+        -- if v.firstFrame == nil then
+        --     DebugPrint('FirstFrame Missing')
+        --     table.remove(TABLEwindows, v)
+        --     return false
+        -- end
         if v.firstFrame or v.firstFrame == nil then v.focused = false; v.prefocused = false; v.closeWindow = false; v.keepMoving = false; v.keepResizing = false; v.disableDrag = false;
             if v.dragging == nil then v.dragging = false end
             if v.hideTitleBar == nil then v.hideTitleBar = false end
             if v.minSize == nil then v.minSize = {w = 160,h = 160,} end
             if v.allowResize == nil then v.allowResize = true end
+            if v.disableCloseButton == nil then v.disableCloseButton = false end
             v.firstFrame = false
 
             if v.startMiddle then
@@ -231,13 +241,13 @@ function initDrawTGUI( TABLEwindows, style )
                             UiAlign("top left")
                             UiTranslate(-v.size.w, -v.size.h)
                             UiTranslate(0, 32)
-                            if UiIsMouseInRect(v.size.w, v.size.h-32) and InputDown('lmb') then v.disableDrag = true v.allowResize = false
-                            elseif not UiIsMouseInRect(v.size.w, v.size.h-32) then if InputReleased('lmb') then v.disableDrag = false v.allowResize = true end end
-                            if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false v.allowResize = true end end
+                            if UiIsMouseInRect(v.size.w, v.size.h-32) and InputDown('lmb') then v.disableDrag = true v.disableRezie = true
+                            elseif not UiIsMouseInRect(v.size.w, v.size.h-32) then if InputReleased('lmb') then v.disableDrag = false v.disableRezie = false end end
+                            if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false v.disableRezie = false end end
                         else
-                            if UiIsMouseInRect(11, 11) and InputDown('lmb') then v.allowResize = true
-                            elseif not UiIsMouseInRect(11, 11) then if InputReleased('lmb') then v.allowResize = true end end
-                            if v.allowResize == false then if InputReleased('lmb') then v.allowResize = true end end
+                            if UiIsMouseInRect(11, 11) and InputDown('lmb') then v.disableRezie = false
+                            elseif not UiIsMouseInRect(11, 11) then if InputReleased('lmb') then v.disableRezie = false end end
+                            if v.disableRezie == true then if InputReleased('lmb') then v.disableRezie = false end end
                         end
                     end
                     UiPop()
@@ -310,23 +320,27 @@ function initDrawTGUI( TABLEwindows, style )
                     font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF"
                 })
             UiPop()
-            UiPush()
-                UiColorFilter(1,1,1,globalWindowOpacity)
-                UiAlign("top right")
-                UiTranslate(UiWidth()-10,10)
+            if not v.disableCloseButton then
                 UiPush()
-                    UiTranslate(-1,1)
-                    UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
+                    local buttonSize = 16
+                    UiColorFilter(1,1,1,globalWindowOpacity)
+                    UiAlign("top right")
+                    UiTranslate(UiWidth()-8,16/2)
+                    -- -- UiRect(1,10)
+                    UiPush()
+                        UiTranslate(-4,4)
+                        UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
+                    UiPop()
+                    -- UiColor(1,1,1,0.3)
+                    -- UiRect(buttonSize,buttonSize)
+                    if UiIsMouseInRect(buttonSize,buttonSize) and InputDown('lmb') then
+                        -- Nothing
+                    elseif UiIsMouseInRect(buttonSize,buttonSize) then v.disableDrag = true end
+                    if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false end end
+                    if v.disableDrag == true then if not UiIsMouseInRect(buttonSize,buttonSize) and not InputDown('lmb') then v.disableDrag = false end end
+                    if UiBlankButton(buttonSize,buttonSize) then v.closeWindow = true end
                 UiPop()
-                UiColor(1,1,1,0.3)
-                -- UiRect(11,11)
-                if UiIsMouseInRect(11,11) and InputDown('lmb') then
-                    -- Nothing
-                elseif UiIsMouseInRect(11,11) then v.disableDrag = true end
-                if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false end end
-                if v.disableDrag == true then if not UiIsMouseInRect(11,11) and not InputDown('lmb') then v.disableDrag = false end end
-                if UiBlankButton(11,11) then v.closeWindow = true end
-            UiPop()
+            end
             UiPush()
                 UiTranslate(0,32)
                 UiWindow(v.size.w,v.size.h-32,v.clip)
@@ -399,33 +413,35 @@ function initDrawTGUI( TABLEwindows, style )
                         UiTranslate(-3,-3)
                         UiImage(tgui_ui_assets..'/textures/resizeicon.png',image)
                     UiPop()
-                    if UiIsMouseInRect(20,20) or v.keepResizing and InputDown('lmb') and last == i then
-                        UiPush()
-                            UiTranslate(-10,-10)
-                            UiAlign("middle center")
-                            if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
-                                SetBool('TGUI.interactingWindow',true)
-                                local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
-                                -- v.size = 
-                                if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
-                                    if v.size.w > v.minSize.w then
-                                        v.size.w = Vec2DAdd.w
+                    if not v.disableRezie then
+                        if UiIsMouseInRect(20,20) or v.keepResizing and InputDown('lmb') and last == i then
+                            UiPush()
+                                UiTranslate(-10,-10)
+                                UiAlign("middle center")
+                                if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
+                                    SetBool('TGUI.interactingWindow',true)
+                                    local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
+                                    -- v.size = 
+                                    if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
+                                        if v.size.w > v.minSize.w then
+                                            v.size.w = Vec2DAdd.w
+                                        end
+                                        if v.size.h > v.minSize.h then
+                                            v.size.h = Vec2DAdd.h
+                                        end
                                     end
-                                    if v.size.h > v.minSize.h then
-                                        v.size.h = Vec2DAdd.h
-                                    end
-                                end
-                                if Vec2DAdd.w-8 < cursor_x then v.size.w = Vec2DAdd.w end
-                                if Vec2DAdd.h-8 < cursor_y then v.size.h = Vec2DAdd.h end
-                                if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
-                                if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
-                                v.disableDrag = true
-                                v.keepResizing = true
-                            else v.keepResizing = false end
-                        UiPop()
-                    else
-                       if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
-                       if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
+                                    if Vec2DAdd.w-8 < cursor_x then v.size.w = Vec2DAdd.w end
+                                    if Vec2DAdd.h-8 < cursor_y then v.size.h = Vec2DAdd.h end
+                                    if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
+                                    if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
+                                    v.disableDrag = true
+                                    v.keepResizing = true
+                                else v.keepResizing = false end
+                            UiPop()
+                        else
+                        if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
+                        if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
+                        end
                     end
                 end
                 if InputReleased('lmb') and v.keepResizing then
@@ -455,15 +471,15 @@ function initDrawTGUI( TABLEwindows, style )
             UiTranslate(UiCenter(),UiMiddle() -80)
             UiPush()
                 if TGUI_icon_fade_loopcounter < 3 then
-                    do
+                    if dt then
                         if TGUI_icon_fade_direction == "up" then
-                            TGUI_icon_fade = TGUI_icon_fade + 0.05
+                            TGUI_icon_fade = TGUI_icon_fade + dt/0.5
                             if TGUI_icon_fade >= 1 then
                                 TGUI_icon_fade_loopcounter = TGUI_icon_fade_loopcounter + 1
                                 TGUI_icon_fade_direction = "down"
-                            end
+                               end
                         elseif TGUI_icon_fade_direction == "down" then
-                            TGUI_icon_fade = TGUI_icon_fade - 0.05
+                            TGUI_icon_fade = TGUI_icon_fade - dt/0.5
                             if TGUI_icon_fade <= 0 then
                             TGUI_icon_fade_direction = "up"
                             end
@@ -472,7 +488,7 @@ function initDrawTGUI( TABLEwindows, style )
                 end
                 UiColor(1, 1, 1, TGUI_icon_fade)
                 UiAlign("center bottom")
-                UiImage(tgui_ui_assets.."/textures/icons/warning.png")
+                UiImage(tgui_ui_assets.."/textures/icons/error.png")
             UiPop()
             UiTranslate(0, 6)
             UiTranslate(-(lineWidth/2), 0)

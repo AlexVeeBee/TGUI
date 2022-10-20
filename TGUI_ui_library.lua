@@ -681,12 +681,12 @@ end
 ---@param h integer height
 ---@param text string text of the tooltip
 ---@param dt any draw param
-function uic_tooltipHitbox( w,h, active ,text )
+function uic_tooltipHitbox( w,h, active ,text, dt )
     -- DebugPrint(draw_tooltip_params.popInTimer)
     UiPush()
     if active then
         if UiIsMouseInRect(w, h) then
-            draw_tooltip_params.popInTimer = draw_tooltip_params.popInTimer + 0.1
+            draw_tooltip_params.popInTimer = draw_tooltip_params.popInTimer + dt/0.1
             if draw_tooltip_params.popInTimer > 5 then
                 draw_tooltip_params.popInTimer = 5
                 draw_tooltip = true
@@ -1214,7 +1214,7 @@ end
 ---- `tabPaddingLeft` default: 0, Padding left of the tabs for the text
 ---- `tabTextSize` default: 15, Text size of the tab
 -----------
----@param dt? any The draw
+---@param dt? any Delta Time
 function uic_tab_container(window, w,h,clip,border,contents, extraContent, style, dt)
     -- if window.tabFirstFrame == true or window.tabFirstFrame == nil then
         if style == nil then
@@ -1267,6 +1267,8 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent, style
             if window.overflow then if UiIsMouseInRect(w,tab_height+1) then else UiDisableInput() end end
             UiTranslate(window.tabScroll,0)
             for i, v in ipairs(contents) do
+                if v.title then else v.title = "Title Here" end
+                
                 UiPush()
                     UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
                     tab_width = 0 
@@ -1398,14 +1400,25 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent, style
         end
         -- uic_text(window.tabOpen)
         UiPush()
-            if not UiIsMouseInRect(w,h) then
-                UiDisableInput()
-            end
-            UiColorFilter(1, 1, 1, window.tabFade)
-            -- UiWindow(w,h,clip)
-            if (extraContent ==not nil) then
-            contents[window.tabOpen]["Content"](extraContent)
-            else contents[window.tabOpen]["Content"]("Missing Contents")
+            if #contents >= 0 then
+                if not UiIsMouseInRect(w,h) then
+                    UiDisableInput()
+                end
+                UiColorFilter(1, 1, 1, window.tabFade)
+                -- local s, e = pcall(function() 
+                    if (extraContent ==not nil) then
+                    contents[window.tabOpen].Content(extraContent)
+                    else contents[window.tabOpen].Content("Missing Contents");
+                    end
+                -- end)
+                -- if not s then
+                    -- error("Tab Container\nYour content is missing within the tab function\nAdd `Content = function() end` with a title to the contents table");
+                -- end
+            else
+                uic_text("Empty Table Contents", 18, 15);
+                UiWordWrap(w)
+                UiTranslate(0, 24)
+                uic_text("Add `Content = function() end` with a title to the table", 18, 15);
             end
         UiPop()
     UiPop()    
@@ -1849,6 +1862,7 @@ end
 
 ---Make a tree of items
 ---@param window table Window table
+---@param key string -
 ---@param w integer height of the tree container
 ---@param h_items_visible integer height of the tree container
 ---@param contents table contents for the tree
@@ -1858,7 +1872,7 @@ end
 ---- `style.BorderInnder` default: false - change the texture to make it inner 
 ---- `style.BorderPadding` default: 1 - change the borderWidth and borderHeight 
 ---- `style.Padding` default: 1 - change the borderWidth and borderHeight 
-function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
+function uic_treeView_container(window,key,w,h_items_visible,onClick,contents,style)
     if style == nil then 
         style = {
             BackgroundColor = {r=93,g=93,b=93,a=100},
@@ -1876,9 +1890,13 @@ function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
         if style.BackgroundTextureInner == nil then BackgroundTextureInner = tgui_ui_assets.."/textures/outline_inner_normal.png" end
         if style.BackgroundTextureOutter == nil then BackgroundTextureOutter = tgui_ui_assets.."/textures/outline_outer_normal.png" end
     end
+    local totalHeight = 0;
     UiPush()
-        if not UiIsMouseInRect(w, h_items_visible*19+2) then
-            UiDisableInput()
+        if window.treefirstframe == nil or window.treefirstframe == true then
+            window.contentHeight = 0
+            window.scrollfirstFrame = true
+            -- 
+            window.treefirstframe = false
         end
         if style.Border then
             UiPush()
@@ -1891,6 +1909,7 @@ function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
                 UiImageBox(style.BackgroundTextureOutter,w+1,(h_items_visible*19)+2,style.BorderPadding,style.BorderPadding)
             end
         end
+        window.contentHeight = 0
         UiTranslate(style.BorderPadding, style.BorderPadding);
         UiTranslate(style.Padding, style.Padding);
         UiWindow((w+(style.BorderPadding*2)-3), (h_items_visible*19+(style.BorderPadding*2)-2), true, true)
@@ -1900,10 +1919,20 @@ function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
                 uic_text( t , 19, 15)
             UiPop()
         end
+        function pre_displayTree(content, extra)
+            local path = extra
+            if type(content) == "table" then
+                window.contentHeight = window.contentHeight + 19;
+                if content.hidden == false then for i, v in ipairs(content) do pre_displayTree(v, path.."."..content.itemText) end end
+            elseif type(content) == "string" then
+                window.contentHeight = window.contentHeight + 19;
+            end
+        end
+        for i, v in ipairs(contents) do pre_displayTree(v, "") end
+
         -- for i, v in ipairs(contents) do
 
         -- end
-
         function displayTree(content, extra)
             local path = extra
             if type(content) == "table" then
@@ -1925,6 +1954,7 @@ function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
                 UiTranslate(19, 0)
                 displayName( content.itemText )
                 UiTranslate(0, 19)
+                window.contentHeight = window.contentHeight + 19;
                 if content.hidden == false then
                     for i, v in ipairs(content) do
                         displayTree(v, path.."."..content.itemText)
@@ -1932,6 +1962,7 @@ function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
                 end
                 UiTranslate(-19, -19)
             elseif type(content) == "string" then
+                window.contentHeight = window.contentHeight + 19;
                 if UiBlankButton(w, 19) then
                     
                     onClick( "root"..path.."."..content );
@@ -1940,9 +1971,16 @@ function uic_treeView_container(window,w,h_items_visible,onClick,contents,style)
             end
             UiTranslate(0, 19)
         end
-        for i, v in ipairs(contents) do
-            displayTree(v, "")
-        end
+        DebugPrint(window.contentHeight)
+        uic_scroll_Container(window, w,h_items_visible*19, false, window.contentHeight, 0, function()
+            if not UiIsMouseInRect(UiWidth(), window.contentHeight) then
+                UiDisableInput()
+            end
+            for i, v in ipairs(contents) do
+                displayTree(v, "")
+            end
+        end)
+
     UiPop()
 end
 ---[[ WIDGETS ]]
@@ -1964,7 +2002,7 @@ function uic_text( Text, height, fontSize, customization )
     end
     if height == nil then height = 15 end
     if fontSize == nil then fontSize = 15 end
-    UiPush()
+    UiPush() 
         UiFont(customization.font, fontSize)
         local txt_w, txt_h = UiGetTextSize(Text)
         UiDisableInput()
@@ -2157,6 +2195,7 @@ function uic_button(buttinid, text, width, height, disabled, toolTipText)
 end
 ---Create a button
 ---@param window table Window
+---@param dt any Delta time
 ---@param text string Display text on the button
 ---@param width integer Width of the button
 ---@param height integer Height of the button
@@ -2165,7 +2204,11 @@ end
 ---@param onClick function Do something when on the button on click
 ---@param extraContent? any Additional content to be called to the button
 ---@param style? table Customize the button
-function uic_button_func(window, text, width, height, disabled, tooltip, onClick, extraContent, style)
+---- `fontPath` Defailt: tgui_ui_assets.."/Fonts/TAHOMA.TTF", Font
+---- `fontSize` Defailt: 14, size of the text
+---- `textcolornormal` Defailt: `{r=255,g=255,b=255,a=200}`, color of the text when not disabled
+---- `textcolordisabled` Defailt: {g=24,b=24,a=160} , color of the text when disabled
+function uic_button_func(window, dt, text, width, height, disabled, tooltip, onClick, extraContent ,style)
     if type(window) == "table" then
         if window == not nil then
             if window.tooltipActive == nil then window.tooltipActive = false end
@@ -2177,11 +2220,6 @@ function uic_button_func(window, text, width, height, disabled, tooltip, onClick
             fontSize = 14,
             textcolornormal = {r=255,g=255,b=255,a=200},
             textcolordisabled = {r=24,g=24,b=24,a=160},
-            
-            -- buttonTextureOuter = tgui_ui_assets.."/textures/outline_outer_normal.png",
-            -- buttonTextureUnner = tgui_ui_assets.."/textures/outline_inner_normal.png",
-            -- buttonTextureBorderWidth = 1,
-            -- buttonTextureBorderHeight = 1,
         }
     else
         if style.fontPath == nil then style.fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF" end
@@ -2230,7 +2268,7 @@ function uic_button_func(window, text, width, height, disabled, tooltip, onClick
         UiButtonImageBox("MOD",1,1,1,1,1,0)
         if UiBlankButton(width, height+1) then onClick(extraContent) end
         if type(window) == "table" then
-            uic_tooltipHitbox( width,height,window.tooltipActive ,tooltip )
+            uic_tooltipHitbox( width,height,window.tooltipActive ,tooltip, dt )
             if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
             if UiIsMouseInRect(width, height) then 
                 if tooltip then draw_tooltip_text = tooltip; window.tooltipActive = true end
@@ -2435,7 +2473,7 @@ function uic_spincontrol(key, direction, w, disabled, onClick, config)
         UiPush()
             UiTranslate(17, 0)
             UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png", w, 24, 1, 1)
-            
+            -- TODO:make a textbox for a editable spin controls
             uic_text(GetInt(key), 24, 18)
         UiPop()
     UiPop()
@@ -2539,12 +2577,6 @@ function uic_progressBar( w,current, total, style )
             UiTranslate(size+padding, 0)
             end
         UiPop()
-        -- UiPush()
-        --     UiTranslate(-3,2);
-        --     UiColor(c255(255), c255(0), c255(0), 1)
-        --     UiRect(current/total*w*(11)+5, 2 )
-        --     UiColor(c255(255), c255(255), c255(255), 1)
-        -- UiPop()
     UiPop()
 end
 
@@ -2556,59 +2588,66 @@ end
 ---@param tooltip? string tooltip text
 ---@return number Value Slider value
 ---@return boolean Done Is done dragging
-function uic_slider(window ,w ,key,range,roundv, tooltip)
-    if type(window) == "table" then 
-    if window.tooltipActive == nil then window.tooltipActive = false end
-    else error("slider component: "..errorMessages.WindowAlerts.wrongType.."\n"..errorMessages.WindowAlerts.wrongType_example.."`content = function(window) ... uic_slider(window,...)`") end
-    -- else error("window is missing/not the corresponding type.\nType:"..type(window)..". Make sure you have attached the first parameter with window ( the function parameter name ).") end
-    -- Code from: Artzert´s Utilies -- Cedited: Artzert
-    local function round(x, n)
-        n = math.pow(10, n or 0); x = x * n; if x >= 0 then x = math.floor(x + 0.5) else x = math.ceil(x - 0.5) end
-        return x / n
-    end
-    
-    local function optionsSlider(w,val, min, max, roundd)
+function uic_slider(window, dt ,w ,key,range,roundv, tooltip)
+    local s, e = pcall(function() 
+        if type(window) == "table" then 
+        if window.tooltipActive == nil then window.tooltipActive = false end
+        else error("slider Element: "..errorMessages.WindowAlerts.wrongType.."\n"..errorMessages.WindowAlerts.wrongType_example.."`content = function(window) ... uic_slider(window,...)`", 0) end
+        -- DebugPrint(type(dt))
+        if type(dt) == "number" then else 
+            error("slider Element\ndt is not the corresponding type\nType:"..type(dt).." What is suspended to be: Number")
+        end
+        -- else error("window is missing/not the corresponding type.\nType:"..type(window)..". Make sure you have attached the first parameter with window ( the function parameter name ).") end
+        -- Code from: Artzert´s Utilies -- Cedited: Artzert
+        local function round(x, n)
+            n = math.pow(10, n or 0); x = x * n; if x >= 0 then x = math.floor(x + 0.5) else x = math.ceil(x - 0.5) end
+            return x / n
+        end
+        
+        local function optionsSlider(w,val, min, max, roundd)
+            UiPush()
+                val = (val-min) / (max-min)
+                local done = false
+                UiImageBox(tgui_ui_assets.."/textures/slider/outline_inner_sliderbar.png", w, 4, 1, 1)
+                UiAlign("left middle")
+                UiTranslate(-8, 2)
+                val, done = UiSlider(tgui_ui_assets.."/textures/slider/Slider.png", "x", val*w, 0, w) / w
+                UiTranslate(w*val, 23)
+                val = round(val*(max-min)+min, roundd)
+            UiPop()
+            return val, done
+        end
+        --
+
         UiPush()
-            val = (val-min) / (max-min)
-            local done = false
-            UiImageBox(tgui_ui_assets.."/textures/slider/outline_inner_sliderbar.png", w, 4, 1, 1)
-            UiAlign("left middle")
-            UiTranslate(-8, 2)
-            val, done = UiSlider(tgui_ui_assets.."/textures/slider/Slider.png", "x", val*w, 0, w) / w
-            UiTranslate(w*val, 23)
-            val = round(val*(max-min)+min, roundd)
+            UiWindow(w, 0, false)
+            UiAlign("top left")
+            UiPush()
+                UiAlign("left middle")
+                UiTranslate(0, 2)
+                uic_tooltipHitbox( w,16,window.tooltipActive ,tooltip, dt )
+                if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
+                if UiIsMouseInRect(w, 16) then 
+                    if tooltip then draw_tooltip_text = tooltip; window.tooltipActive = true end
+                else
+                    if window.tooltipActive then
+                        draw_tooltip = false
+                        draw_tooltip_params.popInTimer = 0
+                        window.tooltipActive = false
+                    end
+                end
+            UiPop()
+            local val,done = optionsSlider(w ,GetInt(key) ,range[1], range[2], roundv)
+            SetInt(key, val)
         UiPop()
         return val, done
-    end
-    --
-
-    UiPush()
-        UiWindow(w, 0, false)
-        UiAlign("top left")
-        UiPush()
-            UiAlign("left middle")
-            UiTranslate(0, 2)
-            uic_tooltipHitbox( w,16,window.tooltipActive ,tooltip )
-            if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
-            if UiIsMouseInRect(w, 16) then 
-                if tooltip then draw_tooltip_text = tooltip; window.tooltipActive = true end
-            else
-                if window.tooltipActive then
-                    draw_tooltip = false
-                    draw_tooltip_params.popInTimer = 0
-                    window.tooltipActive = false
-                end
-            end
-        UiPop()
-        local val,done = optionsSlider(w ,GetInt(key) ,range[1], range[2], roundv)
-        SetInt(key, val)
-    UiPop()
-    return val, done
+    end)
+    if not s then error("Slider Element\n"..e, 0) end
 end
 
 backspace_Timer = 5
 
-function custom_UiInputText( string, w, h, window )
+function custom_UiInputText( string, w, h, window, dt )
     -- UiRect(w,h)
     local chars = {
         lower = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./`",
@@ -2622,14 +2661,16 @@ function custom_UiInputText( string, w, h, window )
         window.focused = false
     end
     if window.focused then
-        if InputDown('backspace') then
-            backspace_Timer = backspace_Timer - 0.1
-            if backspace_Timer <= 0 then
-                backspace_Timer = 0
-                return string:sub(1, -2)
+        if dt then
+            if InputDown('backspace') then
+                backspace_Timer = backspace_Timer - dt/0.1
+                if backspace_Timer <= 0 then
+                    backspace_Timer = 0
+                    return string:sub(1, -2)
+                end
             end
         end
-        if not InputDown('backspace') then backspace_Timer = 5 end
+         if not InputDown('backspace') then backspace_Timer = 5 end
     end
     if window.focused then
         if InputPressed("delete") or InputPressed('backspace') then
@@ -2658,6 +2699,7 @@ end
 ---Text Input
 ---@info Hright of textbox is 24
 ---@param key string Key for the input
+---@param dt any delta time
 ---@param width integer width of the input
 ---@param window table Root window for the textbox
 ---@param style? table Style the textbox
@@ -2668,7 +2710,17 @@ end
 ---- color range: rgb: 0 to 255
 ---@param tooltip? string Tooltip text
 ---@return string inputText Text input string
-function uic_textbox(key , width, window, style, tooltip )    
+function uic_textbox(key , dt, width, window, tooltip, style )
+    if type(window) == "table" then
+    else
+        error("TextBox Element: WINDOW MISSING\nA Window with a table is required for this to function as intended", 0)
+    end
+    if dt then else 
+        error("TextBox Element: dt MISSING\nThis parameter is required for this to function as intended\nhave `function draw(dt) end` at the start of the draw function and the param to this element param", 0)
+    end
+    if window then
+        if window.focused == nil then window.focused =false end
+    end
     if style == nil then
         style = {
             textAlgin = "left",
@@ -2683,7 +2735,7 @@ function uic_textbox(key , width, window, style, tooltip )
         if style.textColor == nil then style.textColor = {r=255, g=255, b=255} end
     end
     UiPush()
-        uic_tooltipHitbox( width,24,window.tooltipActive ,tooltip )
+        uic_tooltipHitbox( width,24,window.tooltipActive ,tooltip, dt )
         if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
         if UiIsMouseInRect(width, 24) then 
             if tooltip then draw_tooltip_text = tooltip; window.tooltipActive = true end
@@ -2709,7 +2761,7 @@ function uic_textbox(key , width, window, style, tooltip )
             UiColor(1,1,1,1)
             UiTextButton('EN',13,22)
         UiPop()
-        SetString(key, custom_UiInputText(GetString(key), width , 24 , window))
+        SetString(key, custom_UiInputText(GetString(key), width , 24 , window, dt))
         if tW >= width-13 then
             if style.textAlgin == 'center' then
                 UiWindow(width,24,true,true)
@@ -2718,8 +2770,7 @@ function uic_textbox(key , width, window, style, tooltip )
                 UiWindow(width,24,true, true)
                 UiTranslate(width-tW-13,0)
             end
-        else
-        end
+        else end
         if style.textAlgin == 'right' then
             UiWindow(width,24,true,true)
             UiTranslate(width-tW-13,0)
