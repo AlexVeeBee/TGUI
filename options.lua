@@ -34,12 +34,17 @@ function hex2rgb(hex)
     end
 end
 function draw(dt)
+
+    if HasKey('TGUI.regExplorer.openNew') then
+        table.insert(ALL_WINDOWS_OPEN, registerRegedit(GetString('TGUI.regExplorer.openNew')))
+        ClearKey('TGUI.regExplorer.openNew')
+    end
     if not windowPopupFirstFrame then
         table.insert(ALL_WINDOWS_OPEN, {
             textBox_test = {},
             tabFirstFrame = true,
             firstFrame = true,
-            title = "Debuging Window",
+            title = "TGUI OPTIONS",
             padding = 0,
             pos = {x = 180, y = 200},
             size = {w = 628, h = 540},
@@ -47,7 +52,7 @@ function draw(dt)
             startMiddle = true,
             disableCloseButton = true,
             
-            clip = false, content = function(window)
+            clip = false, content = function(window, dt_w)
                 uic_menubar(UiWidth(), {
                     {
                         label = "File",
@@ -88,7 +93,7 @@ function draw(dt)
                         title = "Personalization",
                         Content = function ()
                             UiTranslate(24, 24)
-                            local textbox_text = uic_textbox("TGUI.textbox.test", dt, UiWidth()-48, window.textBox_test, "This textbox does not do anything" )
+                            local textbox_text = uic_textbox("TGUI.textbox.test", dt_w, UiWidth()-48, window.textBox_test, "This textbox does not do anything" )
                             -- UiTranslate(10,10)
                             -- uic_text("HELLO", 24,18);
                             -- uic_checkbox("enable compass", "hpTD.compass", 100)
@@ -97,7 +102,7 @@ function draw(dt)
                         end
                     },
                 }, false, {
-                }, dt)
+                }, dt_w)
                 UiPush()
                     UiTranslate(UiWidth()-32,3)
                     UiAlign('top right')
@@ -109,7 +114,7 @@ function draw(dt)
                 UiPush()
                     UiTranslate(4,3)
                     UiAlign('top left')
-                    uic_button_func(_,dt,"About TGUI",128,28,false,"",function(ALL_WINDOWS_OPEN)
+                    uic_button_func(_,dt_w,"About TGUI",128,28,false,"",function(ALL_WINDOWS_OPEN)
                         aboutTGUI(ALL_WINDOWS_OPEN,dt)
                     end , ALL_WINDOWS_OPEN)
                 UiPop()

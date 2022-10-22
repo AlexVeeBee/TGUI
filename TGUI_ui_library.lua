@@ -1062,7 +1062,7 @@ function uic_scroll_Container(window,w,h,border,scroll_height, scroll_width, con
                 if scroll_width > w-2 then UiTranslate(scrollX,0) end
                 if scroll_height > h-2 then UiTranslate(0,scrollY) end
                 UiWindow(window_w,window_h,style.clip, style.clip)
-                content(extraContent)
+                content(extraContent,scrollX,scrollY)
             end)
         UiPop()
         UiPush()
@@ -1862,7 +1862,9 @@ end
 
 ---Make a tree of items
 ---@param window table Window table
----@param key string -
+---@param options table options for the treeview
+---- `key` - where the items should be stored
+---- `multiSelect` - able to select nultiple items at once
 ---@param w integer height of the tree container
 ---@param h_items_visible integer height of the tree container
 ---@param contents table contents for the tree
@@ -1872,7 +1874,7 @@ end
 ---- `style.BorderInnder` default: false - change the texture to make it inner 
 ---- `style.BorderPadding` default: 1 - change the borderWidth and borderHeight 
 ---- `style.Padding` default: 1 - change the borderWidth and borderHeight 
-function uic_treeView_container(window,key,w,h_items_visible,onClick,contents,style)
+function uic_treeView_container(window,options,w,h_items_visible,onClick,contents,style)
     if style == nil then 
         style = {
             BackgroundColor = {r=93,g=93,b=93,a=100},
@@ -1933,8 +1935,29 @@ function uic_treeView_container(window,key,w,h_items_visible,onClick,contents,st
         -- for i, v in ipairs(contents) do
 
         -- end
-        function displayTree(content, extra)
+        function displayTree(content, extra, index,...)
             local path = extra
+            UiPush()
+                local _, c = path:gsub("%.+", "");
+                UiTranslate(-19*c, 0)
+                if options.multiSelect then
+                    if HasKey(options.key..".multiSelect."..path:gsub("%.+","-").."-"..index) then
+                        UiPush()
+                            UiColor(c255(255),c255(156),c255(0),1)
+                            UiRect(UiWidth(),19)
+                        UiPop()     
+                    end
+                else
+                    if type(content) == "string" then
+                        if GetString(options.key) == "root"..path.."."..content then
+                            UiPush()
+                                UiColor(c255(255),c255(156),c255(0),1)
+                                UiRect(UiWidth(),19)
+                            UiPop()
+                        end
+                    end
+                end
+            UiPop()
             if type(content) == "table" then
                 -- UiImage("path", opt_x0, opt_y0, opt_x1, opt_y1)
                 UiPush()
@@ -1957,30 +1980,36 @@ function uic_treeView_container(window,key,w,h_items_visible,onClick,contents,st
                 window.contentHeight = window.contentHeight + 19;
                 if content.hidden == false then
                     for i, v in ipairs(content) do
-                        displayTree(v, path.."."..content.itemText)
+                        displayTree(v, path.."."..content.itemText, i)
                     end
                 end
                 UiTranslate(-19, -19)
             elseif type(content) == "string" then
                 window.contentHeight = window.contentHeight + 19;
                 if UiBlankButton(w, 19) then
-                    
+                    if options.multiSelect then
+                        if HasKey(options.key..".multiSelect."..path:gsub("%.+","-").."-"..index) then
+                            ClearKey(options.key..".multiSelect."..path:gsub("%.+","-").."-"..index)
+                        else
+                            SetString(options.key..".multiSelect."..path:gsub("%.+","-").."-"..index, content)
+                        end
+                    else
+                        SetString(options.key,"root"..path.."."..content)
+                    end
                     onClick( "root"..path.."."..content );
                 end
                 displayName( content )
             end
             UiTranslate(0, 19)
         end
-        DebugPrint(window.contentHeight)
         uic_scroll_Container(window, w,h_items_visible*19, false, window.contentHeight, 0, function()
             if not UiIsMouseInRect(UiWidth(), window.contentHeight) then
                 UiDisableInput()
             end
             for i, v in ipairs(contents) do
-                displayTree(v, "")
+                displayTree(v, "", i)
             end
         end)
-
     UiPop()
 end
 ---[[ WIDGETS ]]
@@ -2646,6 +2675,7 @@ function uic_slider(window, dt ,w ,key,range,roundv, tooltip)
 end
 
 backspace_Timer = 5
+backspace_Timer_cut = 0.1
 
 function custom_UiInputText( string, w, h, window, dt )
     -- UiRect(w,h)
@@ -2666,11 +2696,16 @@ function custom_UiInputText( string, w, h, window, dt )
                 backspace_Timer = backspace_Timer - dt/0.1
                 if backspace_Timer <= 0 then
                     backspace_Timer = 0
-                    return string:sub(1, -2)
+                    -- --
+                    backspace_Timer_cut = backspace_Timer_cut - dt/0.1
+                    if backspace_Timer_cut <= 0 then
+                        backspace_Timer_cut = 0.1
+                        return string:sub(1, -2)
+                    end
                 end
             end
         end
-         if not InputDown('backspace') then backspace_Timer = 5 end
+        if not InputDown('backspace') then backspace_Timer = 5 end
     end
     if window.focused then
         if InputPressed("delete") or InputPressed('backspace') then

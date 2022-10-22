@@ -123,7 +123,7 @@ local got_ver = false;
 ---- `style.unfocusedBackgroundColor` default: `{r=28,g=28,b=28,a=64}` - 
 ---- `style.TitleBar.titleColor` default: `{r=255,g=255,b=255,a=200}` -
 function initDrawTGUI( TABLEwindows, dt, style )
-    SetString("TGUI.Version","0.8.9-2 - ALPHA");
+    SetString("TGUI.Version","0.8.9-3 - ALPHA");
 
     function winError( err )
         if TGUI_has_error == false then
@@ -351,12 +351,8 @@ function initDrawTGUI( TABLEwindows, dt, style )
                 UiPush()
                     UiAlign("top left")
                     if v.focused or v.doNotHide then
-                        if v.pos.x > MaxWindowPos.w then
-                            v.pos.x = MaxWindowPos.w
-                        end
-                        if v.pos.y > MaxWindowPos.h then
-                            v.pos.y = MaxWindowPos.h
-                        end
+                        if v.pos.x > MaxWindowPos.w then v.pos.x = MaxWindowPos.w end
+                        if v.pos.y > MaxWindowPos.h then v.pos.y = MaxWindowPos.h end
                         UiColorFilter(1,1,1,1)
                         local success, err = pcall(function() 
                             if v.content == nil then
@@ -376,7 +372,7 @@ function initDrawTGUI( TABLEwindows, dt, style )
                             if v.keepResizing == true then
                                 UiDisableInput()
                             end
-                            v.content(v)
+                            v.content(v, dt)
                         end, v)
 
                         if not success then
@@ -423,12 +419,8 @@ function initDrawTGUI( TABLEwindows, dt, style )
                                     local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
                                     -- v.size = 
                                     if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
-                                        if v.size.w > v.minSize.w then
-                                            v.size.w = Vec2DAdd.w
-                                        end
-                                        if v.size.h > v.minSize.h then
-                                            v.size.h = Vec2DAdd.h
-                                        end
+                                        if v.size.w > v.minSize.w then v.size.w = Vec2DAdd.w end
+                                        if v.size.h > v.minSize.h then v.size.h = Vec2DAdd.h end
                                     end
                                     if Vec2DAdd.w-8 < cursor_x then v.size.w = Vec2DAdd.w end
                                     if Vec2DAdd.h-8 < cursor_y then v.size.h = Vec2DAdd.h end

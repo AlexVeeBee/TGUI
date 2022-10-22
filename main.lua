@@ -245,7 +245,7 @@ function draw(dt)
     end
 
     if HasKey('TGUI.regExplorer.openNew') then
-        table.insert(ALL_WINDOWS_OPEN, registerRegedit(GetString('TGUI.regExplorer.openNew'),dt))
+        table.insert(ALL_WINDOWS_OPEN, registerRegedit(GetString('TGUI.regExplorer.openNew')))
         ClearKey('TGUI.regExplorer.openNew')
     end
 
@@ -545,7 +545,7 @@ function draw(dt)
                         minSize = {w =600, h= 400},
                         startMiddle = true,
                         clip = false,
-                        content = function(window)
+                        content = function(window, dt_w)
                             uic_menubar(UiWidth(),{
                                 {
                                     title = "File",
@@ -1178,7 +1178,7 @@ function draw(dt)
                                             UiPop()
                                             UiPush()
                                             UiTranslate(175, 0)
-                                            uic_treeView_container(window.treeview,"TGUI.treeview_test", 160, GetInt("TGUI.test.listbox.h"),function(c)
+                                            uic_treeView_container(window.treeview,{key="TGUI.treeview_test",multiSelect=GetBool("TGUI.listbox.enabledMulty")}, 160, GetInt("TGUI.test.listbox.h"),function(c)
                                                 DebugPrint(c)
                                             end, window.treeview.contents )
                                             UiPop()
