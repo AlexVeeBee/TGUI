@@ -87,7 +87,7 @@ function draw(dt)
                 })
         
                 UiTranslate(12,32)
-                uic_tab_container(window, UiWidth()-24,UiHeight()-67,false,true,{
+                uic_tab_container(window, UiWidth()-24,UiHeight()-64,false,true,{
                     ["open_default"] = 1,
                     {
                         title = "Personalization",
@@ -106,17 +106,16 @@ function draw(dt)
                 UiPush()
                     UiTranslate(UiWidth()-32,3)
                     UiAlign('top right')
-                    if uic_button(100,"Close",128,28) then
-                        window.closeWindow = true
-                        Menu()
-                    end
+                    uic_button_func(_,dt_w,"Close",64,24,false,"",function()
+                        window.closeWindow = true;Menu()
+                    end)
                 UiPop()
                 UiPush()
                     UiTranslate(4,3)
                     UiAlign('top left')
-                    uic_button_func(_,dt_w,"About TGUI",128,28,false,"",function(ALL_WINDOWS_OPEN)
+                    uic_button_func(_,dt_w,"About TGUI",128,24,false,"",function()
                         aboutTGUI(ALL_WINDOWS_OPEN,dt)
-                    end , ALL_WINDOWS_OPEN)
+                    end)
                 UiPop()
             end ,
         })

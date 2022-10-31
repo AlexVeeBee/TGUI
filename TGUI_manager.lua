@@ -114,7 +114,6 @@ local got_ver = false;
 ---- important: title - Title of the window
 ---- important: pos = `{x = (int), y = (int)}` - Position of the window
 ---- important: size = `{w = (int), h = (int)}` - Size of the window
----- opacity - no in use
 ------------------ 
 --- style:
 ----
@@ -123,7 +122,7 @@ local got_ver = false;
 ---- `style.unfocusedBackgroundColor` default: `{r=28,g=28,b=28,a=64}` - 
 ---- `style.TitleBar.titleColor` default: `{r=255,g=255,b=255,a=200}` -
 function initDrawTGUI( TABLEwindows, dt, style )
-    SetString("TGUI.Version","0.8.9-3 - ALPHA");
+    SetString("TGUI.Version","0.8.9-4 - ALPHA");
 
     function winError( err )
         if TGUI_has_error == false then
@@ -207,6 +206,7 @@ function initDrawTGUI( TABLEwindows, dt, style )
         -- end
         if v.firstFrame or v.firstFrame == nil then v.focused = false; v.prefocused = false; v.closeWindow = false; v.keepMoving = false; v.keepResizing = false; v.disableDrag = false;
             if v.dragging == nil then v.dragging = false end
+            if v.opacity == nil then v.opacity = 0 end
             if v.hideTitleBar == nil then v.hideTitleBar = false end
             if v.minSize == nil then v.minSize = {w = 160,h = 160,} end
             if v.allowResize == nil then v.allowResize = true end
@@ -221,11 +221,17 @@ function initDrawTGUI( TABLEwindows, dt, style )
                 v.startMiddle = false
             end
         end
+        if not v.closeWindow then
+            if v.opacity < 1 then
+                v.opacity = v.opacity + dt/0.3
+            end
+        end
         -- UI
         UiPush()
             UiTranslate(v.pos.x,v.pos.y)    
             UiEnableInput()
             UiWindow(v.size.w ,v.size.h ,v.clip)
+            UiColorFilter(1, 1, 1, v.opacity)
             -- UiPush()
             --     if v.disableDrag == true then
             --         UiColor(1, 0, 0, 1) UiRect(v.size.w, 32)
@@ -443,8 +449,28 @@ function initDrawTGUI( TABLEwindows, dt, style )
                 end
             UiPop()
         UiPop()
+        -- if v.focused then
+        --     DebugPrint(v.title.." finds table ahead is "..type(TABLEwindows[i+1]))
+        --     DebugPrint(v.title.." finds table behind is "..type(TABLEwindows[i-1]))
+        -- end
+                -- if type(TABLEwindows[i+1]) == "table" then
+        -- end
         if v.closeWindow then if v.onClose == nil then
-            table.remove(TABLEwindows, i)
+            if type(TABLEwindows[i-1]) == "table" then
+                DebugPrint(TABLEwindows[i+1])
+                TABLEwindows[i-1].focused = true;
+                v.doNotHide = true;
+                if v.focused then
+                    local swapWindowData = TABLEwindows[i-1]
+                    table.remove(TABLEwindows , i-1)
+                    table.insert(TABLEwindows , swapWindowData)
+                end
+            end
+            if v.opacity > 0 then
+                v.opacity = v.opacity - dt/0.3
+            else
+                table.remove(TABLEwindows, i)
+            end
         else 
             v.onClose(v, TABLEwindows , i)
         end end

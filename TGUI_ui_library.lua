@@ -339,11 +339,7 @@ function uic_drawContextMenu()
                                         if v.type == "toggle" then
                                             v.action()
                                             if type(v.key) == "string" then
-                                                if GetBool(v.key) then
-                                                    SetBool(v.key,false)
-                                                else
-                                                    SetBool(v.key,true)
-                                                end
+                                                SetBool(v.key,not GetBool(v.key))
                                             end
                                             uic_contextMenu_contents.items={}
                                             uic_draw_contextmenu = false
@@ -798,7 +794,7 @@ end
 ---- `AllBorders` Default: false
 ---- `borderTop` Default: true
 ---- `borderBottom` Default: true
----- `textPadding` Default: 4
+---- `textPadding` Default: 4 - padding is located left and right of the text
 function uic_menubar(w, items ,extraContent , customization)
     if customization == nil then
         customization = {
@@ -810,21 +806,11 @@ function uic_menubar(w, items ,extraContent , customization)
         }
     end
     if type(customization) == "table" then
-        if customization.showBorder == nil then
-            customization.showBorder = true
-        end
-        if customization.AllBorders == nil then
-            customization.AllBorders = false
-        end
-        if customization.textPadding == nil then
-            customization.textPadding = 4
-        end
-        if customization.borderTop == nil then
-            customization.borderTop = true
-        end
-        if customization.borderBottom == nil then
-            customization.borderBottom = true
-        end
+        if customization.showBorder == nil then customization.showBorder = true end
+        if customization.AllBorders == nil then customization.AllBorders = false end
+        if customization.textPadding == nil then customization.textPadding = 4 end
+        if customization.borderTop == nil then customization.borderTop = true end
+        if customization.borderBottom == nil then customization.borderBottom = true end
     else
         error("customization is not a table type")
     end
@@ -1015,22 +1001,14 @@ function uic_scroll_Container(window,w,h,border,scroll_height, scroll_width, con
                     end
                 end
             else
-                if window.scrollXPos >= 0 then
-                    window.scrollXPos = 0
-                end
-                if window.scrollXPos <= max_scroll_X then
-                    window.scrollXPos = max_scroll_X
-                end
+                if window.scrollXPos >= 0 then window.scrollXPos = 0 end
+                if window.scrollXPos <= max_scroll_X then window.scrollXPos = max_scroll_X end
             end
         UiPop()
         local is_overflow_Y = false
         local is_overflow_X = false
-        if scroll_height > h then
-            is_overflow_Y = true
-        end
-        if scroll_width > w then
-            is_overflow_X = true
-        end
+        if scroll_height > h then is_overflow_Y = true end
+        if scroll_width > w then is_overflow_X = true end
         if UiIsMouseInRect(w,h) or window.keepScrolling == true then
         else
             UiDisableInput()
@@ -1103,10 +1081,9 @@ function uic_scroll_Container(window,w,h,border,scroll_height, scroll_width, con
             if is_overflow_Y then
                 UiPush()    
                     -- local factor = scroll_height/(h-20)
-                    -- local factor;
                     UiAlign('top left')
                     UiTranslate(0,17)
-                    UiTranslate(w-18,0)
+                    UiTranslate(w-17,0)
                     UiColor(c255(191), c255(191), c255(191), 0.5)
                     UiRect(17,h-34-addY)
                     
@@ -1228,7 +1205,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent, style
             if style.tabHeight == nil then style.tabHeight = 25 end
             if style.tabPaddingRight == nil then style.tabPaddingRight = 20 end
             if style.tabPaddingLeft == nil then style.tabPaddingLeft = 0 end
-            if style.tabTextSize == nil then style.tabTextSize = 15 end
+            if style.tabTextSize == nil then style.tabTextSize = 13 end
         end
     -- end
     local line_width = w
@@ -1270,7 +1247,7 @@ function uic_tab_container(window, w,h,clip,border,contents, extraContent, style
                 if v.title then else v.title = "Title Here" end
                 
                 UiPush()
-                    UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+                    UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", style.tabTextSize)
                     tab_width = 0 
                     tab_text_w,_ = UiGetTextSize(v.title)
                     UiPush()
@@ -1644,10 +1621,10 @@ end
 ---```
 function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, contents, options)
     scroll_height = h_items_visible*19
-    if options == nil then
+    if options == nil or options == {} then
         options = {}
     else
-        if options.key == nil then error("You must specify a key") end
+        if options.key == nil then error("Element: uic_listBox_container\nYou must specify a key",0) end
         if options.multiSelect == nil then options.multiSelect = false end
         if options.onSelect == nil then options.onSelect = function() end end
         if options.onDeSelect == nil then options.onDeSelect = function() end end
@@ -1676,11 +1653,14 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
             do
                 -- if style.scrollbar == nil then style.scrollbar = true end
                 if window.scrollcontainer.scrollfirstFrame == nil or window.scrollcontainer.scrollfirstFrame == true  then
+                    window.scrollcontainer = {};
                     window.scrollcontainer.showScrollbar = false;
                     window.scrollcontainer.showWidth = 0;
                     --
+                    window.scrollcontainer.scrollYPos = 0
+                    --
                     window.scrollcontainer.contentsScroll = 0;
-                    window.scrollcontainer.scrollYPos = 0;
+                    window.scrollcontainer.contentsScrollbar = 0;
                     --
                     window.scrollcontainer.mouse_pos_thum = {};
                     window.scrollcontainer.pos_thum = {};
@@ -1701,6 +1681,7 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
         
                 local max_scroll_Y = h_items_visible;
                 local contentsScroll = window.scrollcontainer.contentsScroll;
+                local scrollY = window.scrollcontainer.scrollYPos;
                 local is_overflow_Y = false;
                 -- DebugPrint(max_scroll_Y)
 
@@ -1708,6 +1689,9 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                     max_scroll_Y = (#contents - h_items_visible) window.scrollcontainer.showWidth = 17; is_overflow_Y = true; else
                     max_scroll_Y = 0; window.scrollcontainer.showWidth = 0; is_overflow_Y = false;
                 end
+                
+
+
                 if UiIsMouseInRect(w,h_items_visible*19) then
                     window.scrollcontainer.contentsScroll = window.scrollcontainer.contentsScroll - InputValue("mousewheel");
                 end
@@ -1719,59 +1703,60 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                 end
                 UiPush()
                     UiWindow(w-1 , h_items_visible*19, true, true)
+
+                    function clamp(value, mi, ma)
+                        if value < mi then value = mi end
+                        if value > ma then value = ma end
+                        return value
+                    end
+
+                    -- TODO: make a scroll system like pysimplegui instead
+                    -- Normal Scrollbar
                     if is_overflow_Y then
-                        local scrollY = window.scrollcontainer.contentsScroll
                         UiPush()    
                             -- local factor = scroll_height/(h-20)
-                            -- local factor;
                             UiAlign('top left')
                             UiTranslate(0,17)
-                            UiTranslate(w-18,0)
+                            UiTranslate(w-17,0)
                             UiColor(c255(191), c255(191), c255(191), 0.5)
-                            UiRect(17,h_items_visible*19-34)
+                            UiRect(17,(h_items_visible*19)-34)
                             
-                            local bar_scroll_Y=scrollY*((h_items_visible*19-34)/(#contents))
+                            local bar_scroll_Y=scrollY*((h_items_visible-34)/(#contents))
                             local viewportRatio_height = h_items_visible / #contents
-                            local scrollY_bar_height = math.max(0, math.floor(((h_items_visible*19)-34)*viewportRatio_height))
+                            local scrollY_bar_height = math.max(0, math.floor((h_items_visible*19-34)*viewportRatio_height))
                             UiColor(c255(191), c255(191), c255(191), 1)
-                            UiTranslate(0, bar_scroll_Y)
+                            UiTranslate(0,-bar_scroll_Y)
                             UiColor(1,1,1,1) --scrollY
+                            DebugPrint(bar_scroll_Y)
                             -- if (scroll_bar_height+h-(17*2)) > 1 then
                             -- window.oldscrollYPos = window.scrollYPos
                             UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scrollY_bar_height),1,1)
-                            if GetBool("TGUI.interactingWindow") == false then
+                            -- if GetBool("TGUI.interactingWindow") == false then
                                 UiPush()
                                 -- UiWindow(17,scroll_bar_height,false)
                                 if UiIsMouseInRect(17,scrollY_bar_height) or window.scrollcontainer.keepScrolling == true and InputDown('lmb') then
                                     UiPush()
                                         UiAlign('center middle')
                                         UiTranslate(window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y)
-                                        -- UiRect(window.scrollcontainer.deltaMouse.x, window.scrollcontainer.deltaMouse.y)
+                                        -- UiRect(window.deltaMouse.x, window.deltaMouse.y)
                                         -- UiWindow(200,scroll_bar_height,false)
                                         -- UiColor(1,1,0,0.3)
                                         -- UiRect(750,scroll_bar_height+750)
                                         if UiIsMouseInRect(750,scrollY_bar_height+750) and InputDown('lmb') then 
                                             window.scrollcontainer.pos_thum.mouse.x, window.scrollcontainer.pos_thum.mouse.y = UiGetMousePos()
-                                            window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y + window.scrollcontainer.pos_thum.lastMouse.y }
-                                            window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0
-                                            local vec2d = ui2DAdd(window.scrollcontainer.contentsScroll, window.scrollcontainer.pos_thum.deltaMouse).y
-                                            window.scrollcontainer.contentsScroll = math.floor( vec2d/4 ) ;
-                                            -- DebugPrint( math.floor( vec2d/4 ) );
-                                            if window.scrollcontainer.contentsScroll <= 0 then
-                                                window.scrollcontainer.contentsScroll = 0
+                                            window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y - window.scrollcontainer.pos_thum.lastMouse.y }            
+                                            window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0                                
+                                            local vec2d = ui2DAdd(-scrollY, window.scrollcontainer.pos_thum.deltaMouse).y
+                                            window.scrollcontainer.scrollYPos = vec2d
+                                            if window.scrollcontainer.scrollYPos >= 0 then
+                                                window.scrollcontainer.scrollYPos = 0
                                             end
-                                            if window.scrollcontainer.contentsScroll >= max_scroll_Y then
-                                                window.scrollcontainer.contentsScroll = max_scroll_Y
-                                            end
-                                            -- if window.scrollcontainer.contentsScroll >= 0 then
-                                            --     window.scrollcontainer.contentsScroll = 0
-                                            -- end
-                                            -- if window.scrollcontainer.contentsScroll <= max_scroll_Y then
-                                            --     window.scrollcontainer.contentsScroll = max_scroll_Y
-                                            -- end                    
+                                            if window.scrollcontainer.scrollYPos <= max_scroll_Y then
+                                                window.scrollcontainer.scrollYPos = max_scroll_Y
+                                            end                    
                                             -- DebugWatch('Scroll',InputValue("mousedy")/(scroll_height/h))
                                             -- local mouseWheel = InputDown('')
-                                            -- window.scrollcontainer.scrollYPos = window.scrollcontainer.scrollYPos-InputValue("mousedy")+(h-34*scroll_bar_height)
+                                            -- window.scrollYPos = window.scrollYPos-InputValue("mousedy")+(h-34*scroll_bar_height)
                                             window.scrollcontainer.keepScrolling = true
                                         end
                                     UiPop()
@@ -1784,14 +1769,31 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                                     window.scrollcontainer.keepScrolling = false
                                 end
                                 UiPop()
-                            end
+                            -- end
                             -- else
                                 -- UiImageBox('MOD/ui/TGUI_resources/textures/outline_inner_normal.png',17,2,1,1)
                             -- end
                         UiPop()
                     else
                     end
-        
+
+                    -- Virtual Scrollbar 
+
+                    if is_overflow_Y then
+                        -- UiPush()
+                        --     local height_snap_test = #contents+h_items_visible; 
+                        --     UiTranslate(0, -window.scrollcontainer.contentsScroll*19)
+                        --     UiPush()
+                        --         UiTranslate(32, 0)
+                        --         UiText("scroll: "..UiHeight()/(#contents-h_items_visible+1), opt_move)
+                        --     UiPop()
+                        --     for i=1, (#contents-h_items_visible)+1 do
+                        --         UiRect(12, UiHeight()/(#contents-h_items_visible+1))
+                        --         UiTranslate(3, UiHeight()/(#contents-h_items_visible+1))
+                        --         -- UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(h_items_visible*19)/i,1,1)
+                        --     end
+                        -- UiPop()
+                    end
                     for i=1,h_items_visible do
                         local s, r = pcall(function( ... )
                             local v = contents[i+contentsScroll];
@@ -1883,6 +1885,7 @@ function uic_treeView_container(window,options,w,h_items_visible,onClick,content
             BorderPadding = 1,
             BackgroundTextureInner = tgui_ui_assets.."/textures/outline_inner_normal.png",
             BackgroundTextureOutter = tgui_ui_assets.."/textures/outline_outer_normal.png",
+            Padding = 0
         }
     else
         if style.BackgroundColor == nil then style.BackgroundColor = {r=93,g=93,b=93,a=100} end
@@ -1891,6 +1894,7 @@ function uic_treeView_container(window,options,w,h_items_visible,onClick,content
         if style.BorderPadding == nil then style.BorderPadding = 1 end
         if style.BackgroundTextureInner == nil then BackgroundTextureInner = tgui_ui_assets.."/textures/outline_inner_normal.png" end
         if style.BackgroundTextureOutter == nil then BackgroundTextureOutter = tgui_ui_assets.."/textures/outline_outer_normal.png" end
+        if style.Padding == nil then style.Padding = 0 end
     end
     local totalHeight = 0;
     UiPush()
@@ -1912,13 +1916,13 @@ function uic_treeView_container(window,options,w,h_items_visible,onClick,content
             end
         end
         window.contentHeight = 0
-        UiTranslate(style.BorderPadding, style.BorderPadding);
+        -- UiTranslate(style.BorderPadding, style.BorderPadding);
         UiTranslate(style.Padding, style.Padding);
-        UiWindow((w+(style.BorderPadding*2)-3), (h_items_visible*19+(style.BorderPadding*2)-2), true, true)
+        UiWindow((w+(style.Padding*2)), ((h_items_visible*19)+(style.Padding*2)+2), true, true)
 
         function displayName( t )
             UiPush()
-                uic_text( t , 19, 15)
+                uic_text( t , 19, 13)
             UiPop()
         end
         function pre_displayTree(content, extra)
@@ -2002,7 +2006,7 @@ function uic_treeView_container(window,options,w,h_items_visible,onClick,content
             end
             UiTranslate(0, 19)
         end
-        uic_scroll_Container(window, w,h_items_visible*19, false, window.contentHeight, 0, function()
+        uic_scroll_Container(window, w,UiHeight(), false, window.contentHeight, 0, function()
             if not UiIsMouseInRect(UiWidth(), window.contentHeight) then
                 UiDisableInput()
             end
@@ -2030,7 +2034,7 @@ function uic_text( Text, height, fontSize, customization )
         }
     end
     if height == nil then height = 15 end
-    if fontSize == nil then fontSize = 15 end
+    if fontSize == nil then fontSize = 13 end
     UiPush() 
         UiFont(customization.font, fontSize)
         local txt_w, txt_h = UiGetTextSize(Text)
@@ -2046,8 +2050,7 @@ function uic_text( Text, height, fontSize, customization )
     UiPop()
     local finalHeight;
     if txt_h >= height then finalHeight = txt_h
-    else finalHeight = height
-    end
+    else finalHeight = height end
     return {font=customization.font, size=fontSize, width=txt_w ,height=finalHeight}
 end
 
@@ -2056,32 +2059,62 @@ end
 ---@param key string|table Key for the checkbox
 ---@param hitWidth integer Changes width of the hitbox for the checkbox
 ---@param beDisabled? boolean Make it disabled and unchecable
-function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
+---@param toolTipText? string Display a tooltip when hovering over the checkbox
+---@param style? table Style the checkbox
+function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText, style)
+    if type( style ) == not "table" then
+        error( "style must be a table", 0 )
+    end
+    if style == nil or style == {} then
+        style = {
+            font = tgui_ui_assets.."/Fonts/TAHOMA.TTF",
+            fontSize = 13,
+            enabledColor =  {r=255,g=255,b=255,a=1},
+            disabledColor = {r=0.5,g=0.5,b=0.5,a=1},
+            disabledColorShadow = {r=60,g=60,b=60,a=0.4},
+            hoverColor =    {r=0.95,g=0.95,b=0.95,a=1},
+            activeColor =   {r=255,g=255,b=255,a=1},
+        }
+    else
+        if style.font == nil then style.font = tgui_ui_assets.."/Fonts/TAHOMA.TTF" end
+        if style.fontSize == nil then style.fontSize = 13 end
+        if style.enabledColor == nil then style.enabledColor = {r=255,g=255,b=255,a=1} end
+        if style.disabledColor == nil then style.disabledColor = {r=0.5,g=0.5,b=0.5,a=1} end
+        if style.disabledColorShadow == nil then style.disabledColorShadow = {r=60,g=60,b=60,a=0.4} end
+        if style.hoverColor == nil then style.hoverColor = {r=0.95,g=0.95,b=0.95,a=1} end
+        if style.activeColor == nil then style.activeColor = {r=1,g=1,b=1,a=1} end
+    end
     UiPush()
         UiWindow(0,12,false	)
         UiAlign('left top')
-        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 13)
         UiButtonImageBox('',1,1,1,1,1,1)
         UiImageBox(tgui_ui_assets.."/textures/outline_inner_special_checkbox.png",12, 12,1,1,1,1)
         UiButtonImageBox(' ',0,0,0,0,0,0)
         tx_s_w,no_v_h = UiGetTextSize(text)
+        -- check if the text is bigger than the hitbox
+        if tx_s_w > hitWidth then
+            hitWidth = tx_s_w
+        end
         UiPush()
             UiColor(1,1,1,1)
             UiTranslate(-6,-4)
-            if uic_debug_checkHit then
+            if uic_debug_show_hitboxes_checkbox then
                 UiColor(1,1,1,0.2)
                 UiRect(6 + no_v_h + hitWidth,20)
                 UiColor(1,1,1,1)
             end
-            if UiBlankButton(6 + no_v_h + hitWidth,20) then
-                if type(key) == "string" then
-                    SetBool(key,not GetBool(key))
-                end
-                if type(key) == "boolean" then
-                    if key then
-                        return false
-                    else
-                        return true
+            if not beDisabled then 
+                if UiBlankButton(6 + no_v_h + hitWidth,20) then
+                    if type(key) == "string" then
+                        SetBool(key,not GetBool(key))
+                    end
+                    if type(key) == "boolean" then
+                        if key then
+                            return false
+                        else
+                            return true
+                        end
                     end
                 end
             end
@@ -2103,7 +2136,7 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
             else
                 UiTranslate(-6,-4)
                 if UiIsMouseInRect(6 + no_v_h + hitWidth,20) then
-                    UiColor(0.95,0.95,0.95,1)
+                    UiColor(style.hoverColor.r,style.hoverColor.g,style.hoverColor.b,1)
                 end
                 UiTranslate(6,4)
             end
@@ -2111,7 +2144,17 @@ function uic_checkbox(text, key, hitWidth, beDisabled, toolTipText)
         UiAlign('left middle')
         UiTranslate(12,5)
         UiDisableInput()
-        if UiTextButton(text,0,12) then end
+        if beDisabled then
+            UiColor(style.disabledColor.r, style.disabledColor.g, style.disabledColor.b, style.disabledColor.a)
+        end
+        uic_text(text, 24)
+        if( beDisabled ) then
+            UiPush()
+                UiColor(c255(style.disabledColorShadow.r), c255(style.disabledColorShadow.g), c255(style.disabledColorShadow.b), style.disabledColorShadow.a)
+                UiTranslate(1,1)
+                uic_text(text, 24)
+            UiPop()
+        end
     UiPop()
     if type(key) == "boolean" then
         return key
@@ -2122,24 +2165,91 @@ end
     18/9/22 - Add a 'not' prefix to the SetInt line
 ]]
 
+
 ---Create a radio button
 ---@param key string Connected keys for the radio button
 ---@param setString string Set this string when the radio button is pressed
 ---@param Text string Display text to the right of the radio button
-function uic_radio_button( key, setString, Text, hitboxWidth )
+---@param hitWidth integer Changes width of the hitbox for the radio button
+---@param beDisabled? boolean Make it disabled and unchecable
+---@param style? table Style of the radio button
+---- `font` default: tgui_ui_assets.."/Fonts/TAHOMA.TTF", Font path	
+---- `fontSize` default: 13, Font size
+---- `enabledColor` default: {1,1,1,1}, Color of the radio button when enabled
+---- `disabledColor` default: {0.5,0.5,0.5,1}, Color of the radio button when disabled
+---- `hoverColor` default: {0.95,0.95,0.95,1}, Color of the text when hovering over the radio button
+---- `activeColor` default:  {1,1,1,1}, Color of the text when active
+---- ⚠ Colors will be changed to 255 format
+---@param toolTipText? string Display text when hovering over the radio button
+function uic_radio_button( key, setString, Text, hitboxWidth, beDisabled, style, toolTipText )
+    if type( style ) == not "table" then
+        error( "style must be a table", 0 )
+    end
+    if style == nil or style == {} then
+        style = {
+            font = tgui_ui_assets.."/Fonts/TAHOMA.TTF",
+            fontSize = 13,
+            enabledColor =  {r=255,g=255,b=255,a=1},
+            disabledColor = {r=0.5,g=0.5,b=0.5,a=1},
+            disabledColorShadow = {r=60,g=60,b=60,a=0.4},
+            hoverColor =    {r=0.95,g=0.95,b=0.95,a=1},
+            activeColor =   {r=255,g=255,b=255,a=1},
+        }
+    else
+        if style.font == nil then style.font = tgui_ui_assets.."/Fonts/TAHOMA.TTF" end
+        if style.fontSize == nil then style.fontSize = 13 end
+        if style.enabledColor == nil then style.enabledColor = {r=255,g=255,b=255,a=1} end
+        if style.disabledColor == nil then style.disabledColor = {r=0.5,g=0.5,b=0.5,a=1} end
+        if style.disabledColorShadow == nil then style.disabledColorShadow = {r=60,g=60,b=60,a=0.4} end
+        if style.hoverColor == nil then style.hoverColor = {r=0.95,g=0.95,b=0.95,a=1} end
+        if style.activeColor == nil then style.activeColor = {r=1,g=1,b=1,a=1} end
+    end
     UiPush()
         UiAlign('top left')
-        UiColor(1,1,1,1)
+        if uic_debug_show_hitboxes_checkbox then
+            UiPush()
+                UiTranslate(-3, -3)
+                UiColor(1,1,1,0.2)
+                UiRect(9 + hitboxWidth,17)
+            UiPop()
+        end
         UiImage(tgui_ui_assets..'/textures/outline_inner_selection_radio.png')
         if GetString(key) == setString then
             UiImage(tgui_ui_assets..'/textures/outline_inner_selection_radio_mark.png')
+        else
+            UiTranslate(-3, -3)
+            if UiIsMouseInRect(9 + hitboxWidth,17) then
+                UiColor(0.95,0.95,0.95,1)
+            end
+            UiTranslate(3, 3)
         end
-        -- UiRect(hitboxWidth,13)
-        if UiBlankButton(hitboxWidth,13) then
-            SetString(key, setString)
+        UiPush()
+            UiTranslate(-3, -3)
+            if UiBlankButton(9+hitboxWidth,17) then
+                if not beDisabled then
+                    SetString(key,setString)
+                    -- SetString(key, setString)
+                end
+            end
+        UiPop()
+        if beDisabled then
+            UiColor(style.disabledColor.r, style.disabledColor.g, style.disabledColor.b, style.disabledColor.a)
+        else
+            UiColor(c255(style.enabledColor.r), c255(style.enabledColor.g), c255(style.enabledColor.b), style.enabledColor.a)
         end
-        UiTranslate(16)
-        uic_text(Text, 13, 14)
+        UiTranslate(16,-7)
+        uic_text(Text, 24, style.fontsize, {
+            font = style.font
+        })
+        if( beDisabled ) then
+            UiPush()
+                UiColor(c255(style.disabledColorShadow.r), c255(style.disabledColorShadow.g), c255(style.disabledColorShadow.b), style.disabledColorShadow.a)
+                UiTranslate(1,1)
+                uic_text(Text, 24, style.fontsize, {
+                    font = style.font
+                })
+            UiPop()
+        end
     UiPop()
 end
 
@@ -2503,7 +2613,7 @@ function uic_spincontrol(key, direction, w, disabled, onClick, config)
             UiTranslate(17, 0)
             UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png", w, 24, 1, 1)
             -- TODO:make a textbox for a editable spin controls
-            uic_text(GetInt(key), 24, 18)
+            uic_text(GetInt(key), 24, 13)
         UiPop()
     UiPop()
 end
@@ -2527,7 +2637,7 @@ end
 function uic_dropdown(width, key, items, toolTipText)
     local he, scroll_width = 24, 24
     UiPush()
-        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+        UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 13)
         UiImageBox(tgui_ui_assets.."/textures/outline_inner_normal_dropdown.png",width, he,1,1,1,1)
         UiColor(1,1,1,1)
         UiPush()

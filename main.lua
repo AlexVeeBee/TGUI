@@ -102,8 +102,8 @@ function init()
     SetInt("TGUI.test.listbox.h", 6)
 end
 TGUI_debug_show_windowMinsize = false
-uic_debug_checkHit = false
 uic_debug_buttontextWidth = false
+uic_debug_show_hitboxes_checkbox = false
 uic_debug_show_hitboxes_tooltip = true
 uic_debug_show_hitboxes_menubar = false
 uic_debug_show_hitboxes_gameMenu = true
@@ -1149,7 +1149,7 @@ function draw(dt)
                                                     key = "savegame.mod.multiSelect_test",
                                                     multiSelect = GetBool("TGUI.listbox.enabledMulty"),
                                                 });
-                                                UiTranslate(0,24)
+                                                UiTranslate(16,24)
                                                 uic_checkbox("Enable multiSelect", "TGUI.listbox.enabledMulty", 300, false)
                                                 UiTranslate(0,16)
                                                 UiPush()
@@ -1173,7 +1173,11 @@ function draw(dt)
                                                     UiTranslate(0,18)
                                                     uic_radio_button("TGUI.test.radio.t1", "hard", "Hard", 130)
                                                     UiTranslate(0,18)
-                                                    uic_radio_button("TGUI.test.radio.t1", "WTF", "WTF", 130)
+                                                    uic_radio_button("TGUI.test.radio.t1", "WTF", "WTF", 130, true)
+                                                    UiPush()
+                                                        UiTranslate(160,0)
+                                                        uic_checkbox("Disabled Test", "TGUI.disabledTest.checkbox", 10, true)
+                                                    UiPop()
                                                 UiPop()
                                             UiPop()
                                             UiPush()
