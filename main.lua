@@ -593,7 +593,33 @@ function draw(dt)
                                     title = "UI component: Table container",
                                     ["Content"] = function(MainWindow)
                                         UiTranslate(10,10)
-                                        uic_tableview_container(window.tableContainer, UiWidth()-140, UiHeight()-20, false, true, true, window.tableContainer.tableColumnNames,window.tableContainer.table)
+                                        uic_tableview_container(window.tableContainer, dt_w,UiWidth()-140, UiHeight()-20, false, true, true, window.tableContainer.tableColumnNames,window.tableContainer.table,{
+                                            onItemClick = function (itemNumber,item)
+                                                DebugPrint("onItemClick")
+                                            end,
+                                            onItemRightClick = function (itemNumber,item)
+                                                DebugPrint("onItemRightClick")
+                                            end,
+                                            onItemDoubleClick = function (itemNumber,item)
+                                                local s, err = pcall(function() 
+                                                    DebugPrint("--- Tableview debug ---")
+                                                    for k, v in ipairs(item) do
+                                                        local text = "Cant display"
+                                                        -- DebugPrint("item: "..k.." "..v)
+                                                        if type(v) == "string" then
+                                                            text = v
+                                                        elseif type(v) == "number" then
+                                                            text = tostring(v)
+                                                        end
+                                                        DebugPrint(k.." "..type(v)..": "..text)
+                                                    end
+                                                end)
+
+                                                if not s then
+                                                    DebugPrint("Error has occurred: "..err)
+                                                end
+                                            end
+                                        })
                                         UiTranslate(UiWidth()-120,0)
                                         uic_button_func(_, dt, "Empty Table", 100, 24, false, "", function ()
                                             window.tableContainer.table = {}

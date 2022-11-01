@@ -1404,6 +1404,7 @@ end
 
 ---Table view
 ---@param window table
+---@param dt number delta time
 ---@param w integer width of the table container
 ---@param h integer height of the table container
 ---@param clip boolean clip the container
@@ -1417,181 +1418,247 @@ end
 ---@param itemsContents table List of items 
 ---```
 ----- format: List of items
----{ onClick=function() emd,
----  onRightClick=function() end, 
---- (string|number)...}
+---{ (string|number)...}
 ---```
-function uic_tableview_container(window,w,h,clip,border,makeinner,nameContents,itemsContents)
+---@param options table options - Returns with the itemnumber in the table and the items that are selected
+---- `onLeftClick` function to run on left click
+---- `onRightClick` function to run on right click
+---- `onDoubleClick` function to run on double click
+function uic_tableview_container(window,dt,w,h,clip,border,makeinner,nameContents,itemsContents, options)
+    if nameContents.elementFirstFrame == true then
+        if window.firstFrame == nil then
+            error("Tableview Container: The Window param is being reset while being redrawn\nPlease make sure you have setup the table outside the contents param of the window",0);
+        else
+            -- Remove elementFirstFrame from the namecontents
+            table.remove(nameContents, 1)  
+            window.checkComplete = true  
+        end
+    end
+    if nameContents.elementFirstFrame == nil then
+        if window.checkComplete == true then 
+        else
+            nameContents.elementFirstFrame = true
+        end
+    end
     -- local s, r = pcall()
-    if window.firstFrame == nil then
+    if window.firstFrame == nil or window.firstFrame == {} then
         window.totalWidth = 0
         window.totalHeight = 0
         window.firstFrame = false
         window.tableScroll = {}
         window.scroll_height = 0
+        window.itemDoubleClick = {
+            itemNumber = -1,
+            time = 0,
+            doubleClick = false
+        }
     end
     window.totalWidth = 0
-    UiPush()
-        if border then
-            UiPush()
-                UiColor(c255(93),c255(93),c255(93),0.5)
-                UiRect(w,h)
-            UiPop()
-            if makeinner then
-                UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',w,h,1,1)
-            else
-                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w,h,1,1)
+    if window.checkComplete == true then
+        DebugWatch("window.itemDoubleClick.time", window.itemDoubleClick.time)
+        if window.itemDoubleClick.time > 0 then
+            window.itemDoubleClick.time = window.itemDoubleClick.time - dt/1
+            if window.itemDoubleClick.time <= 0 then
+                window.itemDoubleClick.time = 0
+                window.itemDoubleClick.itemNumber = -1
+                window.itemDoubleClick.doubleClick = false
             end
         end
-        for i, v in ipairs(nameContents) do
-            window.totalWidth = window.totalWidth + v.w
-        end
-        UiTranslate(1,1)
-
         UiPush()
-            UiTranslate(0,h-30)
-            uic_text(window.totalWidth, 17, 10)
-        UiPop()
-        if window.totalWidth > w then
-            UiWindow(w-2,h-2,true)
-        end
-        UiPush()
-            for i , v in pairs(itemsContents) do
-                window.totalHeight = 17*i
-            end
-        UiPop()
-        UiTranslate(0,0)
-        UiPush()
-            uic_container(w, h, true, false, false, function()
-            uic_scroll_Container(window.tableScroll, w-1, h-1, false, window.totalHeight+17, window.totalWidth+17 , function()
-                -- UiWindow(UiWidth(),UiHeight()-17,false)
+            if border then
                 UiPush()
-                for k , v in pairs(nameContents) do
-                    local text = uic_text(v.label, 17, 10)
-                    UiPush()
-                        UiFont(text.font,text.size)
-                        local txt_w, _ = UiGetTextSize(v.label)
-                    UiPop()
-                    UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',v.w,17,1,1)
-                    if v.w <= txt_w then v.w = txt_w end
-                    UiTranslate(v.w,0)
-                end
-                -- UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w-window.totalHeight,17,1,1)
+                    UiColor(c255(93),c255(93),c255(93),0.5)
+                    UiRect(w,h)
                 UiPop()
-                UiTranslate(0,17)
-    
-                for i, v in ipairs(itemsContents) do
-                    local item = v
+                if makeinner then
+                    UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',w,h,1,1)
+                else
+                    UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w,h,1,1)
+                end
+            end
+            for i, v in ipairs(nameContents) do
+                window.totalWidth = window.totalWidth + v.w
+            end
+            UiTranslate(1,1)
+
+            UiPush()
+                UiTranslate(0,h-30)
+                uic_text(window.totalWidth, 17, 10)
+            UiPop()
+            if window.totalWidth > w then
+                UiWindow(w-2,h-2,true)
+            end
+            UiPush()
+                for i , v in pairs(itemsContents) do
+                    window.totalHeight = 17*i
+                end
+            UiPop()
+            UiTranslate(0,0)
+            UiPush()
+                uic_container(w, h, true, false, false, function()
+                uic_scroll_Container(window.tableScroll, w-1, h-1, false, window.totalHeight+17, window.totalWidth+17 , function()
+                    -- UiWindow(UiWidth(),UiHeight()-17,false)
                     UiPush()
-                        if UiIsMouseInRect(window.totalWidth,17) then
-                            UiPush()
-                                UiColor(c255(255),c255(156),c255(0),1)
-                                UiRect(window.totalWidth,17)
-                            UiPop()
-                            UiColor(0,0,0,1)
-                            if InputPressed('rmb') then
-                                if type(v.onRightClick) == "function" then
-                                    v.onRightClick()
-                                end
-                            end
-                            if InputPressed('lmb') then
-                                if type(v.onClick) == "function" then
-                                    v.onClick()
-                                end
-                            end
+                    for k , v in pairs(nameContents) do
+                        if type(v) == "boolean" then
+                            break
                         end
-                        for iInner, vInner in ipairs(item) do
-                            local rowWidth = nameContents[iInner].w
-                            local text, txtType = {}, type(vInner);
-                            
-                            UiPush()
-                                if txtType == "string" or txtType == "number"  then
-                                    text = uic_text(vInner, 17, 15)
-                                else
-                                    text = uic_text(txtType, 17, 15)
-                                end
-                            UiPop()
+                        local text = uic_text(v.label, 17, 10)
+                        UiPush()
                             UiFont(text.font,text.size)
-                            local txt_w, _ = UiGetTextSize(vInner)
-                            if rowWidth <= txt_w then
-                                nameContents[iInner].w = txt_w
-                            end
-                            UiTranslate(rowWidth,0)
-                        end
+                            local txt_w, _ = UiGetTextSize(v.label)
+                        UiPop()
+                        UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',v.w,17,1,1)
+                        if v.w <= txt_w then v.w = txt_w end
+                        UiTranslate(v.w,0)
+                    end
+                    -- UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w-window.totalHeight,17,1,1)
                     UiPop()
                     UiTranslate(0,17)
-                    window.totalHeight = window.totalHeight + 17
-                end
-            end , {
-                clip = false,
-            })
-            end, nil, {HaveUiWindow = false})
-            
-            -- SCROLL CONTAINER
-            do
-                -- if style.scrollbar == nil then style.scrollbar = true end
-                if window.scrollfirstFrame == nil or window.scrollfirstFrame == true  then
-                    window.scrollXPos = 0
-                    window.scrollYPos = 0
-                    --
-                    window.mouse_pos_thum = {}
-                    window.pos_thum = {}
-                    --
-                    window.mouse_pos_thum.lastMouse = { x = 0, y = 0 }
-                    window.mouse_pos_thum.mouse = { x = 0, y = 0 }
-                    window.mouse_pos_thum.deltaMouse = { x = window.mouse_pos_thum.mouse.x - window.mouse_pos_thum.lastMouse.x, y = window.mouse_pos_thum.mouse.y - window.mouse_pos_thum.lastMouse.y }            
-                    window.mouse_pos_thum.mouseMoved = window.mouse_pos_thum.deltaMouse.x ~= 0 or window.mouse_pos_thum.deltaMouse.y ~= 0
-                    --
-                    window.pos_thum.lastMouse = { x = 0, y = 0 }
-                    window.pos_thum.mouse = { x = 0, y = 0 }
-                    window.pos_thum.deltaMouse = { x = window.pos_thum.mouse.x - window.pos_thum.lastMouse.x, y = window.pos_thum.mouse.y - window.pos_thum.lastMouse.y }            
-                    window.pos_thum.mouseMoved = window.pos_thum.deltaMouse.x ~= 0 or window.pos_thum.deltaMouse.y ~= 0
-                    --
-                    window.scrollfirstFrame = false
-                end
-    
-                local scrollY = window.scrollYPos
-
-                local max_scroll_Y = 500
-                if window.scroll_height > h then
-                    max_scroll_Y = h - window.scroll_height else
-                    max_scroll_Y = 0
-                end
-                if UiIsMouseInRect(w,h) and not InputDown('shift') then
-                    local scrollY = InputValue('mousewheel')
-                    local scrollTest = 0
-                    scrollTest = window.scrollYPos + scrollY
-                    if window.scrollYPos >= 0 then
+        
+                    for i, v in ipairs(itemsContents) do
+                        local item = v
+                        UiPush()
+                            if UiIsMouseInRect(w,17) then
+                                UiPush()
+                                    UiColor(c255(255),c255(156),c255(0),1)
+                                    UiRect(w,17)
+                                UiPop()
+                                UiColor(0,0,0,1)
+                                if InputPressed('rmb') then
+                                    if type(options.onItemRightClick) == "function" then
+                                        options.onItemRightClick(i,v)
+                                    end
+                                end
+                                if InputPressed('lmb') then
+                                    if window.itemDoubleClick.time <= 0 then
+                                        if type(options.onItemClick) == "function" then
+                                            options.onItemClick(i,v)
+                                        end
+                                    end
+                                    if window.itemDoubleClick.doubleClick == true then
+                                        if type(options.onItemClick) == "function" then
+                                            options.onItemClick(i,v)
+                                        end
+                                    end
+                                end
+                                -- Double click
+                                if InputPressed('lmb') then
+                                    if type(options.onItemDoubleClick) == "function" then
+                                        if window.itemDoubleClick.itemNumber == i then
+                                            if window.itemDoubleClick.time >= 0 then
+                                                if window.itemDoubleClick.doubleClick == false then
+                                                    -- DebugPrint("Double Click")
+                                                    window.itemDoubleClick.time = -0.1
+                                                    window.itemDoubleClick.itemNumber = -1
+                                                    window.itemDoubleClick.doubleClick = true
+                                                    options.onItemDoubleClick(i,v)
+                                                else
+                                                    -- DebugPrint("Double Click: too many clicks")
+                                                    window.itemDoubleClick.time = 0.5
+                                                end
+                                            end
+                                        end
+                                    end
+                                    if window.itemDoubleClick.time <= 0 then
+                                        window.itemDoubleClick.itemNumber = i
+                                        window.itemDoubleClick.time = 0.5
+                                    end
+                                end
+                            end
+                            for iInner, vInner in ipairs(item) do
+                                local rowWidth = nameContents[iInner].w
+                                local text, txtType = {}, type(vInner);
+                                
+                                UiPush()
+                                    if txtType == "string" or txtType == "number"  then
+                                        text = uic_text(vInner, 17, 15)
+                                    else
+                                        text = uic_text(txtType, 17, 15)
+                                    end
+                                UiPop()
+                                UiFont(text.font,text.size)
+                                local txt_w, _ = UiGetTextSize(vInner)
+                                if rowWidth <= txt_w then
+                                    nameContents[iInner].w = txt_w
+                                end
+                                UiTranslate(rowWidth,0)
+                            end
+                        UiPop()
+                        UiTranslate(0,17)
+                        window.totalHeight = window.totalHeight + 17
+                    end
+                end , {
+                    clip = false,
+                })
+                end, nil, {HaveUiWindow = false})
+                
+                -- SCROLL CONTAINER
+                do
+                    -- if style.scrollbar == nil then style.scrollbar = true end
+                    if window.scrollfirstFrame == nil or window.scrollfirstFrame == true  then
+                        window.scrollXPos = 0
                         window.scrollYPos = 0
+                        --
+                        window.mouse_pos_thum = {}
+                        window.pos_thum = {}
+                        --
+                        window.mouse_pos_thum.lastMouse = { x = 0, y = 0 }
+                        window.mouse_pos_thum.mouse = { x = 0, y = 0 }
+                        window.mouse_pos_thum.deltaMouse = { x = window.mouse_pos_thum.mouse.x - window.mouse_pos_thum.lastMouse.x, y = window.mouse_pos_thum.mouse.y - window.mouse_pos_thum.lastMouse.y }            
+                        window.mouse_pos_thum.mouseMoved = window.mouse_pos_thum.deltaMouse.x ~= 0 or window.mouse_pos_thum.deltaMouse.y ~= 0
+                        --
+                        window.pos_thum.lastMouse = { x = 0, y = 0 }
+                        window.pos_thum.mouse = { x = 0, y = 0 }
+                        window.pos_thum.deltaMouse = { x = window.pos_thum.mouse.x - window.pos_thum.lastMouse.x, y = window.pos_thum.mouse.y - window.pos_thum.lastMouse.y }            
+                        window.pos_thum.mouseMoved = window.pos_thum.deltaMouse.x ~= 0 or window.pos_thum.deltaMouse.y ~= 0
+                        --
+                        window.scrollfirstFrame = false
                     end
-                    if window.scrollYPos <= max_scroll_Y then
-                        window.scrollYPos = max_scroll_Y
+        
+                    local scrollY = window.scrollYPos
+
+                    local max_scroll_Y = 500
+                    if window.scroll_height > h then
+                        max_scroll_Y = h - window.scroll_height else
+                        max_scroll_Y = 0
                     end
-                    if scrollY > -1 then
-                        if scrollTest < 1 then
-                            window.scrollYPos = window.scrollYPos + scrollY
-                        else
+                    if UiIsMouseInRect(w,h) and not InputDown('shift') then
+                        local scrollY = InputValue('mousewheel')
+                        local scrollTest = 0
+                        scrollTest = window.scrollYPos + scrollY
+                        if window.scrollYPos >= 0 then
                             window.scrollYPos = 0
                         end
-                    end
-                    if scrollY < 1 then
-                        if scrollTest+1 > max_scroll_Y then
-                            window.scrollYPos = window.scrollYPos + scrollY
-                        else
+                        if window.scrollYPos <= max_scroll_Y then
+                            window.scrollYPos = max_scroll_Y
+                        end
+                        if scrollY > -1 then
+                            if scrollTest < 1 then
+                                window.scrollYPos = window.scrollYPos + scrollY
+                            else
+                                window.scrollYPos = 0
+                            end
+                        end
+                        if scrollY < 1 then
+                            if scrollTest+1 > max_scroll_Y then
+                                window.scrollYPos = window.scrollYPos + scrollY
+                            else
+                                window.scrollYPos = max_scroll_Y
+                            end
+                        end
+                    else
+                        if window.scrollYPos >= 0 then
+                            window.scrollYPos = 0
+                        end
+                        if window.scrollYPos <= max_scroll_Y then
                             window.scrollYPos = max_scroll_Y
                         end
                     end
-                else
-                    if window.scrollYPos >= 0 then
-                        window.scrollYPos = 0
-                    end
-                    if window.scrollYPos <= max_scroll_Y then
-                        window.scrollYPos = max_scroll_Y
-                    end
                 end
-            end
+            UiPop()
         UiPop()
-    UiPop()
+    end
 end
 
 ---Listox 
