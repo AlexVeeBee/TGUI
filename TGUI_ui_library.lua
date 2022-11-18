@@ -619,15 +619,21 @@ function uic_drawContextMenu()
         draw_dropdown_contents = {}
     end
     if draw_tooltip then
-        UiPush()
-            UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
-            local t_text_w,t_text_h = UiGetTextSize(draw_tooltip_text)
-            UiAlign('top left')
-            UiTranslate(draw_tooltip_pos.mouse.x,draw_tooltip_pos.mouse.y +20)
-            UiImageBox(tgui_ui_assets..'/textures/hint.png',t_text_w,t_text_h,1,1)
-            UiColor(c255(136),c255(84),c255(30),1)
-            UiText(draw_tooltip_text)
-        UiPop()
+        -- check if the string is empty
+        -- if draw_tooltip_contents.text == "" then
+        if draw_tooltip_text == "" then
+            draw_tooltip = false
+        else
+            UiPush()
+                UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
+                local t_text_w,t_text_h = UiGetTextSize(draw_tooltip_text)
+                UiAlign('top left')
+                UiTranslate(draw_tooltip_pos.mouse.x,draw_tooltip_pos.mouse.y +20)
+                UiImageBox(tgui_ui_assets..'/textures/hint.png',t_text_w,t_text_h,1,1)
+                UiColor(c255(136),c255(84),c255(30),1)
+                UiText(draw_tooltip_text)
+            UiPop()
+        end
     else
         local mouse_x,mouse_y = UiGetMousePos();
         draw_tooltip_pos.mouse.x = mouse_x;
