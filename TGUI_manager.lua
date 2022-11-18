@@ -23,6 +23,7 @@ Valve´s original creation: VGUI ( Valve's proprietary Graphical User Interface 
 
 ---_
 local TGUI_has_error, TGUI_error_message, TGUI_icon_fade, TGUI_icon_fade_direction, TGUI_icon_fade_loopcounter = false, nil, 1, "down", 0;
+local erroricon_repeat_tiumer = 30
 local ScreenWidth, ScreenHeight = 0, 0;
 
 ---_
@@ -70,6 +71,7 @@ function aboutTGUI(TABLEwindows,dt)
         })
     end
 end
+
 
 local opacityEnabled = false
 local showSlicing = false
@@ -122,7 +124,77 @@ local got_ver = false;
 ---- `style.unfocusedBackgroundColor` default: `{r=28,g=28,b=28,a=64}` - 
 ---- `style.TitleBar.titleColor` default: `{r=255,g=255,b=255,a=200}` -
 function initDrawTGUI( TABLEwindows, dt, style )
-    SetString("TGUI.Version","0.8.9-4 - ALPHA");
+    SetString("TGUI.Version","0.8.9-5 - ALPHA");
+
+    ERRORUI_API = {
+        Border = function(options) 
+            local bordertop = options.bordertop or 0
+            local borderbottom = options.borderbottom or 0
+            local borderleft = options.borderleft or 0
+            local borderright = options.borderright or 0
+            UiPush()
+                UiWindow(options.size[1],options.size[2], false)
+                UiPush()
+                    UiTranslate(0, 0)
+                    UiRect(UiWidth(), bordertop)
+                UiPop()
+                UiPush()
+                    UiTranslate(0 ,options.size[2])
+                    UiAlign("bottom left")
+                    UiRect(UiWidth(), borderbottom)
+                UiPop()
+                UiPush()
+                    UiTranslate(0, 0)
+                    UiRect(borderleft, UiHeight())
+                UiPop()
+                UiPush()
+                    UiTranslate(options.size[1], 0)
+                    UiAlign("top right")
+                    UiRect(borderright, UiHeight())
+                UiPop()
+            UiPop()
+        end,
+        Button = function(options)
+            local disabled = options.disabled or false
+            UiPush()
+                UiAlign("top left")
+                UiWindow(options.size[1], options.size[2], false)
+                if disabled then
+                    UiDisableInput()
+                else
+                    UiEnableInput()
+                end
+                UiPush()
+                    if not disabled then
+                        UiColor(c255(255),c255(255),c255(255),c200(200))
+                        UiRect(options.size[1], options.size[2])
+                        UiColor(c255(0),c255(0),c255(0),c200(200))
+                    else
+                        UiColor(c255(59),c255(59),c255(59),c200(200))
+                        UiRect(options.size[1], options.size[2])
+                        UiColor(c255(156),c255(156),c255(156),c200(200))
+                    end
+                    UiPush()
+                        UiTranslate(2, 2)
+                        ERRORUI_API.Border{
+                            size = {options.size[1]-4, options.size[2]-4},
+                            bordertop = 2,
+                            borderbottom = 2,
+                            borderleft = 2,
+                            borderright = 2
+                        }
+                    UiPop()
+
+                    UiWindow(options.size[1], options.size[2], false)
+                    local w,h = UiGetTextSize(options.text)
+                    UiButtonImageBox('MOD',0,0,0,0,0,0)
+                    UiDisableInput()
+                    if UiTextButton(options.text,w,options.size[2]) then end
+                UiPop()
+                if UiBlankButton(options.size[1],options.size[2]) then options.onClick() end
+            UiPop()
+        end
+    };
 
     function winError( err )
         if TGUI_has_error == false then
@@ -486,7 +558,7 @@ function initDrawTGUI( TABLEwindows, dt, style )
             UiColor(0,0,0,1)
             UiRect(UiWidth(),UiHeight())
             UiPop()
-            UiTranslate(UiCenter(),UiMiddle() -80)
+            UiTranslate(UiCenter(),UiMiddle() -120)
             UiPush()
                 if TGUI_icon_fade_loopcounter < 3 then
                     if dt then
@@ -504,6 +576,16 @@ function initDrawTGUI( TABLEwindows, dt, style )
                         end
                     end
                 end
+                if TGUI_icon_fade_loopcounter == 3 then
+                    if dt then
+                        DebugWatch("repeat timer", math.floor(erroricon_repeat_tiumer))
+                        erroricon_repeat_tiumer = erroricon_repeat_tiumer - dt/1
+                        if erroricon_repeat_tiumer <= 0 then
+                            erroricon_repeat_tiumer = 30
+                            TGUI_icon_fade_loopcounter = 0
+                        end
+                    end
+                end
                 UiColor(1, 1, 1, TGUI_icon_fade)
                 UiAlign("center bottom")
                 UiImage(tgui_ui_assets.."/textures/icons/error.png")
@@ -516,19 +598,30 @@ function initDrawTGUI( TABLEwindows, dt, style )
                 UiPush()
                     UiTranslate(lineWidth/2, 8)
                     UiAlign("center top")
-                    UiColor(1, 0.8, 0.05, 1)
+                    UiColor(1, 0.1, 0, 1)
                     local tx,ty=UiText("The TGUI system broke due to a leak or a bug in the code")
                 UiPop()
                 UiTranslate(0, ty+8)
                 UiRect(lineWidth, 2)
                 UiTranslate(0, 6)
-                UiWordWrap(lineWidth-100)
+                UiWordWrap(lineWidth-105)
                 UiAlign("top left")
                 UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 23)
                 UiPush()
                     UiTranslate(lineWidth/2, 0)
                     UiAlign("center top")
                     local tx,ty=UiText("It is recommended you report this to a developer as soon as possible and show them how you got this error. It is also best you screenshot this screen just in case you can't get this error again.")
+                    UiPush()
+                        UiTranslate(-50, ty+8)
+                        ERRORUI_API.Button{
+                            text = "Quit",
+                            size = {100, 32},
+                            onClick = function()
+                                Menu()
+                            end
+                        }
+                        ty = ty + 44;
+                    UiPop()
                 UiPop()
                 UiTranslate(0, ty+8)
                 UiRect(lineWidth, 2)

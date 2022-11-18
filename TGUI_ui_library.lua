@@ -1544,6 +1544,13 @@ function uic_tableview_container(window,dt,w,h,clip,border,makeinner,nameContent
                                 end
                                 -- Double click
                                 if InputPressed('lmb') then
+                                    if i == not window.itemDoubleClick.itemNumber then
+                                        DebugPrint("Item number is not the same")
+                                        if type(options.onItemClick) == "function" then
+                                            options.onItemClick(i,v)
+                                        end
+                                    end
+
                                     if type(options.onItemDoubleClick) == "function" then
                                         if window.itemDoubleClick.itemNumber == i then
                                             if window.itemDoubleClick.time >= 0 then
@@ -1660,11 +1667,90 @@ function uic_tableview_container(window,dt,w,h,clip,border,makeinner,nameContent
         UiPop()
     end
 end
+---Test element: listview
+--
+---⚠ function example: Testuic_listbox_container{w=10, h=30, key="TGUI.keyexample", content={}}
+--
+---⚠ This is a test element, it may not work as expected
+------------------------
+--- @param options table Options
+---- `h` number - height 
+---- `w` number - width
+---- `key` string - key
+---- `content` table - content
+---- `style` table - style
+---- `style.invertborder` boolean - invert border
+---- `style.backgroundcolor` boolean - {r=93,g=93,b=93,a=0.5} - RGB ragne 255 - background color of the element
+function Testuic_listbox_container( options )
+    if type(options) == "table" then
+
+    else
+        error("TGUI: Testuic_listbox_container: options must be a tabke or a named argument function\nExample: foo{text=\"hello\", text2=\"World!\"}", 0)
+    end
+    if type(options.key ) ~= "string" then
+        error("Testuic_listbox_container: key must be a string", 0)
+        return
+    end
+    
+    local w = options.w
+    local h = options.h
+    local key = options.key
+    local content = options.content or {}
+    local style = options.style or {invertborder = false, backgroundcolor = {r=93,g=93,b=93,a=0.5}}
+    --[[STYLE]]    local invertborder = style.invertborder or false
+    --[[STYLE]]    local backgroundcolor = style.backgroundcolor or {r=93,g=93,b=93,a=0.5}
+
+    if options.window.scroll == nil then options.window.scroll = {} end
+    if options.window.scroll.firstframe == nil then
+        options.window.scroll.firstframe = true
+        options.window.scroll.scrollYPos = 0
+        options.window.scroll.scrollXPos = 0
+
+        options.window.scroll.mouse_pos_thum = {}
+        options.window.scroll.mouse_pos_thum.mouse = {}
+        options.window.scroll.mouse_pos_thum.mouse.x = 0
+        options.window.scroll.mouse_pos_thum.mouse.y = 0
+
+        options.window.scroll.pos_thum = {}
+        options.window.scroll.pos_thum.mouse = {}
+        options.window.scroll.pos_thum.mouse.x = 0
+        options.window.scroll.pos_thum.mouse.y = 0
+
+        options.window.scroll.pos_thum.lastMouse = {}
+    end
+
+    local scrollX = options.window.scroll.scrollXPos
+    local scrollY = options.window.scroll.scrollYPos
+
+    UiPush() -- root drawing 
+        UiPush()
+            UiPush()
+                UiColor(c255(backgroundcolor.r),c255(backgroundcolor.g),c255(backgroundcolor.b),0.5)
+                UiRect(w+1,(h*19)+2)
+            UiPop()
+            if invertborder then
+                UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',w+1,(h*19)+2,1,1)
+            else
+                UiImageBox(tgui_ui_assets..'/textures/outline_outer_normal.png',w+1,(h*19)+2,1,1)
+            end
+        UiPop()
+        -- Scrollbar
+                
+        -- 
+        -- Content drawing
+        -- for i,v in ipairs(items) do
+        --     UiPush()
+                
+        --     UiPop()
+        -- end
+        --
+    UiPop()
+end
 
 ---Listox 
 ---@param window table
 ---@param w integer width of the listbox container
----@param h integer height of the listbox container
+---@param h_items_visible integer height of how many items are visible
 ---@param clip boolean clip the container
 ---@param border boolean add border
 ---@param makeinner boolean invert the texture
@@ -1677,14 +1763,7 @@ end
 ---  --for singleSelect, item will be stored in the key (GetString(key)).
 ---  --for multiSelect, there will multiple keys ((key).multiSelect.(item))
 ---  multiSelect = boolean (default false), -- if true, the listbox will be multiSelect.
----  onSelect = function(item) 
----   --[[Code goes here]]
----  end,
----  onDeSelect = function(item) 
----   --[[Code goes here]]
----  end,
 ---}
------ format: options
 ---```
 function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, contents, options)
     scroll_height = h_items_visible*19
