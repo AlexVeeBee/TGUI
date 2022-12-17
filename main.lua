@@ -1,4 +1,5 @@
 #include "./TGUI_ui_library.lua"
+#include "./TGUI_ui_library2.lua"
 #include "TGUI_manager.lua"
 #include "regeditWindow.lua"
 
@@ -42,10 +43,9 @@
     })
 ]]
 function init()
-    
+
     compass_ui_assets = "MOD/ui/TGUI_resources"
     tgui_ui_assets = "MOD/ui/TGUI_resources"
-    globalWindowOpacity = 1
     camera = FindLocation('camera_test',true)
     ALL_WINDOWS_OPEN = ALL_WINDOWS_OPEN or { 
         -- {
@@ -100,6 +100,7 @@ function init()
     SetInt('TGUI.settings.colors.hover.b', 255)
     -- 
     SetInt("TGUI.test.listbox.h", 6)
+    UILIB = NewTGUIuiLibrary({});
 end
 TGUI_debug_show_windowMinsize = false
 uic_debug_buttontextWidth = false
@@ -625,15 +626,15 @@ function draw(dt)
                                             end
                                         })
                                         UiTranslate(UiWidth()-120,0)
-                                        uic_button_func(_, dt, "Empty Table", 100, 24, false, "", function ()
+                                        uic_button_func{dt = dt, text = "Empty Table", width = 100, height = 24, onclick = function ()
                                             window.tableContainer.table = {}
                                             window.tableContainer.tableColumnNames = {}
                                             -- for i, v in ipairs(MainWindow.tableContainer) do
 
                                             -- end
-                                        end)
+                                        end}
                                         UiTranslate(0,28)
-                                        uic_button_func(_, dt, "Small Table", 100, 24, false, "", function ()
+                                        uic_button_func{dt = dt, text = "Small Table", width = 100, height = 24, onclick = function ()
                                             window.tableContainer.tableColumnNames = {
                                                 {label="1",w=0}, {label="2",w=0},
                                             }
@@ -645,9 +646,9 @@ function draw(dt)
                                                     onRightClick = function() DebugPrint("On Right Click") end,
                                                 }
                                             }
-                                        end)
+                                        end}
                                         UiTranslate(0,28)
-                                        uic_button_func(_, dt, "Testing Table", 100, 24, false, "", function ()
+                                        uic_button_func{dt = dt, text = "Testing Table", width = 100, height = 24, onclick = function ()
                                             window.tableContainer.tableColumnNames = {
                                                 {label="Test 1",w=0}, {label="column test 2",w=0},
                                                 {label="Test 3",w=0}, {label="column test 4",w=0},
@@ -808,7 +809,7 @@ function draw(dt)
                                             -- for i, v in ipairs(MainWindow.tableContainer) do
 
                                             -- end
-                                        end)
+                                        end}
                                     end
                                 },
                                 {
@@ -930,11 +931,11 @@ function draw(dt)
                                                 --     }, false)
                                                 UiPop()
                                                 UiTranslate(310,0)
-                                                uic_button_func(window.button_print, dt, "Print", 100, 24, false, "Print a text to the debug console\nR: "..math.floor(buttoncolor_r).." G: "..math.floor(buttoncolor_g).." B: "..math.floor(buttoncolor_b).."\nR:"..buttoncolor_r_dir.." G:"..buttoncolor_g_dir.." b:"..buttoncolor_b_dir , function()
+                                                uic_button_func{window = window.button_print, dt = dt, text="Print", width= 100, height= 24, tooltip = "Print a text to the debug console\nR: "..math.floor(buttoncolor_r).." G: "..math.floor(buttoncolor_g).." B: "..math.floor(buttoncolor_b).."\nR:"..buttoncolor_r_dir.." G:"..buttoncolor_g_dir.." b:"..buttoncolor_b_dir , onclick = function()
                                                     DebugPrint(textbox_text)
-                                                end, _, {
+                                                end , style = {
                                                     textcolornormal = {r=buttoncolor_r,g=buttoncolor_g,b=buttoncolor_b,a=200}
-                                                })
+                                                }}
                                                 UiTranslate(0, 32)
                                                 if buttoncolor_r_enabled then
                                                     if buttoncolor_r_dir == "up" then buttoncolor_r = buttoncolor_r + dt/0.005
@@ -1217,15 +1218,15 @@ function draw(dt)
                                                 uic_checkbox("Enable multiSelect", "TGUI.listbox.enabledMulty", 300, false)
                                                 UiTranslate(0,16)
                                                 UiPush()
-                                                    uic_button_func(_, dt, "Add", 100, 24,false, "", function() 
+                                                    uic_button_func{dt = dt, text= "Add", width= 100, onclick = function() 
                                                         local i = GetInt("TGUI.test.listbox.h");
                                                         SetInt("TGUI.test.listbox.h", i+1);
-                                                    end, _);
+                                                    end};
                                                     UiTranslate(0,28)
-                                                    uic_button_func(_, dt, "Remove", 100, 24,false, "", function() 
+                                                    uic_button_func{dt = dt, text = "Remove", width = 100, onclick = function() 
                                                         local i = GetInt("TGUI.test.listbox.h");
                                                         SetInt("TGUI.test.listbox.h", i-1);
-                                                    end, _);
+                                                    end};
                                                 UiPop()
                                                 UiTranslate(0,64)
                                                 UiPush()
@@ -1246,7 +1247,7 @@ function draw(dt)
                                             UiPop()
                                             UiPush()
                                             UiTranslate(175, 0)
-                                            uic_treeView_container(window.treeview,{key="TGUI.treeview_test",multiSelect=GetBool("TGUI.listbox.enabledMulty")}, 160, GetInt("TGUI.test.listbox.h"),function(c)
+                                            uic_treeView_container(window.treeview,{key="savegame.mod.TGUI.treeview_test",multiSelect=GetBool("TGUI.listbox.enabledMulty")}, 160, GetInt("TGUI.test.listbox.h"),function(c)
                                                 DebugPrint(c)
                                             end, window.treeview.contents )
                                             UiPop()
@@ -1424,6 +1425,35 @@ function draw(dt)
                     table.insert(ALL_WINDOWS_OPEN, registerRegedit(nil, dt))
                 end
                 UiTranslate(0,28);
+                UiTranslate(0,28);
+                if uic_button(0,"UI LIB 2",UiWidth(),24) then
+                    NewWindowPopup = false
+                    table.insert(ALL_WINDOWS_OPEN, {
+                        title = "UI LIB 2",
+                        pos = {x = 0, y = 0},
+                        size = {w = 300, h = 300},
+                        startMiddle = true,
+                        content = function() 
+                            local text = UILIB:createText({
+                                text = "Text",
+                            })
+                            UiTranslate(0, text.height + 6);
+                            UILIB:createButton({
+                                text = "Button",
+                                func = function()
+                                    DebugPrint("Button pressed")
+                                end
+                            })
+                            UiTranslate(0, 24 + 6);
+                            UILIB:createCheckbox({
+                                text = "Checkbox",
+                                key = "TGUI.v2.checkbox"
+                            })
+                        end
+                    })
+                    
+                end
+
                 -- uic_button_func(0,"function button",UiWidth(),24, false, "", function(contents)
                 --     DebugPrint(contents.win);
                 --     DebugPrint(contents.pop);
@@ -1444,9 +1474,9 @@ function draw(dt)
         UiPush()  
             UiTranslate(30,100)
             UiCreateWindow(120,100,false,"Window settings",8,function()
-                uic_button_func(_, dt, "New Window", UiWidth(), 24, false, "", function()
+                uic_button_func{ dt = dt, text = "New Window", width = UiWidth(), height = 24, onclick = function()
                     SetBool('TGUI.menu.show',true);
-                end)
+                end}
                 UiTranslate(0,28)
                 uic_checkbox("disable input", "tgui.disableInput", 100)
             end)

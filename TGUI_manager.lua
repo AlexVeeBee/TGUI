@@ -73,6 +73,7 @@ function aboutTGUI(TABLEwindows,dt)
 end
 
 
+local globalWindowOpacity = 1
 local opacityEnabled = false
 local showSlicing = false
 local windowSlice = { x = 13/2, y = 13/2}
@@ -269,285 +270,296 @@ function initDrawTGUI( TABLEwindows, dt, style )
 
     local last = #TABLEwindows -0
     if not TGUI_has_error then
-    for i, v in pairs(TABLEwindows) do
-        -- INIT
-        -- if v.firstFrame == nil then
-        --     DebugPrint('FirstFrame Missing')
-        --     table.remove(TABLEwindows, v)
-        --     return false
-        -- end
-        if v.firstFrame or v.firstFrame == nil then v.focused = false; v.prefocused = false; v.closeWindow = false; v.keepMoving = false; v.keepResizing = false; v.disableDrag = false;
-            if v.dragging == nil then v.dragging = false end
-            if v.opacity == nil then v.opacity = 0 end
-            if v.hideTitleBar == nil then v.hideTitleBar = false end
-            if v.minSize == nil then v.minSize = {w = 160,h = 160,} end
-            if v.allowResize == nil then v.allowResize = true end
-            if v.disableCloseButton == nil then v.disableCloseButton = false end
-            v.firstFrame = false
+        local s, e = pcall(function() 
+        for i, v in pairs(TABLEwindows) do
+            -- INIT
+            -- if v.firstFrame == nil then
+            --     DebugPrint('FirstFrame Missing')
+            --     table.remove(TABLEwindows, v)
+            --     return false
+            -- end
+            if v.firstFrame or v.firstFrame == nil then v.focused = false; v.prefocused = false; v.closeWindow = false; v.keepMoving = false; v.keepResizing = false; v.disableDrag = false;
+                if v.padding == nil then v.padding = 0 end
+                if v.dragging == nil then v.dragging = false end
+                if v.opacity == nil then v.opacity = 0 end
+                if v.hideTitleBar == nil then v.hideTitleBar = false end
+                if v.minSize == nil then v.minSize = {w = 160,h = 160,} end
+                if v.allowResize == nil then v.allowResize = true end
+                if v.disableCloseButton == nil then v.disableCloseButton = false end
+                v.firstFrame = false
 
-            if v.startMiddle then
-                UiPop()
-                local sm_x,sm_y = UiCenter(),UiMiddle()
-                local f_sm_x = sm_x - v.size.w/2; v.pos.x = f_sm_x
-                local f_sm_y = sm_y - v.size.h/2; v.pos.y = f_sm_y
-                v.startMiddle = false
-            end
-        end
-        if not v.closeWindow then
-            if v.opacity < 1 then
-                v.opacity = v.opacity + dt/0.3
-            end
-        end
-        -- UI
-        UiPush()
-            UiTranslate(v.pos.x,v.pos.y)    
-            UiEnableInput()
-            UiWindow(v.size.w ,v.size.h ,v.clip)
-            UiColorFilter(1, 1, 1, v.opacity)
-            -- UiPush()
-            --     if v.disableDrag == true then
-            --         UiColor(1, 0, 0, 1) UiRect(v.size.w, 32)
-            --     end
-            -- UiPop()
-            UiPush()
-                if v.focused or v.doNotHide then
-                    UiPush()
-                    if v.keepMoving == false then
-                        UiTranslate(v.size.w, v.size.h)
-                        UiAlign("bottom right")
-                        if not UiIsMouseInRect(24, 24) and not v.keepResizing then
-                            UiAlign("top left")
-                            UiTranslate(-v.size.w, -v.size.h)
-                            UiTranslate(0, 32)
-                            if UiIsMouseInRect(v.size.w, v.size.h-32) and InputDown('lmb') then v.disableDrag = true v.disableRezie = true
-                            elseif not UiIsMouseInRect(v.size.w, v.size.h-32) then if InputReleased('lmb') then v.disableDrag = false v.disableRezie = false end end
-                            if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false v.disableRezie = false end end
-                        else
-                            if UiIsMouseInRect(11, 11) and InputDown('lmb') then v.disableRezie = false
-                            elseif not UiIsMouseInRect(11, 11) then if InputReleased('lmb') then v.disableRezie = false end end
-                            if v.disableRezie == true then if InputReleased('lmb') then v.disableRezie = false end end
-                        end
-                    end
+                if v.startMiddle then
                     UiPop()
+                    local sm_x,sm_y = UiCenter(),UiMiddle()
+                    local f_sm_x = sm_x - v.size.w/2; v.pos.x = f_sm_x
+                    local f_sm_y = sm_y - v.size.h/2; v.pos.y = f_sm_y
+                    v.startMiddle = false
                 end
-            UiPop()
+            end
+            if not v.closeWindow then
+                if v.opacity < 1 then
+                    v.opacity = v.opacity + dt/0.3
+                end
+            end
+            -- UI
             UiPush()
-                UiAlign("top left")
-                if UiIsMouseInRect(v.size.w, 32) or v.keepMoving and v.disableDrag == false and InputDown('lmb') and last == i then
-                    -- UiRect(v.size.w+0, 32)
-                    UiPush()
-                        UiTranslate(v.size.w/2,16)
-                        UiAlign("middle center")
-                        if UiIsMouseInRect(v.size.w+2000, 1600) and v.disableDrag == false and InputDown('lmb') and last == i then
-                            v.keepMoving = true
-                            v.pos = Vec2DAdd(v.pos, deltaMouse)
-                            SetBool('TGUI.interactingWindow',true)
-                        else
-                            SetBool('TGUI.interactingWindow',false)
-                            v.keepMoving = false
-                        end
-                    UiPop()
-                end
-                if InputReleased('lmb') and v.keepMoving then
-                    SetBool('TGUI.interactingWindow',false)
-                    v.keepMoving = false
-                end
+                UiTranslate(v.pos.x,v.pos.y)    
+                UiEnableInput()
+                UiWindow(v.size.w ,v.size.h ,v.clip)
+                UiColorFilter(1, 1, 1, v.opacity)
+                -- UiPush()
+                --     if v.disableDrag == true then
+                --         UiColor(1, 0, 0, 1) UiRect(v.size.w, 32)
+                --     end
+                -- UiPop()
                 UiPush()
-                    UiAlign('top left')
-                    UiColorFilter(1,1,1,globalWindowOpacity)
-                    if last == i then
-                        UiColor(c255(style.focusBackgroundColor.r), c255(style.focusBackgroundColor.g), c255(style.focusBackgroundColor.b),c200(style.focusBackgroundColor.a))
-                        v.focused = true
-                        if v.prefocused == false then
-                            v.prefocused = true
-                        end
-                        if UiBlankButton(v.size.w, v.size.h) then end
-                    else
-                        UiColor(c255(style.unfocusedBackgroundColor.r), c255(style.unfocusedBackgroundColor.g), c255(style.unfocusedBackgroundColor.b),c200(style.unfocusedBackgroundColor.a))
-                        v.focused = false
-                        if v.prefocused == true then
-                            v.prefocused = false
-                        end
-
-                        if UiBlankButton(v.size.w, v.size.h) then
-                            local swapWindowData = TABLEwindows[i]
-                            table.remove(TABLEwindows , i)
-                            table.insert(TABLEwindows , swapWindowData)
-                        end
-                    end
-                    UiImageBox(tgui_ui_assets.."/textures/window.png",v.size.w ,v.size.h,windowSlice.x,windowSlice.y)
-                    if showSlicing then
+                    if v.focused or v.doNotHide then
                         UiPush()
-                            UiColor(1,0,0,1)
-                            UiPush()
-                                UiTranslate(0,windowSlice.x)
-                                UiRect(UiWidth(),1)
-                            UiPop()
-                            UiColor(0,1,0,1)
-                            UiPush()
-                                UiTranslate(windowSlice.y,0)
-                                UiRect(1,UiHeight())
-                            UiPop()
+                        if v.keepMoving == false then
+                            UiTranslate(v.size.w, v.size.h)
+                            UiAlign("bottom right")
+                            if not UiIsMouseInRect(24, 24) and not v.keepResizing then
+                                UiAlign("top left")
+                                UiTranslate(-v.size.w, -v.size.h)
+                                UiTranslate(0, 32)
+                                if UiIsMouseInRect(v.size.w, v.size.h-32) and InputDown('lmb') then v.disableDrag = true v.disableRezie = true
+                                elseif not UiIsMouseInRect(v.size.w, v.size.h-32) then if InputReleased('lmb') then v.disableDrag = false v.disableRezie = false end end
+                                if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false v.disableRezie = false end end
+                            else
+                                if UiIsMouseInRect(11, 11) and InputDown('lmb') then v.disableRezie = false
+                                elseif not UiIsMouseInRect(11, 11) then if InputReleased('lmb') then v.disableRezie = false end end
+                                if v.disableRezie == true then if InputReleased('lmb') then v.disableRezie = false end end
+                            end
+                        end
                         UiPop()
                     end
                 UiPop()
-                -- UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
-                UiTranslate(12,0)
-                UiColor(c255(style.TitleBar.titleColor.r), c255(style.TitleBar.titleColor.g), c255(style.TitleBar.titleColor.b), c200(style.TitleBar.titleColor.a))
-                uic_text(v.title, 32, 12, {
-                    font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF"
-                })
-            UiPop()
-            if not v.disableCloseButton then
-                UiPush()
-                    local buttonSize = 16
-                    UiColorFilter(1,1,1,globalWindowOpacity)
-                    UiAlign("top right")
-                    UiTranslate(UiWidth()-8,16/2)
-                    -- -- UiRect(1,10)
-                    UiPush()
-                        UiTranslate(-4,4)
-                        UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
-                    UiPop()
-                    -- UiColor(1,1,1,0.3)
-                    -- UiRect(buttonSize,buttonSize)
-                    if UiIsMouseInRect(buttonSize,buttonSize) and InputDown('lmb') then
-                        -- Nothing
-                    elseif UiIsMouseInRect(buttonSize,buttonSize) then v.disableDrag = true end
-                    if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false end end
-                    if v.disableDrag == true then if not UiIsMouseInRect(buttonSize,buttonSize) and not InputDown('lmb') then v.disableDrag = false end end
-                    if UiBlankButton(buttonSize,buttonSize) then v.closeWindow = true end
-                UiPop()
-            end
-            UiPush()
-                UiTranslate(0,32)
-                UiWindow(v.size.w,v.size.h-32,v.clip)
-                UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
-                UiTranslate(v.padding,v.padding)
-                UiWindow(v.size.w-v.padding/2*4,v.size.h-32+v.padding/2*-4,v.clip)
-                UiColor(1,1,1,1)
                 UiPush()
                     UiAlign("top left")
-                    if v.focused or v.doNotHide then
-                        if v.pos.x > MaxWindowPos.w then v.pos.x = MaxWindowPos.w end
-                        if v.pos.y > MaxWindowPos.h then v.pos.y = MaxWindowPos.h end
-                        UiColorFilter(1,1,1,1)
-                        local success, err = pcall(function() 
-                            if v.content == nil then
-                                -- v.content = function()
-                                --     UiWordWrap(UiWidth())
-                                --     uic_text("nil value, Reopen this window and continue what you were doing", -1, 32)
-                                -- end
-                                SetString('TGUI.error',"1. You might have quicksaved while a window was opened\n2. Content in table does not exist")
-                                SetBool('TGUI.error.allowTo.terminateWindow',true)
-                                SetInt('TGUI.error.allowTo.terminateNumber',v)
-                            end
-                            if v.focused == false then
-                                UiDisableInput()
+                    if UiIsMouseInRect(v.size.w, 32) or v.keepMoving and v.disableDrag == false and InputDown('lmb') and last == i then
+                        -- UiRect(v.size.w+0, 32)
+                        UiPush()
+                            UiTranslate(v.size.w/2,16)
+                            UiAlign("middle center")
+                            if UiIsMouseInRect(v.size.w+2000, 1600) and v.disableDrag == false and InputDown('lmb') and last == i then
+                                v.keepMoving = true
+                                v.pos = Vec2DAdd(v.pos, deltaMouse)
+                                SetBool('TGUI.interactingWindow',true)
                             else
-                                UiButtonImageBox('MOD',0,0,0,0,0,0)
+                                SetBool('TGUI.interactingWindow',false)
+                                v.keepMoving = false
                             end
-                            if v.keepResizing == true then
-                                UiDisableInput()
+                        UiPop()
+                    end
+                    if InputReleased('lmb') and v.keepMoving then
+                        SetBool('TGUI.interactingWindow',false)
+                        v.keepMoving = false
+                    end
+                    UiPush()
+                        UiAlign('top left')
+                        UiColorFilter(1,1,1,globalWindowOpacity)
+                        if last == i then
+                            UiColor(c255(style.focusBackgroundColor.r), c255(style.focusBackgroundColor.g), c255(style.focusBackgroundColor.b),c200(style.focusBackgroundColor.a))
+                            v.focused = true
+                            if v.prefocused == false then
+                                v.prefocused = true
                             end
-                            v.content(v, dt)
-                        end, v)
+                            if UiBlankButton(v.size.w, v.size.h) then end
+                        else
+                            UiColor(c255(style.unfocusedBackgroundColor.r), c255(style.unfocusedBackgroundColor.g), c255(style.unfocusedBackgroundColor.b),c200(style.unfocusedBackgroundColor.a))
+                            v.focused = false
+                            if v.prefocused == true then
+                                v.prefocused = false
+                            end
 
-                        if not success then
-                            TGUI_has_error = true
-                            TGUI_error_message = err
+                            if UiBlankButton(v.size.w, v.size.h) then
+                                local swapWindowData = TABLEwindows[i]
+                                table.remove(TABLEwindows , i)
+                                table.insert(TABLEwindows , swapWindowData)
+                            end
                         end
+                        UiImageBox(tgui_ui_assets.."/textures/window.png",v.size.w ,v.size.h,windowSlice.x,windowSlice.y)
+                        if showSlicing then
+                            UiPush()
+                                UiColor(1,0,0,1)
+                                UiPush()
+                                    UiTranslate(0,windowSlice.x)
+                                    UiRect(UiWidth(),1)
+                                UiPop()
+                                UiColor(0,1,0,1)
+                                UiPush()
+                                    UiTranslate(windowSlice.y,0)
+                                    UiRect(1,UiHeight())
+                                UiPop()
+                            UiPop()
+                        end
+                    UiPop()
+                    -- UiFont(tgui_ui_assets.."/Fonts/TAHOMABD.TTF", 12)
+                    UiTranslate(12,0)
+                    UiColor(c255(style.TitleBar.titleColor.r), c255(style.TitleBar.titleColor.g), c255(style.TitleBar.titleColor.b), c200(style.TitleBar.titleColor.a))
+                    uic_text(v.title, 32, 12, {
+                        font = tgui_ui_assets.."/Fonts/TAHOMABD.TTF"
+                    })
+                UiPop()
+                if not v.disableCloseButton then
+                    UiPush()
+                        local buttonSize = 16
+                        UiColorFilter(1,1,1,globalWindowOpacity)
+                        UiAlign("top right")
+                        UiTranslate(UiWidth()-8,16/2)
+                        -- -- UiRect(1,10)
+                        UiPush()
+                            UiTranslate(-4,4)
+                            UiImageBox(tgui_ui_assets..'/textures/close.png',9,9,0,0)
+                        UiPop()
+                        -- UiColor(1,1,1,0.3)
+                        -- UiRect(buttonSize,buttonSize)
+                        if UiIsMouseInRect(buttonSize,buttonSize) and InputDown('lmb') then
+                            -- Nothing
+                        elseif UiIsMouseInRect(buttonSize,buttonSize) then v.disableDrag = true end
+                        if v.disableDrag == true then if InputReleased('lmb') then v.disableDrag = false end end
+                        if v.disableDrag == true then if not UiIsMouseInRect(buttonSize,buttonSize) and not InputDown('lmb') then v.disableDrag = false end end
+                        if UiBlankButton(buttonSize,buttonSize) then v.closeWindow = true end
+                    UiPop()
+                end
+                UiPush()
+                    UiTranslate(0,32)
+                    UiWindow(v.size.w,v.size.h-32,v.clip)
+                    UiFont(tgui_ui_assets.."/Fonts/TAHOMA.TTF", 15)
+                    UiTranslate(v.padding,v.padding)
+                    UiWindow(v.size.w-v.padding/2*4,v.size.h-32+v.padding/2*-4,v.clip)
+                    UiColor(1,1,1,1)
+                    UiPush()
+                        UiAlign("top left")
+                        if v.focused or v.doNotHide then
+                            if v.pos.x > MaxWindowPos.w then v.pos.x = MaxWindowPos.w end
+                            if v.pos.y > MaxWindowPos.h then v.pos.y = MaxWindowPos.h end
+                            UiColorFilter(1,1,1,1)
+                            local success, err = pcall(function() 
+                                if v.content == nil then
+                                    -- v.content = function()
+                                    --     UiWordWrap(UiWidth())
+                                    --     uic_text("nil value, Reopen this window and continue what you were doing", -1, 32)
+                                    -- end
+                                    SetString('TGUI.error',"1. You might have quicksaved while a window was opened\n2. Content in table does not exist")
+                                    SetBool('TGUI.error.allowTo.terminateWindow',true)
+                                    SetInt('TGUI.error.allowTo.terminateNumber',v)
+                                end
+                                if v.focused == false then
+                                    UiDisableInput()
+                                else
+                                    UiButtonImageBox('MOD',0,0,0,0,0,0)
+                                end
+                                if v.keepResizing == true then
+                                    UiDisableInput()
+                                end
+                                v.content(v, dt)
+                            end, v)
+
+                            if not success then
+                                TGUI_has_error = true
+                                TGUI_error_message = err
+                            end
+                        end
+                    UiPop()
+                UiPop()
+                UiPush()
+                    if TGUI_debug_show_windowMinsize then
+                        UiPush()
+                            UiPush()
+                                UiColor(1,0,0,1)
+                                UiTranslate(v.minSize.w, 0)
+                                UiRect(3,v.size.h)
+                            UiPop()
+                            UiPush()
+                                UiColor(0,1,0,1)
+                                UiTranslate(0,v.minSize.h)
+                                UiRect(v.size.w,3)
+                            UiPop()
+                        UiPop()
+                    end
+                    if v.focused and v.allowResize then
+                        local cursor_x, cursor_y = UiGetMousePos()
+                        -- UiPush()
+                        -- UiColor(1,1,1,0.3)
+                        -- UiRect(cursor_x, cursor_y)
+                        -- UiPop()            
+                        UiTranslate(v.size.w,v.size.h)
+                        UiAlign('bottom right')
+                        UiPush()
+                            UiTranslate(-3,-3)
+                            UiImage(tgui_ui_assets..'/textures/resizeicon.png',image)
+                        UiPop()
+                        if not v.disableRezie then
+                            if UiIsMouseInRect(20,20) or v.keepResizing and InputDown('lmb') and last == i then
+                                UiPush()
+                                    UiTranslate(-10,-10)
+                                    UiAlign("middle center")
+                                    if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
+                                        SetBool('TGUI.interactingWindow',true)
+                                        local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
+                                        -- v.size = 
+                                        if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
+                                            if v.size.w > v.minSize.w then v.size.w = Vec2DAdd.w end
+                                            if v.size.h > v.minSize.h then v.size.h = Vec2DAdd.h end
+                                        end
+                                        if Vec2DAdd.w-8 < cursor_x then v.size.w = Vec2DAdd.w end
+                                        if Vec2DAdd.h-8 < cursor_y then v.size.h = Vec2DAdd.h end
+                                        if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
+                                        if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
+                                        v.disableDrag = true
+                                        v.keepResizing = true
+                                    else v.keepResizing = false end
+                                UiPop()
+                            else
+                            if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
+                            if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
+                            end
+                        end
+                    end
+                    if InputReleased('lmb') and v.keepResizing then
+                        SetBool('TGUI.interactingWindow',false)
+                        v.disableDrag = false
+                        v.keepResizing = false
                     end
                 UiPop()
             UiPop()
-            UiPush()
-                if TGUI_debug_show_windowMinsize then
-                    UiPush()
-                        UiPush()
-                            UiColor(1,0,0,1)
-                            UiTranslate(v.minSize.w, 0)
-                            UiRect(3,v.size.h)
-                        UiPop()
-                        UiPush()
-                            UiColor(0,1,0,1)
-                            UiTranslate(0,v.minSize.h)
-                            UiRect(v.size.w,3)
-                        UiPop()
-                    UiPop()
-                end
-                if v.focused and v.allowResize then
-                    local cursor_x, cursor_y = UiGetMousePos()
-                    -- UiPush()
-                    -- UiColor(1,1,1,0.3)
-                    -- UiRect(cursor_x, cursor_y)
-                    -- UiPop()            
-                    UiTranslate(v.size.w,v.size.h)
-                    UiAlign('bottom right')
-                    UiPush()
-                        UiTranslate(-3,-3)
-                        UiImage(tgui_ui_assets..'/textures/resizeicon.png',image)
-                    UiPop()
-                    if not v.disableRezie then
-                        if UiIsMouseInRect(20,20) or v.keepResizing and InputDown('lmb') and last == i then
-                            UiPush()
-                                UiTranslate(-10,-10)
-                                UiAlign("middle center")
-                                if UiIsMouseInRect(4000,4000) and InputDown('lmb') and last == i then
-                                    SetBool('TGUI.interactingWindow',true)
-                                    local Vec2DAdd = Vec2DAdd_WH(v.size, deltaMouse)
-                                    -- v.size = 
-                                    if Vec2DAdd.w > -1 and Vec2DAdd.h > -1 then
-                                        if v.size.w > v.minSize.w then v.size.w = Vec2DAdd.w end
-                                        if v.size.h > v.minSize.h then v.size.h = Vec2DAdd.h end
-                                    end
-                                    if Vec2DAdd.w-8 < cursor_x then v.size.w = Vec2DAdd.w end
-                                    if Vec2DAdd.h-8 < cursor_y then v.size.h = Vec2DAdd.h end
-                                    if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
-                                    if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
-                                    v.disableDrag = true
-                                    v.keepResizing = true
-                                else v.keepResizing = false end
-                            UiPop()
-                        else
-                        if v.size.w < v.minSize.w then v.size.w = v.minSize.w end
-                        if v.size.h < v.minSize.h then v.size.h = v.minSize.h end
-                        end
+            -- if v.focused then
+            --     DebugPrint(v.title.." finds table ahead is "..type(TABLEwindows[i+1]))
+            --     DebugPrint(v.title.." finds table behind is "..type(TABLEwindows[i-1]))
+            -- end
+                    -- if type(TABLEwindows[i+1]) == "table" then
+            -- end
+            if v.closeWindow then if v.onClose == nil then
+                if type(TABLEwindows[i-1]) == "table" then
+                    DebugPrint(TABLEwindows[i+1])
+                    TABLEwindows[i-1].focused = true;
+                    v.doNotHide = true;
+                    if v.focused then
+                        local swapWindowData = TABLEwindows[i-1]
+                        table.remove(TABLEwindows , i-1)
+                        table.insert(TABLEwindows , swapWindowData)
                     end
                 end
-                if InputReleased('lmb') and v.keepResizing then
-                    SetBool('TGUI.interactingWindow',false)
-                    v.disableDrag = false
-                    v.keepResizing = false
+                if v.opacity > 0 then
+                    v.opacity = v.opacity - dt/0.3
+                else
+                    table.remove(TABLEwindows, i)
                 end
-            UiPop()
-        UiPop()
-        -- if v.focused then
-        --     DebugPrint(v.title.." finds table ahead is "..type(TABLEwindows[i+1]))
-        --     DebugPrint(v.title.." finds table behind is "..type(TABLEwindows[i-1]))
-        -- end
-                -- if type(TABLEwindows[i+1]) == "table" then
-        -- end
-        if v.closeWindow then if v.onClose == nil then
-            if type(TABLEwindows[i-1]) == "table" then
-                DebugPrint(TABLEwindows[i+1])
-                TABLEwindows[i-1].focused = true;
-                v.doNotHide = true;
-                if v.focused then
-                    local swapWindowData = TABLEwindows[i-1]
-                    table.remove(TABLEwindows , i-1)
-                    table.insert(TABLEwindows , swapWindowData)
-                end
-            end
-            if v.opacity > 0 then
-                v.opacity = v.opacity - dt/0.3
-            else
-                table.remove(TABLEwindows, i)
-            end
-        else 
-            v.onClose(v, TABLEwindows , i)
-        end end
-        lastMouse = mouse
-    end
+            else 
+                v.onClose(v, TABLEwindows , i)
+            end end
+            lastMouse = mouse
+        end
+        end)
+        if not s then
+            TGUI_has_error = true
+            TGUI_error_message = e
+            DebugPrint("# - Error in TGUI: "..tostring(e) )
+            DebugPrint("#================================================#" )
+            DebugPrint("| THE WINDOW THAT WAS INSERTED HAD INVALID VLUES |" )
+            DebugPrint("#================================================#" )
+        end
     end 
     if TGUI_has_error then
         local lineWidth = 700

@@ -159,27 +159,26 @@ end
 ---Convert to float 0 to 1 from any range
 ---@param c integer range of 0 to any
 ---@param n integer range
----@return float c Range of 0 to 1 float
+---@return number c Range of 0 to 1 float
 function cRangeAny(c, n)
     return c/n
 end
 
 ---Convert to float 0 to 1 from 255 range
 ---@param c integer range of 0 to 255
----@return float c Range of 0 to 1 float
+---@return number c Range of 0 to 1 float
 function c255(c)
     return c/255
 end
 ---Convert to float 0 to 1 from 200 range
 ---@param c integer range of 0 to 200
----@return float c Range of 0 to 1 float
+---@return number c Range of 0 to 1 float
 function c200(c)
     return c/200
 end
-
 ---Convert to float 0 to 1 from 100 range
 ---@param c integer range of 0 to 100
----@return float c Range of 0 to 1 float
+---@return number c Range of 0 to 1 float
 function c100(c)
     return c/100
 end
@@ -1873,53 +1872,53 @@ function uic_listBox_container(window,w,h_items_visible,clip,border,makeinner, c
                             UiColor(c255(191), c255(191), c255(191), 0.5)
                             UiRect(17,(h_items_visible*19)-34)
                             
-                            local bar_scroll_Y=scrollY*((h_items_visible-34)/(#contents))
+                            local bar_scroll_Y=-contentsScroll*((h_items_visible*19-34)/(#contents))
                             local viewportRatio_height = h_items_visible / #contents
                             local scrollY_bar_height = math.max(0, math.floor((h_items_visible*19-34)*viewportRatio_height))
                             UiColor(c255(191), c255(191), c255(191), 1)
                             UiTranslate(0,-bar_scroll_Y)
                             UiColor(1,1,1,1) --scrollY
-                            DebugPrint(bar_scroll_Y)
+                            -- DebugPrint(bar_scroll_Y)
                             -- if (scroll_bar_height+h-(17*2)) > 1 then
                             -- window.oldscrollYPos = window.scrollYPos
                             UiImageBox(tgui_ui_assets..'/textures/outline_inner_normal.png',17,(scrollY_bar_height),1,1)
                             -- if GetBool("TGUI.interactingWindow") == false then
                                 UiPush()
                                 -- UiWindow(17,scroll_bar_height,false)
-                                if UiIsMouseInRect(17,scrollY_bar_height) or window.scrollcontainer.keepScrolling == true and InputDown('lmb') then
-                                    UiPush()
-                                        UiAlign('center middle')
-                                        UiTranslate(window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y)
-                                        -- UiRect(window.deltaMouse.x, window.deltaMouse.y)
-                                        -- UiWindow(200,scroll_bar_height,false)
-                                        -- UiColor(1,1,0,0.3)
-                                        -- UiRect(750,scroll_bar_height+750)
-                                        if UiIsMouseInRect(750,scrollY_bar_height+750) and InputDown('lmb') then 
-                                            window.scrollcontainer.pos_thum.mouse.x, window.scrollcontainer.pos_thum.mouse.y = UiGetMousePos()
-                                            window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y - window.scrollcontainer.pos_thum.lastMouse.y }            
-                                            window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0                                
-                                            local vec2d = ui2DAdd(-scrollY, window.scrollcontainer.pos_thum.deltaMouse).y
-                                            window.scrollcontainer.scrollYPos = vec2d
-                                            if window.scrollcontainer.scrollYPos >= 0 then
-                                                window.scrollcontainer.scrollYPos = 0
-                                            end
-                                            if window.scrollcontainer.scrollYPos <= max_scroll_Y then
-                                                window.scrollcontainer.scrollYPos = max_scroll_Y
-                                            end                    
-                                            -- DebugWatch('Scroll',InputValue("mousedy")/(scroll_height/h))
-                                            -- local mouseWheel = InputDown('')
-                                            -- window.scrollYPos = window.scrollYPos-InputValue("mousedy")+(h-34*scroll_bar_height)
-                                            window.scrollcontainer.keepScrolling = true
-                                        end
-                                    UiPop()
-                                end
-                                if UiIsMouseInRect(17,scrollY_bar_height) and window.scrollcontainer.keepScrolling == false and not InputDown('lmb') then
-                                    window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y = UiGetMousePos()
-                                end
-                                UiAlign('center middle')
-                                if InputReleased('lmb') or not UiIsMouseInRect(750,scrollY_bar_height+750) then
-                                    window.scrollcontainer.keepScrolling = false
-                                end
+                                -- if UiIsMouseInRect(17,scrollY_bar_height) or window.scrollcontainer.keepScrolling == true and InputDown('lmb') then
+                                --     UiPush()
+                                --         UiAlign('center middle')
+                                --         UiTranslate(window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y)
+                                --         -- UiRect(window.deltaMouse.x, window.deltaMouse.y)
+                                --         -- UiWindow(200,scroll_bar_height,false)
+                                --         -- UiColor(1,1,0,0.3)
+                                --         -- UiRect(750,scroll_bar_height+750)
+                                --         if UiIsMouseInRect(750,scrollY_bar_height+750) and InputDown('lmb') then 
+                                --             window.scrollcontainer.pos_thum.mouse.x, window.scrollcontainer.pos_thum.mouse.y = UiGetMousePos()
+                                --             window.scrollcontainer.pos_thum.deltaMouse = { x = window.scrollcontainer.pos_thum.mouse.x - window.scrollcontainer.pos_thum.lastMouse.x, y = window.scrollcontainer.pos_thum.mouse.y - window.scrollcontainer.pos_thum.lastMouse.y }            
+                                --             window.scrollcontainer.pos_thum.mouseMoved = window.scrollcontainer.pos_thum.deltaMouse.x ~= 0 or window.scrollcontainer.pos_thum.deltaMouse.y ~= 0                                
+                                --             local vec2d = ui2DAdd(-scrollY, window.scrollcontainer.pos_thum.deltaMouse).y
+                                --             window.scrollcontainer.scrollYPos = vec2d
+                                --             if window.scrollcontainer.scrollYPos >= 0 then
+                                --                 window.scrollcontainer.scrollYPos = 0
+                                --             end
+                                --             if window.scrollcontainer.scrollYPos <= max_scroll_Y then
+                                --                 window.scrollcontainer.scrollYPos = max_scroll_Y
+                                --             end                    
+                                --             -- DebugWatch('Scroll',InputValue("mousedy")/(scroll_height/h))
+                                --             -- local mouseWheel = InputDown('')
+                                --             -- window.scrollYPos = window.scrollYPos-InputValue("mousedy")+(h-34*scroll_bar_height)
+                                --             window.scrollcontainer.keepScrolling = true
+                                --         end
+                                --     UiPop()
+                                -- end
+                                -- if UiIsMouseInRect(17,scrollY_bar_height) and window.scrollcontainer.keepScrolling == false and not InputDown('lmb') then
+                                --     window.scrollcontainer.mouse_pos_thum.mouse.x, window.scrollcontainer.mouse_pos_thum.mouse.y = UiGetMousePos()
+                                -- end
+                                -- UiAlign('center middle')
+                                -- if InputReleased('lmb') or not UiIsMouseInRect(750,scrollY_bar_height+750) then
+                                --     window.scrollcontainer.keepScrolling = false
+                                -- end
                                 UiPop()
                             -- end
                             -- else
@@ -2179,6 +2178,7 @@ end
 ---- use the function `UiColor()` to change the color of the text
 ---@return table fontPathAndSize Get the font path and the size that is used to draw.
 ---- {font, size -- font size, width ,height}
+---@deprecated
 function uic_text( Text, height, fontSize, customization )
     if customization == nil then
         customization = {
@@ -2187,6 +2187,41 @@ function uic_text( Text, height, fontSize, customization )
     end
     if height == nil then height = 15 end
     if fontSize == nil then fontSize = 13 end
+    UiPush() 
+        UiFont(customization.font, fontSize)
+        local txt_w, txt_h = UiGetTextSize(Text)
+        UiDisableInput()
+        if uic_debug_buttontextWidth then
+            UiPush()
+                UiColor(1,1,0,0.3)
+                UiRect(txt_w,height)
+            UiPop()
+        end
+        UiButtonImageBox('MOD',0,0,0,0,0,0)
+        UiTextButton(Text,txt_w,height)
+    UiPop()
+    local finalHeight;
+    if txt_h >= height then finalHeight = txt_h
+    else finalHeight = height end
+    return {font=customization.font, size=fontSize, width=txt_w ,height=finalHeight}
+end
+
+---Display text
+---@param Text string Simple, display the text
+---@param height integer Height for the the `UiTextButton`
+---@param fontSize? integer Size of the text
+---@param customization? table you can only change the font path
+---- `font` default: tgui_ui_assets.."/Fonts/TAHOMA.TTF", Font path
+---- use the function `UiColor()` to change the color of the text
+---@return table fontPathAndSize Get the font path and the size that is used to draw.
+---- {font, size -- font size, width ,height}
+function uic_text_test( options )
+    local Text = options.text or "Text"
+    local height = options.height or 15
+    local fontSize = options.fontSize or 13
+    local customization = options.customization or {
+        font = tgui_ui_assets.."/Fonts/TAHOMA.TTF"
+    }
     UiPush() 
         UiFont(customization.font, fontSize)
         local txt_w, txt_h = UiGetTextSize(Text)
@@ -2499,25 +2534,42 @@ end
 ---- `fontSize` Defailt: 14, size of the text
 ---- `textcolornormal` Defailt: `{r=255,g=255,b=255,a=200}`, color of the text when not disabled
 ---- `textcolordisabled` Defailt: {g=24,b=24,a=160} , color of the text when disabled
-function uic_button_func(window, dt, text, width, height, disabled, tooltip, onClick, extraContent ,style)
+function uic_button_func( options )
+    local window = nil
+    local dt = options.dt or nil
+    local text = options.text or "text = \"Text\"" 
+    local width = options.width or 100 
+    local height = options.height or 20
+    local disabled = options.disabled or false
+    local tooltip = options.tooltip or nil
+    local onclick = options.onclick or function() 
+        DebugPrint("onclick function not set: onclick = function() end")
+    end
+    local extraContent = options.extraContent or nil
+    local style = options.style or {
+        fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF" or options.style.fontPath,
+        fontSize = 14 or options.style.fontSize,
+        textcolornormal = {r=255,g=255,b=255,a=200} or options.style.textcolornormal,
+        textcolordisabled = {r=24,g=24,b=24,a=160} or options.style.textcolordisabled
+    } 
     if type(window) == "table" then
         if window == not nil then
             if window.tooltipActive == nil then window.tooltipActive = false end
         end
     end
-    if style == nil then
-        style = {
-            fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF",
-            fontSize = 14,
-            textcolornormal = {r=255,g=255,b=255,a=200},
-            textcolordisabled = {r=24,g=24,b=24,a=160},
-        }
-    else
+    -- if style == nil then
+    --     style = {
+    --         fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF",
+    --         fontSize = 14,
+    --         textcolornormal = {r=255,g=255,b=255,a=200},
+    --         textcolordisabled = {r=24,g=24,b=24,a=160},
+    --     }
+    -- else
         if style.fontPath == nil then style.fontPath = tgui_ui_assets.."/Fonts/TAHOMA.TTF" end
         if style.fontSize == nil then style.fontSize = 14 end
         if style.textcolornormal == nil then style.textcolornormal = {r=255,g=255,b=255,a=200} end
         if style.textcolornormal == nil then style.textcolordisabled = {r=30,g=255,b=30,a=160} end
-    end
+    -- end
     UiPush()
         UiWindow(width, height, false)
         UiAlign("left top")
@@ -2557,7 +2609,7 @@ function uic_button_func(window, dt, text, width, height, disabled, tooltip, onC
             if UiTextButton(text,w,height) then end
         UiPop()    
         UiButtonImageBox("MOD",1,1,1,1,1,0)
-        if UiBlankButton(width, height+1) then onClick(extraContent) end
+        if UiBlankButton(width, height+1) then onclick(extraContent) end
         if type(window) == "table" then
             uic_tooltipHitbox( width,height,window.tooltipActive ,tooltip, dt )
             if allowSpecialKeys == nil then allowSpecialKeys = {enabled = false} end
@@ -2939,7 +2991,7 @@ end
 backspace_Timer = 5
 backspace_Timer_cut = 0.1
 
-function custom_UiInputText( string, w, h, window, dt )
+local function custom_UiInputText( string, w, h, window, dt )
     -- UiRect(w,h)
     local chars = {
         lower = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./`",
@@ -3209,8 +3261,8 @@ function uic_CreateGameMenu_Buttons_list(t, width ,contents, extraContent, style
     return UIC_height
 end
 
-uilib = {}
-function uilib:new()
+UILIB = {}
+function UILIB:new()
     local self = {
 
     }
