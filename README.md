@@ -1,4 +1,8 @@
 <p align="center">
+DEVELOPMENT IS HALTED BECAUSE THERE ARE NO DEVELOPERS WORKING IN THIS ANYMORE.
+</d>
+
+<p align="center">
   <img src="https://media.discordapp.net/attachments/198644490586685440/979419622262571048/unknown.png" alt="TGUI" >
 </d>
 
